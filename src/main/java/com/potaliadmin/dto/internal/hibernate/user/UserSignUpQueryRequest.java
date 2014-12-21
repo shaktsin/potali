@@ -2,6 +2,7 @@ package com.potaliadmin.dto.internal.hibernate.user;
 
 import com.potaliadmin.constants.user.EnumGender;
 import com.potaliadmin.dto.web.request.user.UserSignUpRequest;
+import com.potaliadmin.util.BaseUtil;
 import org.apache.commons.lang.StringUtils;
 
 /**
@@ -22,6 +23,7 @@ public class UserSignUpQueryRequest extends AbstractUserRequest {
     this.email = userSignUpRequest.getEmail();
     this.verified = userSignUpRequest.getVerified();
     this.instituteId = userSignUpRequest.getInstituteId();
+    this.hash = BaseUtil.passwordEncrypt(userSignUpRequest.getPassword());
   }
 
   public boolean verify() {

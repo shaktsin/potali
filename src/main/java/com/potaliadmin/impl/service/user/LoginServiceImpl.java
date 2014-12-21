@@ -70,12 +70,8 @@ public class LoginServiceImpl implements LoginService {
 
   @Override
   public UserResponse getLoggedInUser() {
-    UserResponse userResponse = new UserResponse();
     Principal principal =(Principal) SecurityUtils.getSubject().getPrincipal();
-    userResponse.setEmail(principal.getEmail());
-    userResponse.setId(principal.getId());
-    userResponse.setName(principal.getName());
-    return userResponse;
+    return getUserService().findByEmail(principal.getEmail());
   }
 
   public UserService getUserService() {

@@ -3,8 +3,7 @@ package com.potaliadmin.pact.framework;
 import org.hibernate.Query;
 import org.hibernate.criterion.DetachedCriteria;
 import org.springframework.dao.DataAccessException;
-import org.springframework.orm.hibernate3.HibernateTemplate;
-
+import org.springframework.orm.hibernate4.HibernateTemplate;
 import java.io.Serializable;
 import java.util.Collection;
 import java.util.List;

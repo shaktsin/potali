@@ -17,4 +17,11 @@ public class DtoJsonConstants {
   public static final String ID = "id";
   public static final String NAME = "nm";
   public static final String EMAIL = "em";
+
+  //institute
+  public static final String ALL_INST = "alInst";
+  public static final String EMAIL_SUFFIX = "emSuffix";
+  public static final String THIRD_PARTY_AUTH = "thPartyAuth";
+  public static final String PROVIDER = "provider";
+
 }

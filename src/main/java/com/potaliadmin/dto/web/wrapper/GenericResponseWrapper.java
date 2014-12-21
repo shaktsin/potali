@@ -10,7 +10,7 @@ import java.util.List;
 /**
  * Created by Shakti Singh on 12/7/14.
  */
-public class GenericResponseWrapper extends JSONObject{
+public class GenericResponseWrapper /*extends JSONObject*/ {
 
   private int status;
   private Object results;
@@ -31,7 +31,7 @@ public class GenericResponseWrapper extends JSONObject{
     this.results = results;
   }
 
-  @Override
+  /*@Override
   protected List<String> getKeys() {
     List<String> keys = new ArrayList<String>();
     keys.add(DtoJsonConstants.RESULTS);
@@ -45,5 +45,5 @@ public class GenericResponseWrapper extends JSONObject{
     values.add(this.results);
     values.add(this.status);
     return values;
-  }
+  }*/
 }

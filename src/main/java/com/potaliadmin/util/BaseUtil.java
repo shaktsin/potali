@@ -1,6 +1,7 @@
 package com.potaliadmin.util;
 
 import com.potaliadmin.constants.DefaultConstants;
+import org.apache.commons.lang.StringUtils;
 import org.apache.shiro.crypto.hash.Md5Hash;
 
 import java.util.regex.Matcher;
@@ -25,6 +26,17 @@ public class BaseUtil {
       return false;
     }
     return true;
+  }
+
+  public static boolean isValidPhone(String phone) {
+    boolean valid = false;
+    if (StringUtils.isNumeric(phone)) {
+      valid = true;
+    }
+    if (valid && phone.length() == 10) {
+      valid = true;
+    }
+    return valid;
   }
 
   public static String passwordEncrypt(String password) {

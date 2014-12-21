@@ -6,17 +6,18 @@ import org.hibernate.*;
 import org.hibernate.criterion.DetachedCriteria;
 import org.hibernate.criterion.Projections;
 import org.hibernate.criterion.Restrictions;
-import org.hibernate.engine.EntityKey;
-import org.hibernate.engine.PersistenceContext;
-import org.hibernate.engine.SessionImplementor;
+import org.hibernate.engine.spi.EntityKey;
+import org.hibernate.engine.spi.PersistenceContext;
+import org.hibernate.engine.spi.SessionImplementor;
 import org.hibernate.persister.entity.EntityPersister;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Primary;
 import org.springframework.dao.DataAccessException;
-import org.springframework.orm.hibernate3.HibernateCallback;
-import org.springframework.orm.hibernate3.HibernateTemplate;
-import org.springframework.orm.hibernate3.support.HibernateDaoSupport;
+
+import org.springframework.orm.hibernate4.HibernateCallback;
+import org.springframework.orm.hibernate4.HibernateTemplate;
+import org.springframework.orm.hibernate4.support.HibernateDaoSupport;
 import org.springframework.stereotype.Repository;
 
 import java.io.Serializable;
@@ -48,7 +49,7 @@ public class BaseDaoImpl extends HibernateDaoSupport implements BaseDao {
 
   public boolean containsKey(final String entityName, final Serializable key) {
     Boolean contains = (Boolean) getHibernateTemplate().execute(new HibernateCallback() {
-      public Object doInHibernate(Session session) throws HibernateException, SQLException {
+      public Object doInHibernate(Session session) throws HibernateException {
         SessionImplementor sessionImpl = (SessionImplementor) session;
         return containsKey(entityName, key, sessionImpl);
       }
@@ -77,7 +78,7 @@ public class BaseDaoImpl extends HibernateDaoSupport implements BaseDao {
     // get the entity persisted for this entity type
     EntityPersister persister = sessionImpl.getFactory().getEntityPersister(entityName);
     // create the possible entity key
-    EntityKey keyToLoad = new EntityKey(key, persister, sessionImpl.getEntityMode());
+    EntityKey keyToLoad = new EntityKey(key, persister);
     // then search in the persistence context
     PersistenceContext persistenceContext = sessionImpl.getPersistenceContext();
     return persistenceContext.containsEntity(keyToLoad);
@@ -96,7 +97,7 @@ public class BaseDaoImpl extends HibernateDaoSupport implements BaseDao {
   @Override
   @SuppressWarnings("unchecked")
   public Object findUnique(String queryString) {
-    List<Object> results = getHibernateTemplate().find(queryString);
+    List<Object> results = (List<Object>)getHibernateTemplate().find(queryString);
 
     if (results.size() == 1) {
       return results.get(0);
@@ -106,7 +107,7 @@ public class BaseDaoImpl extends HibernateDaoSupport implements BaseDao {
 
   @Override
   public Query createQuery(String queryString) {
-    return getSession().createQuery(queryString);
+    return getSessionFactory().getCurrentSession().createQuery(queryString);
   }
 
   /*
@@ -122,7 +123,7 @@ public class BaseDaoImpl extends HibernateDaoSupport implements BaseDao {
   @SuppressWarnings("unchecked")
   public List find(String queryString, Object[] bindings, int startRow, int maxRows) {
     // create the query
-    Query query = getSession().createQuery(queryString);
+    Query query = getSessionFactory().getCurrentSession().createQuery(queryString);
     // set the bindings
     if (bindings != null) {
       for (int i = 0; i < bindings.length; i++) {
@@ -181,7 +182,7 @@ public class BaseDaoImpl extends HibernateDaoSupport implements BaseDao {
   }
 
   public Object findUniqueByNamedParams(String queryString, String[] params, Object[] values) {
-    List<Object> results = getHibernateTemplate().findByNamedParam(queryString, params, values);
+    List<Object> results = (List<Object>)getHibernateTemplate().findByNamedParam(queryString, params, values);
 
     if (results.size() == 1) {
       return results.get(0);
@@ -193,7 +194,7 @@ public class BaseDaoImpl extends HibernateDaoSupport implements BaseDao {
   @SuppressWarnings("unchecked")
   public Object findUnique(String queryString, Object[] binds) {
 
-    List<Object> results = getHibernateTemplate().find(queryString, binds);
+    List<Object> results = (List<Object>)getHibernateTemplate().find(queryString, binds);
 
     if (results.size() == 1) {
       return results.get(0);
@@ -205,7 +206,7 @@ public class BaseDaoImpl extends HibernateDaoSupport implements BaseDao {
   @SuppressWarnings("unchecked")
   @Override
   public Object findUniqueByNamedQueryAndNamedParam(String queryString, String[] paramNames, Object[] paramValues) {
-    List<Object> results = getHibernateTemplate().findByNamedQueryAndNamedParam(queryString, paramNames, paramValues);
+    List<Object> results = (List<Object>)getHibernateTemplate().findByNamedQueryAndNamedParam(queryString, paramNames, paramValues);
 
     if (results.size() == 1) {
       return results.get(0);
@@ -295,7 +296,7 @@ public class BaseDaoImpl extends HibernateDaoSupport implements BaseDao {
   @SuppressWarnings("unchecked")
   public void saveOrUpdate(Collection entities) throws DataAccessException {
     //prepareHibernateForWrite();
-    getHibernateTemplate().saveOrUpdateAll(entities);
+    //getHibernateTemplate().saveOrUpdateAll(entities);
 //    testSave() ;
     //resetHibernateAfterWrite();
   }
@@ -353,7 +354,7 @@ public class BaseDaoImpl extends HibernateDaoSupport implements BaseDao {
     return ((Integer) getHibernateTemplate().execute(new HibernateCallback() {
 
       @Override
-      public Object doInHibernate(Session session) throws HibernateException, SQLException {
+      public Object doInHibernate(Session session) throws HibernateException {
         SQLQuery sqlQuery = session.createSQLQuery(sql);
 
         int i = 0;
@@ -373,7 +374,7 @@ public class BaseDaoImpl extends HibernateDaoSupport implements BaseDao {
     return (List<Object[]>) getHibernateTemplate().execute(new HibernateCallback() {
 
       @Override
-      public Object doInHibernate(Session session) throws HibernateException, SQLException {
+      public Object doInHibernate(Session session) throws HibernateException {
         SQLQuery sqlQuery = session.createSQLQuery("select * from (" + sql + ") t");
 
         int i = 0;

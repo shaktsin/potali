@@ -35,11 +35,13 @@
         </property>
     </bean>
     <bean id="transactionManager"
-          class="org.springframework.orm.hibernate3.HibernateTransactionManager">
+          class="org.springframework.orm.hibernate4.HibernateTransactionManager">
         <property name="sessionFactory">
             <ref bean="sessionFactory"/>
         </property>
         <property name="nestedTransactionAllowed" value="true"/>
     </bean>
+
+    <bean id="serviceLocator" class="com.potaliadmin.impl.framework.ServiceLocatorFactory"/>
 
 </beans>

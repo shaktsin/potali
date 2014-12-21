@@ -18,7 +18,7 @@ public class Institute implements Serializable {
   @Column(name = "name", nullable = false, length = 45)
   private String name;
 
-  @Column(name = "email_suffice", nullable = false, length = 45)
+  @Column(name = "email_suffix", nullable = false, length = 45)
   private String emailSuffice;
 
   @Column(name = "third_party_auth", nullable = false)

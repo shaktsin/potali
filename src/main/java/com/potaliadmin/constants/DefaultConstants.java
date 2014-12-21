@@ -5,6 +5,8 @@ package com.potaliadmin.constants;
  */
 public class DefaultConstants
 {
+  //app
+  public static String APP_NAME = "ofCampus";
   // security
   public static String realmName = "DefaultHibernateRealmName";
   public static String passwordSalt = "";

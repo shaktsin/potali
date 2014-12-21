@@ -14,6 +14,7 @@ public class UserResponse extends GenericBaseResponse {
   private String name;
   private String email;
   private String passwordChecksum;
+  private Long instituteId;
 
   public Long getId() {
     return id;
@@ -47,7 +48,15 @@ public class UserResponse extends GenericBaseResponse {
     this.passwordChecksum = passwordChecksum;
   }
 
-  @Override
+  public Long getInstituteId() {
+    return instituteId;
+  }
+
+  public void setInstituteId(Long instituteId) {
+    this.instituteId = instituteId;
+  }
+
+  /*@Override
   protected List<String> getKeys() {
     List<String> keys = super.getKeys();
     keys.add(DtoJsonConstants.ID);
@@ -63,5 +72,5 @@ public class UserResponse extends GenericBaseResponse {
     values.add(name);
     values.add(email);
     return values;
-  }
+  }*/
 }

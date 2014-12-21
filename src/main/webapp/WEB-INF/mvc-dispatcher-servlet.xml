@@ -37,6 +37,10 @@
     <bean class="org.apache.shiro.spring.security.interceptor.AuthorizationAttributeSourceAdvisor">
         <property name="securityManager" ref="securityManager"/>
     </bean>
+    
+    <mvc:interceptors>
+        <bean class="com.potaliadmin.web.interceptors.GenericResponseWrapperInterceptor"/>
+    </mvc:interceptors>
 
 
 

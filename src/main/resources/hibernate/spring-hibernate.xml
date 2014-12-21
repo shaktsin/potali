@@ -6,15 +6,15 @@
           class="org.springframework.jdbc.support.lob.DefaultLobHandler"/>
 
     <bean id="sessionFactory"
-          class="org.springframework.orm.hibernate3.annotation.AnnotationSessionFactoryBean">
+          class="org.springframework.orm.hibernate4.LocalSessionFactoryBean">
 
         <property name="dataSource">
             <ref bean="dataSource"/>
         </property>
 
-        <property name="lobHandler">
+        <!--<property name="lobHandler">
             <ref bean="lobHandler"/>
-        </property>
+        </property>-->
 
         <property name="packagesToScan">
             <list>
@@ -22,8 +22,8 @@
             </list>
         </property>
 
-        <property name="entityInterceptor">
-            <ref local="defaultHibernateInterceptor"/>
+        <property name="entityInterceptor" ref="defaultHibernateInterceptor">
+            <!--<ref local="defaultHibernateInterceptor"/>-->
         </property>
 
         <property name="hibernateProperties">
@@ -46,7 +46,7 @@
 
 
     <bean id="hibernateTemplate"
-          class="org.springframework.orm.hibernate3.HibernateTemplate">
+          class="org.springframework.orm.hibernate4.HibernateTemplate">
         <property name="sessionFactory">
             <ref bean="sessionFactory"/>
         </property>

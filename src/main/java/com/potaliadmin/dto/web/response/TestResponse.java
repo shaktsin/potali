@@ -8,7 +8,7 @@ import java.util.List;
 /**
  * Created by Shakti Singh on 12/6/14.
  */
-public class TestResponse extends GenericBaseResponse {
+public class TestResponse /*extends GenericBaseResponse*/ {
 
   private String message;
 
@@ -20,7 +20,7 @@ public class TestResponse extends GenericBaseResponse {
     this.message = message;
   }
 
-  @Override
+  /*@Override
   protected List<String> getKeys() {
     List<String> keys = super.getKeys();
     keys.add(DtoJsonConstants.MESSAGE);
@@ -32,5 +32,5 @@ public class TestResponse extends GenericBaseResponse {
     List<Object> values = super.getValues();
     values.add(message);
     return values;
-  }
+  }*/
 }

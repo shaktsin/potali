@@ -9,7 +9,7 @@ import java.util.List;
 /**
  * Created by Shakti Singh on 10/6/14.
  */
-public class GenericBaseResponse extends JSONObject {
+public class GenericBaseResponse /*extends JSONObject*/ {
 
   boolean exception;
   List<String> messages = new ArrayList<String>();
@@ -34,7 +34,7 @@ public class GenericBaseResponse extends JSONObject {
     this.messages = messages;
   }
 
-  @Override
+  /*@Override
   protected List<String> getKeys() {
     List<String> keys = new ArrayList<String>();
     keys.add(DtoJsonConstants.EXCEPTION);
@@ -48,5 +48,5 @@ public class GenericBaseResponse extends JSONObject {
     values.add(this.exception);
     values.add(this.messages);
     return values;
-  }
+  }*/
 }

@@ -31,6 +31,7 @@ public class UserServiceImpl implements UserService {
       userResponse.setEmail(user.getEmail());
       userResponse.setName(user.getAccountName());
       userResponse.setPasswordChecksum(user.getPasswordChecksum());
+      userResponse.setInstituteId(user.getInstituteId());
     }
     return userResponse;
   }
@@ -58,6 +59,7 @@ public class UserServiceImpl implements UserService {
     userResponse.setId(user.getId());
     userResponse.setEmail(user.getEmail());
     userResponse.setName(user.getAccountName());
+    userResponse.setInstituteId(user.getInstituteId());
 
     return userResponse;
   }
