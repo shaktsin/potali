@@ -43,13 +43,13 @@ public class User implements Serializable {
   @Column(name = "institute_id", nullable = false)
   private Long instituteId;
 
-  @Temporal(TemporalType.DATE)
+  @Temporal(TemporalType.TIMESTAMP)
   @Column(name = "created_date", nullable = false)
   private Date createDate = new Date();
 
   @Temporal(TemporalType.TIMESTAMP)
   @Column(name = "updated_date", nullable = true)
-  private Date updateDate;
+  private Date updateDate = new Date();
 
 
   public Long getId() {

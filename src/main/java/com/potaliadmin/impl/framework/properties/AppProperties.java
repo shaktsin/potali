@@ -16,11 +16,18 @@ public class AppProperties {
   @Value("${ENV}")
   private String env;
 
+  @Value("${ES_CLUSTER}")
+  private String esClusterName;
+
   public boolean isDev() {
     return DEV.equalsIgnoreCase(env);
   }
 
   public boolean isProd() {
     return PROD.equalsIgnoreCase(env);
+  }
+
+  public String getEsClusterName() {
+    return esClusterName;
   }
 }

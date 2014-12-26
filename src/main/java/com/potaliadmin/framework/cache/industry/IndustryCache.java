@@ -3,9 +3,7 @@ package com.potaliadmin.framework.cache.industry;
 import com.potaliadmin.dto.internal.cache.job.IndustryVO;
 import com.potaliadmin.framework.cache.LocalCache;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 /**
  * Created by Shakti Singh on 12/17/14.
@@ -40,6 +38,14 @@ public class IndustryCache implements LocalCache {
       exists = true;
     }
     return exists;
+  }
+
+  public List<IndustryVO> getAllIndustryVO() {
+    List<IndustryVO> industryVOList = new ArrayList<IndustryVO>();
+    for (Map.Entry<Long, IndustryVO> instituteVOEntry : industryVOMap.entrySet()) {
+      industryVOList.add(getIndustryVO(instituteVOEntry.getKey()));
+    }
+    return industryVOList;
   }
 
   @Override

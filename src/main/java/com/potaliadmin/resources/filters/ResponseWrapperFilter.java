@@ -27,8 +27,23 @@ public class ResponseWrapperFilter implements ContainerResponseFilter {
         genericResponseWrapper.setStatus(Response.Status.UNAUTHORIZED.getStatusCode());
         genericResponseWrapper.setResults(genericBaseResponse);
       } else if (Response.Status.OK.getStatusCode() == status) {
-        genericResponseWrapper.setResults(containerResponseContext.getEntity());
-        genericResponseWrapper.setStatus(Response.Status.OK.getStatusCode());
+        Object entity = containerResponseContext.getEntity();
+        if (entity instanceof GenericBaseResponse) {
+          if (!((GenericBaseResponse) entity).isException()) {
+            genericResponseWrapper.setResults(entity);
+            genericResponseWrapper.setStatus(Response.Status.OK.getStatusCode());
+          } else {
+            GenericBaseResponse genericBaseResponse = new GenericBaseResponse();
+            genericBaseResponse.setException(Boolean.TRUE);
+            genericBaseResponse.addMessage(((GenericBaseResponse) entity).getMessages().get(0));
+            genericResponseWrapper.setStatus(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode());
+          }
+        } else {
+          GenericBaseResponse genericBaseResponse = new GenericBaseResponse();
+          genericBaseResponse.setException(Boolean.TRUE);
+          genericBaseResponse.addMessage("Are you out of your mind, extend some super class");
+          genericResponseWrapper.setStatus(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode());
+        }
       } else {
         GenericBaseResponse genericBaseResponse = new GenericBaseResponse();
         genericBaseResponse.setException(Boolean.TRUE);

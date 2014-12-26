@@ -1,5 +1,8 @@
 package com.potaliadmin.dto.internal.cache.es.framework;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
+import com.potaliadmin.constants.DefaultConstants;
+
 import java.util.Date;
 
 /**
@@ -15,8 +18,12 @@ public class GenericPostVO {
   private String replyEmail;
   private String replyPhone;
   private String replyWatsApp;
+  @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = DefaultConstants.DEFAULT_ES_DATE_FORMAT, timezone = "IST")
   private Date createdDate;
+  @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = DefaultConstants.DEFAULT_ES_DATE_FORMAT, timezone = "IST")
   private Date updatedDate;
+
+  public GenericPostVO() {}
 
   public GenericPostVO(Long userId, Long userInstituteId, Long postId) {
     this.userId = userId;

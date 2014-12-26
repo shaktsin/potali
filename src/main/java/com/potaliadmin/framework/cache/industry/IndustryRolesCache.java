@@ -24,10 +24,6 @@ public class IndustryRolesCache implements LocalCache {
     return _mInstance;
   }
 
-  public void addIndustry(Long id, IndustryRolesVO industryRolesVO) {
-    this.industryRolesVOMap.put(id, industryRolesVO);
-  }
-
   public void addIndustryRoles(Long id,IndustryRolesVO industryRolesVO) {
     this.industryRolesVOMap.put(id, industryRolesVO);
   }
@@ -36,7 +32,7 @@ public class IndustryRolesCache implements LocalCache {
     return this.industryRolesVOMap.get(id);
   }
 
-  public List<IndustryRolesVO> getAllIndustryVO() {
+  public List<IndustryRolesVO> getAllIndustryRolesVO() {
     List<IndustryRolesVO> industryRolesVOList = new ArrayList<IndustryRolesVO>();
     for (Map.Entry<Long, IndustryRolesVO> instituteVOEntry : industryRolesVOMap.entrySet()) {
       industryRolesVOList.add(getIndustryRolesVO(instituteVOEntry.getKey()));

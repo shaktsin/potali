@@ -32,13 +32,13 @@ public class Post implements Serializable {
   @Column(name = "reply_watspp", length = 45)
   private String replyWatsApp;
 
-  @Temporal(TemporalType.DATE)
+  @Temporal(TemporalType.TIMESTAMP)
   @Column(name = "created_date", nullable = false)
   private Date createDate = new Date();
 
   @Temporal(TemporalType.TIMESTAMP)
   @Column(name = "updated_date", nullable = false)
-  private Date updatedDate;
+  private Date updatedDate = new Date();
 
   @Column(name = "user_id", nullable = false)
   private Long userId;

@@ -48,7 +48,7 @@ public class SecurityRequestFilter implements ContainerRequestFilter {
     if (authorization != null) {
       return SecurityToken.getCredentials(authorization);
     } else {
-      throw new UnAuthorizedAccessException("Access Denied!");
+      return null;
     }
   }
 }

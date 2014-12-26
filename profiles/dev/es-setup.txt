@@ -1,0 +1,14 @@
+PUT /ofc
+{
+    "settings": {
+        "number_of_shards" :   1,
+        "number_of_replicas" : 0
+    }
+    , "mappings": {
+        "_default_":{
+            "dynamic_date_formats": [
+               "yyyy/MM/dd HH:mm:ss+5:30"
+            ]
+        }
+    }
+}

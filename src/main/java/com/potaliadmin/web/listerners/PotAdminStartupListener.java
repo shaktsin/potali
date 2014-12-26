@@ -1,6 +1,7 @@
 package com.potaliadmin.web.listerners;
 
 import com.potaliadmin.domain.address.Country;
+import com.potaliadmin.framework.cache.ESCacheManager;
 import com.potaliadmin.framework.cache.NativeCacheManager;
 import com.potaliadmin.impl.framework.ServiceLocatorFactory;
 import com.potaliadmin.pact.framework.BaseDao;
@@ -34,11 +35,17 @@ public class PotAdminStartupListener implements ServletContextListener {
   public void contextInitialized(ServletContextEvent servletContextEvent) {
     logger.info("=================== STARTING POTALI ADMIN ===================");
     getAppCacheService().reloadAll();
+
+    ESCacheManager esCacheManager = ESCacheManager.getInstance();
+    esCacheManager.startNode();
+
   }
 
   @Override
   public void contextDestroyed(ServletContextEvent servletContextEvent) {
     logger.info("=================== SHUTTING DOWN POTALI ADMIN ===================");
+    ESCacheManager esCacheManager = ESCacheManager.getInstance();
+    esCacheManager.stopNode();
   }
 
   public AppCacheService getAppCacheService() {

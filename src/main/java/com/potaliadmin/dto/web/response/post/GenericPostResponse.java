@@ -1,6 +1,7 @@
 package com.potaliadmin.dto.web.response.post;
 
 import com.potaliadmin.dto.web.response.base.GenericBaseResponse;
+import com.potaliadmin.dto.web.response.user.UserDto;
 
 import java.util.Date;
 
@@ -16,6 +17,8 @@ public class GenericPostResponse extends GenericBaseResponse {
   private String replyPhone;
   private String replyWatsApp;
   private String postedOn;
+  private UserDto userDto;
+
 
   public Long getPostId() {
     return postId;
@@ -71,5 +74,13 @@ public class GenericPostResponse extends GenericBaseResponse {
 
   public void setPostedOn(String postedOn) {
     this.postedOn = postedOn;
+  }
+
+  public UserDto getUserDto() {
+    return userDto;
+  }
+
+  public void setUserDto(UserDto userDto) {
+    this.userDto = userDto;
   }
 }
