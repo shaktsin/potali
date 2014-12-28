@@ -1,6 +1,7 @@
 package com.potaliadmin.dto.web.request.user;
 
 
+import com.potaliadmin.constants.DefaultConstants;
 import com.potaliadmin.constants.institute.EnumInstitute;
 import com.potaliadmin.util.BaseUtil;
 
@@ -18,6 +19,7 @@ public class UserSignUpRequest {
   private Long instituteId;
   private Integer gender;
   private Boolean verified;
+  private boolean thirdPartAuth;
 
   public boolean validate() {
     boolean isValid = Boolean.TRUE;
@@ -30,10 +32,10 @@ public class UserSignUpRequest {
     if (isValid && BaseUtil.isValidEmail(email)) {
       isValid = Boolean.FALSE;
     }
-    if (isValid && (null == password || null == rePassword)) {
+    if (isValid && (null == getPassword() || null == getRePassword())) {
       isValid = Boolean.FALSE;
     }
-    if (isValid && (password.equalsIgnoreCase(rePassword))) {
+    if (isValid && (getPassword().equalsIgnoreCase(getRePassword()))) {
       isValid = Boolean.FALSE;
     }
     if (isValid && (null == instituteId)) {
@@ -71,6 +73,9 @@ public class UserSignUpRequest {
   }
 
   public String getPassword() {
+    if (thirdPartAuth) {
+      return DefaultConstants.DEFAULT_PASSWORD+email;
+    }
     return password;
   }
 
@@ -79,6 +84,9 @@ public class UserSignUpRequest {
   }
 
   public String getRePassword() {
+    if (thirdPartAuth) {
+      return DefaultConstants.DEFAULT_PASSWORD+email;
+    }
     return rePassword;
   }
 
@@ -116,5 +124,13 @@ public class UserSignUpRequest {
 
   public void setVerified(Boolean verified) {
     this.verified = verified;
+  }
+
+  public boolean getThirdPartAuth() {
+    return thirdPartAuth;
+  }
+
+  public void setThirdPartAuth(boolean thirdPartAuth) {
+    this.thirdPartAuth = thirdPartAuth;
   }
 }

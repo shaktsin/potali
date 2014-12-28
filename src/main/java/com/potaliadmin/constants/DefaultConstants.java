@@ -24,4 +24,6 @@ public class DefaultConstants
 
   public static final int MIN_EXP_YEAR = 0;
   public static final int MAX_EXP_YEAR = 100;
+
+  public static final String DEFAULT_PASSWORD = "DEFAULT_PASSWORD";
 }
