@@ -2,10 +2,12 @@ package com.potaliadmin.impl.service.cache;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.potaliadmin.dto.internal.cache.es.framework.GenericPostVO;
+import com.potaliadmin.dto.internal.cache.es.framework.GenericVO;
 import com.potaliadmin.dto.internal.cache.es.job.FullJobVO;
 import com.potaliadmin.framework.cache.ESCacheManager;
 import com.potaliadmin.pact.service.cache.ESCacheService;
 import org.elasticsearch.action.get.GetResponse;
+import org.elasticsearch.action.index.IndexRequestBuilder;
 import org.elasticsearch.action.index.IndexResponse;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.index.query.FilterBuilder;
@@ -30,12 +32,18 @@ public class ESCacheServiceImpl implements ESCacheService {
   }
 
   @Override
-  public boolean put(String type, GenericPostVO object) {
+  public boolean put(String type, GenericVO object, Long parentId) {
     boolean published;
     try {
       String json = objectMapper.writeValueAsString(object);
-      IndexResponse indexResponse = ESCacheManager.getInstance().getClient()
-          .prepareIndex(INDEX, type, object.getPostId().toString()).setSource(json).execute().actionGet();
+      //ESCacheManager.getInstance().getClient().prepareSearch(INDEX, type, object.getId().toString())
+      IndexRequestBuilder indexRequestBuilder = ESCacheManager.getInstance().getClient()
+          .prepareIndex(INDEX, type, object.getId().toString()).setSource(json);
+      if (parentId != null) {
+        indexRequestBuilder.setParent(parentId.toString());
+      }
+      IndexResponse indexResponse = indexRequestBuilder.execute().actionGet();
+
       published = indexResponse.isCreated();
 
     } catch (Exception e) {

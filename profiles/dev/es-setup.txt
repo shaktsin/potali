@@ -6,9 +6,59 @@ PUT /ofc
     }
     , "mappings": {
         "_default_":{
+            "date_detection": true, 
             "dynamic_date_formats": [
-               "yyyy/MM/dd HH:mm:ss+5:30"
+               "yyyy/MM/dd HH:mm:ss"
             ]
         }
     }
 }
+GET /ofc/job/28
+
+DELETE /ofc
+
+PUT /ofc/_mapping/post_reactions
+{
+    "post_reactions" : {
+        "_parent": {
+           "type": "job"
+        }
+    }
+}
+
+GET /ofc/_mapping 
+
+GET /ofc/job/_search
+{
+    "filter": {
+        "and":[
+                {
+                    "or": [
+                    {
+                        "term": { "locationList.id": [1]}                
+                    }, 
+                    {
+                        "term": { "locationList.id": [2]}
+                    }
+                  ]  
+              }, 
+              {
+                  "or":[
+                      {
+                          "term":{"industryRolesList.id":[1]}
+                      }
+                   ]
+                  
+              }
+            ]           
+    }, 
+    "sort": [
+       {
+          "createdDate": {
+             "order": "desc"
+          }
+       }
+    ]
+}
+
+

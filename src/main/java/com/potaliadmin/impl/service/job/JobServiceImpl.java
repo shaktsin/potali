@@ -1,6 +1,7 @@
 package com.potaliadmin.impl.service.job;
 
 import com.potaliadmin.constants.DefaultConstants;
+import com.potaliadmin.constants.reactions.EnumReactions;
 import com.potaliadmin.domain.job.Job;
 import com.potaliadmin.domain.post.PostBlob;
 import com.potaliadmin.dto.internal.cache.address.CityVO;
@@ -30,9 +31,7 @@ import com.potaliadmin.util.BaseUtil;
 import com.potaliadmin.util.DateUtils;
 import org.elasticsearch.action.get.GetResponse;
 import org.elasticsearch.action.search.SearchResponse;
-import org.elasticsearch.index.query.AndFilterBuilder;
-import org.elasticsearch.index.query.FilterBuilders;
-import org.elasticsearch.index.query.TermFilterBuilder;
+import org.elasticsearch.index.query.*;
 import org.elasticsearch.rest.RestStatus;
 import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.SearchHits;
@@ -64,6 +63,8 @@ public class JobServiceImpl implements JobService {
 
   private static final String INDEX = "ofc";
   private static final String TYPE = "job";
+  private static final String POST_REACTIONS = "post_reactions";
+  private static final Long[] REMOVE_LIST = {EnumReactions.HIDE_THIS_POST.getId(), EnumReactions.MARK_AS_SPAM.getId()};
 
 
 
@@ -91,7 +92,7 @@ public class JobServiceImpl implements JobService {
 
     //push in ES
     FullJobVO fullJobVO = new FullJobVO(job, postBlob);
-    boolean published = getEsCacheService().put("job", fullJobVO);
+    boolean published = getEsCacheService().put("job", fullJobVO, null);
 
     if (!published) {
       JobResponse jobResponse = new JobResponse();
@@ -143,6 +144,22 @@ public class JobServiceImpl implements JobService {
 
     JobSearchResponse jobSearchResponse= new JobSearchResponse();
     AndFilterBuilder andFilterBuilder = new AndFilterBuilder();
+
+    // hide all mark as hidden and spam posts from list
+    OrFilterBuilder orFilterBuilder = new OrFilterBuilder();
+    //NotFilterBuilder notFilterBuilder = new NotFilterBuilder()
+    MatchAllFilterBuilder matchAllFilterBuilder = new MatchAllFilterBuilder();
+    HasChildFilterBuilder hasChildFilterBuilder = new HasChildFilterBuilder(POST_REACTIONS, matchAllFilterBuilder);
+    orFilterBuilder.add(hasChildFilterBuilder);
+
+
+    BoolFilterBuilder boolFilterBuilder = new BoolFilterBuilder();
+    boolFilterBuilder.mustNot(FilterBuilders.inFilter("reactionId", REMOVE_LIST));
+    boolFilterBuilder.must(FilterBuilders.termFilter("userId", userResponse.getId()));
+    orFilterBuilder.add(FilterBuilders.hasChildFilter(POST_REACTIONS, boolFilterBuilder));
+    andFilterBuilder.add(orFilterBuilder);
+
+
     if (locationList != null && locationList.length > 0) {
       andFilterBuilder.add(FilterBuilders.inFilter("locationList.id", locationList));
       Arrays.asList(locationList);

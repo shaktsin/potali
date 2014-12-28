@@ -8,7 +8,7 @@ import java.util.Date;
 /**
  * Created by Shakti Singh on 12/20/14.
  */
-public class GenericPostVO {
+public class GenericPostVO extends GenericVO {
 
   private Long userId;
   private Long userInstituteId;
@@ -25,7 +25,8 @@ public class GenericPostVO {
 
   public GenericPostVO() {}
 
-  public GenericPostVO(Long userId, Long userInstituteId, Long postId) {
+  public GenericPostVO(Long id, Long userId, Long userInstituteId, Long postId) {
+    super(id);
     this.userId = userId;
     this.userInstituteId = userInstituteId;
     this.postId = postId;

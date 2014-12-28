@@ -1,6 +1,7 @@
 package com.potaliadmin.pact.service.cache;
 
 import com.potaliadmin.dto.internal.cache.es.framework.GenericPostVO;
+import com.potaliadmin.dto.internal.cache.es.framework.GenericVO;
 import org.elasticsearch.action.get.GetResponse;
 import org.elasticsearch.search.SearchHit;
 
@@ -9,7 +10,7 @@ import org.elasticsearch.search.SearchHit;
  */
 public interface ESCacheService {
 
-  public boolean put(String type, GenericPostVO object);
+  public boolean put(String type, GenericVO object, Long parentId);
 
   public Object parseResponse(SearchHit searchHit, Class responseClass);
 

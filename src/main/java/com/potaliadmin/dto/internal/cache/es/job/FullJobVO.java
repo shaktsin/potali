@@ -29,12 +29,12 @@ public class FullJobVO extends GenericPostVO {
     super();
   }
 
-  public FullJobVO(Long userId, Long userInstituteId, Long postId) {
-    super(userId, userInstituteId, postId);
+  public FullJobVO(Long id,Long userId, Long userInstituteId, Long postId) {
+    super(id,userId, userInstituteId, postId);
   }
 
   public FullJobVO(Job job, PostBlob postBlob) {
-    super(job.getUserId(), job.getUserInstituteId(), job.getId());
+    super(job.getId(),job.getUserId(), job.getUserInstituteId(), job.getId());
     this.setSubject(job.getSubject());
     this.setContent(postBlob.getContent());
     this.setReplyEmail(job.getReplyEmail());

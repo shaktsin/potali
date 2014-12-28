@@ -19,6 +19,9 @@ public class AppProperties {
   @Value("${ES_CLUSTER}")
   private String esClusterName;
 
+  @Value("${UPLOAD}")
+  private String uploadPath;
+
   public boolean isDev() {
     return DEV.equalsIgnoreCase(env);
   }
@@ -29,5 +32,9 @@ public class AppProperties {
 
   public String getEsClusterName() {
     return esClusterName;
+  }
+
+  public String getUploadPath() {
+    return uploadPath;
   }
 }

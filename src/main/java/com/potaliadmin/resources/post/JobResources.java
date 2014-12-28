@@ -9,10 +9,14 @@ import com.potaliadmin.pact.service.job.JobService;
 import com.potaliadmin.util.BaseUtil;
 import org.apache.commons.lang.StringUtils;
 import org.apache.shiro.authz.annotation.RequiresAuthentication;
+import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
+import org.glassfish.jersey.media.multipart.FormDataParam;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import javax.ws.rs.*;
+import javax.ws.rs.core.MediaType;
+import java.io.InputStream;
 
 /**
  * Created by Shakti Singh on 12/16/14.
@@ -105,6 +109,16 @@ public class JobResources {
       return jobSearchResponse;
     }
   }
+
+  /*@POST
+  @Path("/upload")
+  @Consumes(MediaType.MULTIPART_FORM_DATA)
+  public void uploadFile(@FormDataParam("file") InputStream uploadedInputStream,
+                         @FormDataParam("file") FormDataContentDisposition fileDetail) {
+
+
+
+  }*/
 
 
 
