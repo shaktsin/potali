@@ -59,10 +59,14 @@ public class UserServiceImpl implements UserService {
 
     UserResponse userResponse = findByEmail(userSignUpRequest.getEmail());
     if (null != userResponse) {
-      userResponse = new UserResponse();
-      userResponse.setException(Boolean.TRUE);
-      userResponse.addMessage("You have already registered with us!");
-      return userResponse;
+      if (userSignUpRequest.getThirdPartAuth()) {
+        return userResponse;
+      } else {
+        userResponse = new UserResponse();
+        userResponse.setException(Boolean.TRUE);
+        userResponse.addMessage("You have already registered with us!");
+        return userResponse;
+      }
       //throw new PotaliRuntimeException("You have already registered with us!");
     }
 
