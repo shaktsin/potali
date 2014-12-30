@@ -27,9 +27,11 @@ public class LoginServiceImpl implements LoginService {
     UserResponse userResponse = null;
     try {
       userResponse = getUserService().signUp(userSignUpRequest);
-      UsernamePasswordToken usernamePasswordToken = new UsernamePasswordToken(userSignUpRequest.getEmail(), userSignUpRequest.getPassword());
-      usernamePasswordToken.setRememberMe(true);
-      SecurityUtils.getSubject().login(usernamePasswordToken);
+      if (!userResponse.isException()) {
+        UsernamePasswordToken usernamePasswordToken = new UsernamePasswordToken(userSignUpRequest.getEmail(), userSignUpRequest.getPassword());
+        usernamePasswordToken.setRememberMe(true);
+        SecurityUtils.getSubject().login(usernamePasswordToken);
+      }
     } catch (Exception e) {
       if (null == userResponse) {
         userResponse = new UserResponse();

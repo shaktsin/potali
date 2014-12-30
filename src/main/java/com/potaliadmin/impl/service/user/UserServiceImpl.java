@@ -41,21 +41,38 @@ public class UserServiceImpl implements UserService {
   @Override
   @Transactional
   public UserResponse signUp(UserSignUpRequest userSignUpRequest) {
+
     if (userSignUpRequest == null) {
-      throw new InValidInputException("User request Parameters cannot be null");
+      UserResponse userResponse = new UserResponse();
+      userResponse.setException(Boolean.TRUE);
+      userResponse.addMessage("User request Parameters cannot be null");
+      return userResponse;
+      //throw new InValidInputException("User request Parameters cannot be null");
     }
     if (userSignUpRequest.validate()) {
-      throw new InValidInputException("Input Parameters are invalid!");
+      UserResponse userResponse = new UserResponse();
+      userResponse.setException(Boolean.TRUE);
+      userResponse.addMessage("Input Parameters are invalid!");
+      return userResponse;
+      //throw new InValidInputException("Input Parameters are invalid!");
     }
 
     UserResponse userResponse = findByEmail(userSignUpRequest.getEmail());
     if (null != userResponse) {
-      throw new PotaliRuntimeException("You have already registered with us!");
+      userResponse = new UserResponse();
+      userResponse.setException(Boolean.TRUE);
+      userResponse.addMessage("You have already registered with us!");
+      return userResponse;
+      //throw new PotaliRuntimeException("You have already registered with us!");
     }
 
     InstituteVO instituteVO = InstituteCache.getCache().getInstitute(userSignUpRequest.getInstituteId());
     if (!userSignUpRequest.getEmail().toLowerCase().contains(instituteVO.getEmSuffix().toLowerCase())) {
-      throw new PotaliRuntimeException("You are not the student of college !"+instituteVO.getNm());
+      userResponse = new UserResponse();
+      userResponse.setException(Boolean.TRUE);
+      userResponse.addMessage("You are not the student of college !"+instituteVO.getNm());
+      return userResponse;
+      //throw new PotaliRuntimeException("You are not the student of college !"+instituteVO.getNm());
     }
 
     UserSignUpQueryRequest userSignUpQueryRequest = new UserSignUpQueryRequest(userSignUpRequest);

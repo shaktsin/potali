@@ -38,7 +38,7 @@ public class UserResource {
       } else {
         UserResourceResponse userResourceResponse = new UserResourceResponse();
         userResourceResponse.setException(Boolean.TRUE);
-        userResourceResponse.addMessage(userResponse.getMessages().get(0));
+        userResourceResponse.setMessages(userResponse.getMessages());
         return userResourceResponse;
 
       }
