@@ -7,6 +7,7 @@ import javax.ws.rs.container.ContainerResponseFilter;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.ext.Provider;
 import java.io.IOException;
+import java.util.List;
 
 /**
  * Created by Shakti Singh on 12/7/14.
@@ -35,13 +36,16 @@ public class ResponseWrapperFilter implements ContainerResponseFilter {
           } else {
             GenericBaseResponse genericBaseResponse = new GenericBaseResponse();
             genericBaseResponse.setException(Boolean.TRUE);
-            genericBaseResponse.addMessage(((GenericBaseResponse) entity).getMessages().get(0));
+            List<String> messages = ((GenericBaseResponse) entity).getMessages();
+            genericBaseResponse.setMessages(messages);
+            genericResponseWrapper.setResults(genericBaseResponse);
             genericResponseWrapper.setStatus(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode());
           }
         } else {
           GenericBaseResponse genericBaseResponse = new GenericBaseResponse();
           genericBaseResponse.setException(Boolean.TRUE);
           genericBaseResponse.addMessage("Are you out of your mind, extend some super class");
+          genericResponseWrapper.setResults(genericBaseResponse);
           genericResponseWrapper.setStatus(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode());
         }
       } else {

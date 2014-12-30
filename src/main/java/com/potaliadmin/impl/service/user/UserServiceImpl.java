@@ -1,11 +1,13 @@
 package com.potaliadmin.impl.service.user;
 
 import com.potaliadmin.domain.user.User;
+import com.potaliadmin.dto.internal.cache.institute.InstituteVO;
 import com.potaliadmin.dto.internal.hibernate.user.UserSignUpQueryRequest;
 import com.potaliadmin.dto.web.request.user.UserSignUpRequest;
 import com.potaliadmin.dto.web.response.user.UserResponse;
 import com.potaliadmin.exceptions.InValidInputException;
 import com.potaliadmin.exceptions.PotaliRuntimeException;
+import com.potaliadmin.framework.cache.institute.InstituteCache;
 import com.potaliadmin.pact.dao.user.UserDao;
 import com.potaliadmin.pact.service.users.UserService;
 import com.potaliadmin.util.BaseUtil;
@@ -49,6 +51,11 @@ public class UserServiceImpl implements UserService {
     UserResponse userResponse = findByEmail(userSignUpRequest.getEmail());
     if (null != userResponse) {
       throw new PotaliRuntimeException("You have already registered with us!");
+    }
+
+    InstituteVO instituteVO = InstituteCache.getCache().getInstitute(userSignUpRequest.getInstituteId());
+    if (!userSignUpRequest.getEmail().toLowerCase().contains(instituteVO.getEmSuffix().toLowerCase())) {
+      throw new PotaliRuntimeException("You are not the student of college !"+instituteVO.getNm());
     }
 
     UserSignUpQueryRequest userSignUpQueryRequest = new UserSignUpQueryRequest(userSignUpRequest);
