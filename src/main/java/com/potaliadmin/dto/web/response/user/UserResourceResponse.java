@@ -11,7 +11,7 @@ public class UserResourceResponse extends GenericBaseResponse {
   private String name;
   private String email;
   private String authToken;
-  private JobSearchResponse jobSearchResponse;
+  //private JobSearchResponse jobSearchResponse;
 
 
   public String getName() {
@@ -36,13 +36,5 @@ public class UserResourceResponse extends GenericBaseResponse {
 
   public void setAuthToken(String authToken) {
     this.authToken = authToken;
-  }
-
-  public JobSearchResponse getJobSearchResponse() {
-    return jobSearchResponse;
-  }
-
-  public void setJobSearchResponse(JobSearchResponse jobSearchResponse) {
-    this.jobSearchResponse = jobSearchResponse;
   }
 }

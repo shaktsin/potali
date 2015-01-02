@@ -47,14 +47,14 @@ public class UserResource {
   @POST
   @Path("/signUp")
   @Produces("application/json")
-  public UserResourceResponse signUp(UserSignUpRequest userSignUpRequest, @QueryParam(RequestConstants.LOCATION) String locationFilter,
+  public UserResourceResponse signUp(UserSignUpRequest userSignUpRequest/*, @QueryParam(RequestConstants.LOCATION) String locationFilter,
                                      @QueryParam(RequestConstants.INDUSTRY) String industryFilter,
                                      @QueryParam(RequestConstants.ROLES) String rolesFilter,
                                      @QueryParam(RequestConstants.SALARY) String salaryFilter,
                                      @QueryParam(RequestConstants.EXP) String experienceFilter,
                                      @QueryParam(RequestConstants.PER_PAGE) @DefaultValue(DefaultConstants.AND_APP_PER_PAGE)int perPage,
                                      @QueryParam(RequestConstants.PAGE_NO) @DefaultValue(DefaultConstants.AND_APP_PAGE_NO)int pageNo,
-                                     @QueryParam(RequestConstants.PLATE_FORM) @DefaultValue(DefaultConstants.PLATE_FROM) Long plateFormId) {
+                                     @QueryParam(RequestConstants.PLATE_FORM) @DefaultValue(DefaultConstants.PLATE_FROM) Long plateFormId*/) {
 
     try {
       UserResponse userResponse = getLoginService().signUp(userSignUpRequest);
@@ -64,7 +64,7 @@ public class UserResource {
         userResourceResponse.setEmail(userResponse.getEmail());
         userResourceResponse.setAuthToken(SecurityToken.getSecurityToken(userResponse.getEmail(), userSignUpRequest.getPassword(), userSignUpRequest.getInstituteId()));
 
-        String[] locationFilterList=null;
+        /*String[] locationFilterList=null;
         String[] industryFiltersList = null;
         String[] rolesFilterList=null;
         String[] salaryFilterList=null;
@@ -96,7 +96,9 @@ public class UserResource {
           userResourceResponse.setException(Boolean.TRUE);
           userResourceResponse.addMessage(e.getMessage());
           return userResourceResponse;
-        }
+        }*/
+
+        return userResourceResponse;
 
       } else {
         UserResourceResponse userResourceResponse = new UserResourceResponse();
