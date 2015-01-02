@@ -11,6 +11,7 @@ public class UserResourceResponse extends GenericBaseResponse {
   private String name;
   private String email;
   private String authToken;
+  private String image;
   //private JobSearchResponse jobSearchResponse;
 
 
@@ -36,5 +37,13 @@ public class UserResourceResponse extends GenericBaseResponse {
 
   public void setAuthToken(String authToken) {
     this.authToken = authToken;
+  }
+
+  public String getImage() {
+    return image;
+  }
+
+  public void setImage(String image) {
+    this.image = image;
   }
 }

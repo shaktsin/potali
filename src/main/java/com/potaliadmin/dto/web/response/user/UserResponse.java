@@ -15,6 +15,7 @@ public class UserResponse extends GenericBaseResponse {
   private String email;
   private String passwordChecksum;
   private Long instituteId;
+  private String image;
 
   public Long getId() {
     return id;
@@ -54,6 +55,14 @@ public class UserResponse extends GenericBaseResponse {
 
   public void setInstituteId(Long instituteId) {
     this.instituteId = instituteId;
+  }
+
+  public String getImage() {
+    return image;
+  }
+
+  public void setImage(String image) {
+    this.image = image;
   }
 
   /*@Override

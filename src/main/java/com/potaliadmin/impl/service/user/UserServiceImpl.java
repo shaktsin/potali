@@ -42,6 +42,7 @@ public class UserServiceImpl implements UserService {
       userResponse.setName(user.getAccountName());
       userResponse.setPasswordChecksum(user.getPasswordChecksum());
       userResponse.setInstituteId(user.getInstituteId());
+      userResponse.setImage(user.getProfileImage());
     }
     return userResponse;
   }
@@ -56,6 +57,7 @@ public class UserServiceImpl implements UserService {
       userResponse.setName(user.getAccountName());
       userResponse.setPasswordChecksum(user.getPasswordChecksum());
       userResponse.setInstituteId(user.getInstituteId());
+      userResponse.setImage(user.getProfileImage());
     }
     return userResponse;
   }
@@ -110,6 +112,7 @@ public class UserServiceImpl implements UserService {
     userResponse.setEmail(user.getEmail());
     userResponse.setName(user.getAccountName());
     userResponse.setInstituteId(user.getInstituteId());
+    userResponse.setImage(user.getProfileImage());
 
     return userResponse;
   }

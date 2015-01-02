@@ -251,6 +251,7 @@ public class JobServiceImpl implements JobService {
           UserDto userDto = new UserDto();
           userDto.setName(postUser.getName());
           userDto.setId(postUser.getId());
+          userDto.setImage(postUser.getImage());
           genericPostResponse.setUserDto(userDto);
           genericPostResponseList.add(genericPostResponse);
         }
