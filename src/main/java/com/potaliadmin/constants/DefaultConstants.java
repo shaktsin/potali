@@ -1,5 +1,8 @@
 package com.potaliadmin.constants;
 
+import java.util.Arrays;
+import java.util.List;
+
 /**
  * Created by Shakti Singh on 10/6/14.
  */
@@ -26,4 +29,10 @@ public class DefaultConstants
   public static final int MAX_EXP_YEAR = 100;
 
   public static final String DEFAULT_PASSWORD = "DEFAULT_PASSWORD";
+
+  public static final long MAX_IMAGE_UPLOAD_SIZE = 500;//in kb
+  public static final String NAME_SEPARATOR = "_";
+
+  public static final List<String> ALLOWED_IMAGE_CONTENT_TYPE = Arrays.asList("image/png", "image/jpg", "image/jpeg");
+  public static final String PROFILE = "profile";
 }

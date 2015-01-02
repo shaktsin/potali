@@ -43,6 +43,12 @@ public class User implements Serializable {
   @Column(name = "institute_id", nullable = false)
   private Long instituteId;
 
+  @Column(name = "year_of_graduation", nullable = false)
+  private int yearOfGraduation;
+
+  @Column(name = "profile_image", nullable = false)
+  private String profileImage;
+
   @Temporal(TemporalType.TIMESTAMP)
   @Column(name = "created_date", nullable = false)
   private Date createDate = new Date();
@@ -138,5 +144,21 @@ public class User implements Serializable {
 
   public void setUpdateDate(Date updateDate) {
     this.updateDate = updateDate;
+  }
+
+  public int getYearOfGraduation() {
+    return yearOfGraduation;
+  }
+
+  public void setYearOfGraduation(int yearOfGraduation) {
+    this.yearOfGraduation = yearOfGraduation;
+  }
+
+  public String getProfileImage() {
+    return profileImage;
+  }
+
+  public void setProfileImage(String profileImage) {
+    this.profileImage = profileImage;
   }
 }

@@ -5,6 +5,8 @@ import com.potaliadmin.dto.internal.cache.es.job.CityDto;
 import com.potaliadmin.dto.internal.cache.es.job.IndustryRolesDto;
 import com.potaliadmin.dto.web.response.base.GenericBaseResponse;
 import com.potaliadmin.dto.web.response.post.GenericPostResponse;
+import com.potaliadmin.dto.web.response.post.ReplyDto;
+import com.potaliadmin.dto.web.response.post.ShareDto;
 import com.potaliadmin.dto.web.response.user.UserDto;
 
 import java.util.List;
@@ -88,5 +90,4 @@ public class JobResponse extends GenericPostResponse {
   public void setIndustryRolesDtoList(List<IndustryRolesDto> industryRolesDtoList) {
     this.industryRolesDtoList = industryRolesDtoList;
   }
-
 }

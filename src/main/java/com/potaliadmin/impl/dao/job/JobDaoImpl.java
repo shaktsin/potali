@@ -1,5 +1,6 @@
 package com.potaliadmin.impl.dao.job;
 
+import com.potaliadmin.constants.reactions.EnumReactions;
 import com.potaliadmin.domain.address.City;
 import com.potaliadmin.domain.industry.IndustryRoles;
 import com.potaliadmin.domain.job.Job;
@@ -58,6 +59,10 @@ public class JobDaoImpl extends BaseDaoImpl implements JobDao {
     job.setSalaryFrom(jobCreateRequest.getSalaryFrom());
     job.setSalarySpecified(jobCreateRequest.isSalarySpecified());
     job.setTimeSpecified(jobCreateRequest.isTimeSpecified());
+    job.setShareEmail(EnumReactions.isValidShareReaction(jobCreateRequest.getShareDto().getShareEmail()));
+    job.setSharePhone(EnumReactions.isValidShareReaction(jobCreateRequest.getShareDto().getSharePhone()));
+    job.setShareWatsApp(EnumReactions.isValidShareReaction(jobCreateRequest.getShareDto().getShareWatsApp()));
+
 
     // set location set
     Set<City> citySet = getCityDao().findListOfCity(jobCreateRequest.getLocationIdList());

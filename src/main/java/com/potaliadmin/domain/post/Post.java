@@ -32,6 +32,15 @@ public class Post implements Serializable {
   @Column(name = "reply_watspp", length = 45)
   private String replyWatsApp;
 
+  @Column(name = "share_email")
+  private Long shareEmail;
+
+  @Column(name = "share_phone")
+  private Long sharePhone;
+
+  @Column(name = "share_watsapp")
+  private Long shareWatsApp;
+
   @Temporal(TemporalType.TIMESTAMP)
   @Column(name = "created_date", nullable = false)
   private Date createDate = new Date();
@@ -93,6 +102,30 @@ public class Post implements Serializable {
 
   public void setReplyWatsApp(String replyWatsApp) {
     this.replyWatsApp = replyWatsApp;
+  }
+
+  public Long getShareEmail() {
+    return shareEmail;
+  }
+
+  public void setShareEmail(Long shareEmail) {
+    this.shareEmail = shareEmail;
+  }
+
+  public Long getSharePhone() {
+    return sharePhone;
+  }
+
+  public void setSharePhone(Long sharePhone) {
+    this.sharePhone = sharePhone;
+  }
+
+  public Long getShareWatsApp() {
+    return shareWatsApp;
+  }
+
+  public void setShareWatsApp(Long shareWatsApp) {
+    this.shareWatsApp = shareWatsApp;
   }
 
   public Date getCreateDate() {

@@ -9,6 +9,8 @@ import com.potaliadmin.pact.framework.BaseDao;
  */
 public interface UserDao extends BaseDao {
 
+  public User findById(Long id);
+
   public User findByEmail(String email);
 
   public User createUser(UserSignUpQueryRequest userSignUpQueryRequest);

@@ -1,6 +1,7 @@
 package com.potaliadmin.dto.web.request.jobs;
 
 import com.potaliadmin.dto.web.request.framework.GenericRequest;
+import com.potaliadmin.dto.web.response.post.ShareDto;
 import com.potaliadmin.framework.cache.address.CityCache;
 import com.potaliadmin.framework.cache.industry.IndustryCache;
 import com.potaliadmin.framework.cache.industry.IndustryRolesCache;
@@ -31,6 +32,7 @@ public class JobCreateRequest extends GenericRequest {
   private Long userInstituteId;
   private boolean timeSpecified;
   private boolean salarySpecified;
+  private ShareDto shareDto;
 
 
   public JobCreateRequest() {
@@ -197,5 +199,13 @@ public class JobCreateRequest extends GenericRequest {
 
   public void setSalarySpecified(boolean salarySpecified) {
     this.salarySpecified = salarySpecified;
+  }
+
+  public ShareDto getShareDto() {
+    return shareDto;
+  }
+
+  public void setShareDto(ShareDto shareDto) {
+    this.shareDto = shareDto;
   }
 }

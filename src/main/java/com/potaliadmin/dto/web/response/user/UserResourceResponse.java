@@ -1,6 +1,7 @@
 package com.potaliadmin.dto.web.response.user;
 
 import com.potaliadmin.dto.web.response.base.GenericBaseResponse;
+import com.potaliadmin.dto.web.response.job.JobSearchResponse;
 
 /**
  * Created by Shakti Singh on 12/20/14.
@@ -10,6 +11,7 @@ public class UserResourceResponse extends GenericBaseResponse {
   private String name;
   private String email;
   private String authToken;
+  private JobSearchResponse jobSearchResponse;
 
 
   public String getName() {
@@ -34,5 +36,13 @@ public class UserResourceResponse extends GenericBaseResponse {
 
   public void setAuthToken(String authToken) {
     this.authToken = authToken;
+  }
+
+  public JobSearchResponse getJobSearchResponse() {
+    return jobSearchResponse;
+  }
+
+  public void setJobSearchResponse(JobSearchResponse jobSearchResponse) {
+    this.jobSearchResponse = jobSearchResponse;
   }
 }

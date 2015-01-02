@@ -15,6 +15,7 @@ import com.potaliadmin.dto.web.request.jobs.JobCreateRequest;
 import com.potaliadmin.dto.web.response.job.JobResponse;
 import com.potaliadmin.dto.web.response.job.JobSearchResponse;
 import com.potaliadmin.dto.web.response.post.GenericPostResponse;
+import com.potaliadmin.dto.web.response.post.ReplyDto;
 import com.potaliadmin.dto.web.response.user.UserDto;
 import com.potaliadmin.dto.web.response.user.UserResponse;
 import com.potaliadmin.exceptions.InValidInputException;
@@ -29,6 +30,7 @@ import com.potaliadmin.pact.service.job.JobService;
 import com.potaliadmin.pact.service.users.LoginService;
 import com.potaliadmin.util.BaseUtil;
 import com.potaliadmin.util.DateUtils;
+import org.apache.commons.lang.StringUtils;
 import org.elasticsearch.action.get.GetResponse;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.index.query.*;
@@ -150,7 +152,8 @@ public class JobServiceImpl implements JobService {
     //NotFilterBuilder notFilterBuilder = new NotFilterBuilder()
     MatchAllFilterBuilder matchAllFilterBuilder = new MatchAllFilterBuilder();
     HasChildFilterBuilder hasChildFilterBuilder = new HasChildFilterBuilder(POST_REACTIONS, matchAllFilterBuilder);
-    orFilterBuilder.add(hasChildFilterBuilder);
+    orFilterBuilder.add(FilterBuilders.notFilter(hasChildFilterBuilder));
+    orFilterBuilder.add(FilterBuilders.notFilter(FilterBuilders.termFilter("userId", userResponse.getId())));
 
 
     BoolFilterBuilder boolFilterBuilder = new BoolFilterBuilder();
@@ -221,9 +224,9 @@ public class JobServiceImpl implements JobService {
           GenericPostResponse genericPostResponse = new GenericPostResponse();
           genericPostResponse.setPostId(fullJobVO.getPostId());
           genericPostResponse.setSubject(fullJobVO.getSubject());
-          genericPostResponse.setReplyEmail(fullJobVO.getReplyEmail());
-          genericPostResponse.setReplyPhone(fullJobVO.getReplyPhone());
-          genericPostResponse.setReplyWatsApp(fullJobVO.getReplyWatsApp());
+          //genericPostResponse.setReplyEmail(fullJobVO.getReplyEmail());
+          //genericPostResponse.setReplyPhone(fullJobVO.getReplyPhone());
+          //genericPostResponse.setReplyWatsApp(fullJobVO.getReplyWatsApp());
           genericPostResponse.setPostedOn(DateUtils.getPostedOnDate(fullJobVO.getCreatedDate()));
           genericPostResponse.setContent(BaseUtil.trimContent(fullJobVO.getContent()));
 
@@ -300,9 +303,24 @@ public class JobServiceImpl implements JobService {
     jobResponse.setSalaryFrom(fullJobVO.getSalaryFrom());
     jobResponse.setSalaryTo(fullJobVO.getSalaryTo());
     jobResponse.setPostedOn(DateUtils.getPostedOnDate(fullJobVO.getCreatedDate()));
-    jobResponse.setReplyEmail(fullJobVO.getReplyEmail());
-    jobResponse.setReplyPhone(fullJobVO.getReplyPhone());
-    jobResponse.setReplyWatsApp(fullJobVO.getReplyWatsApp());
+    //jobResponse.setReplyEmail(fullJobVO.getReplyEmail());
+    //jobResponse.setReplyPhone(fullJobVO.getReplyPhone());
+    //jobResponse.setReplyWatsApp(fullJobVO.getReplyWatsApp());
+
+    ReplyDto replyDto = new ReplyDto(-1, -1, -1);
+    if (StringUtils.isNotBlank(fullJobVO.getReplyEmail())) {
+      replyDto.setReplyEmail(EnumReactions.REPLY_VIA_EMAIL.getId());
+    }
+    if (StringUtils.isNotBlank(fullJobVO.getReplyPhone())) {
+      replyDto.setReplyEmail(EnumReactions.REPLY_VIA_PHONE.getId());
+    }
+    if (StringUtils.isNotBlank(fullJobVO.getReplyWatsApp())) {
+      replyDto.setReplyEmail(EnumReactions.REPLY_VIA_WATSAPP.getId());
+    }
+    jobResponse.setReplyDto(replyDto);
+
+    jobResponse.setShareDto(fullJobVO.getShareDto());
+
     jobResponse.setLocations(fullJobVO.getLocationList());
     jobResponse.setIndustryRolesDtoList(fullJobVO.getIndustryRolesList());
     UserDto userDto = new UserDto();

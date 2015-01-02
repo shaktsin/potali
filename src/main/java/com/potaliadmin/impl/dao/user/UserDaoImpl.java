@@ -16,6 +16,11 @@ import org.springframework.transaction.annotation.Transactional;
 public class UserDaoImpl extends BaseDaoImpl implements UserDao {
 
   @Override
+  public User findById(Long id) {
+    return get(User.class, id);
+  }
+
+  @Override
   public User findByEmail(String email) {
     return (User) findUniqueByNamedQueryAndNamedParam("findByEmail", new String[]{"email"}, new Object[]{email});
   }

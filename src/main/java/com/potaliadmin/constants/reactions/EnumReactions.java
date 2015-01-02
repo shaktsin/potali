@@ -1,5 +1,8 @@
 package com.potaliadmin.constants.reactions;
 
+import java.util.Arrays;
+import java.util.List;
+
 /**
  * Created by Shakti Singh on 12/28/14.
  */
@@ -35,6 +38,11 @@ public enum  EnumReactions {
       }
     }
     return contains;
+  }
+
+  public static Long isValidShareReaction(Long id) {
+    List<Long> shareList = Arrays.asList(SHARE_VIA_EMAIL.getId(), SHARE_VIA_PHONE.getId(), SHARE_VIA_WATSAPP.getId());
+    return shareList.contains(id) ? id : -1;
   }
 
   public Long getId() {

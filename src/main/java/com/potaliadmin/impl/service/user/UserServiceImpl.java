@@ -3,14 +3,21 @@ package com.potaliadmin.impl.service.user;
 import com.potaliadmin.domain.user.User;
 import com.potaliadmin.dto.internal.cache.institute.InstituteVO;
 import com.potaliadmin.dto.internal.hibernate.user.UserSignUpQueryRequest;
+import com.potaliadmin.dto.web.request.user.UserProfileUpdateRequest;
 import com.potaliadmin.dto.web.request.user.UserSignUpRequest;
+import com.potaliadmin.dto.web.response.user.UserProfileUpdateResponse;
 import com.potaliadmin.dto.web.response.user.UserResponse;
 import com.potaliadmin.exceptions.InValidInputException;
 import com.potaliadmin.exceptions.PotaliRuntimeException;
+import com.potaliadmin.exceptions.UnAuthorizedAccessException;
 import com.potaliadmin.framework.cache.institute.InstituteCache;
 import com.potaliadmin.pact.dao.user.UserDao;
+import com.potaliadmin.pact.service.users.LoginService;
 import com.potaliadmin.pact.service.users.UserService;
+import com.potaliadmin.security.Principal;
 import com.potaliadmin.util.BaseUtil;
+import org.apache.commons.lang.StringUtils;
+import org.apache.shiro.SecurityUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -90,6 +97,42 @@ public class UserServiceImpl implements UserService {
     userResponse.setInstituteId(user.getInstituteId());
 
     return userResponse;
+  }
+
+  @Override
+  public UserResponse getLoggedInUser() {
+    Principal principal =(Principal) SecurityUtils.getSubject().getPrincipal();
+    return findByEmail(principal.getEmail());
+  }
+
+  @Override
+  public UserProfileUpdateResponse updateProfile(UserProfileUpdateRequest userProfileUpdateRequest) {
+    if (!userProfileUpdateRequest.validate()) {
+      throw new InValidInputException("INVALID INPUT!");
+    }
+
+    UserResponse userResponse = getLoggedInUser();
+    if (userResponse == null) {
+      throw new UnAuthorizedAccessException("UnAuthorized Action!");
+    }
+
+    User user = getUserDao().findById(userResponse.getId());
+    if (StringUtils.isNotBlank(userProfileUpdateRequest.getFirstName())) {
+      user.setFirstName(userProfileUpdateRequest.getFirstName());
+    }
+    if (StringUtils.isNotBlank(userProfileUpdateRequest.getLastName())) {
+      user.setLastName(userProfileUpdateRequest.getLastName());
+    }
+    if (StringUtils.isNotBlank(userProfileUpdateRequest.getAccountName())) {
+      user.setAccountName(userProfileUpdateRequest.getAccountName());
+    }
+    if (userProfileUpdateRequest.getYearOfGrad() != null) {
+      user.setYearOfGraduation(userProfileUpdateRequest.getYearOfGrad());
+    }
+
+
+
+    return null;
   }
 
   public UserDao getUserDao() {
