@@ -228,9 +228,21 @@ public class JobServiceImpl implements JobService {
           GenericPostResponse genericPostResponse = new GenericPostResponse();
           genericPostResponse.setPostId(fullJobVO.getPostId());
           genericPostResponse.setSubject(fullJobVO.getSubject());
-          //genericPostResponse.setReplyEmail(fullJobVO.getReplyEmail());
-          //genericPostResponse.setReplyPhone(fullJobVO.getReplyPhone());
-          //genericPostResponse.setReplyWatsApp(fullJobVO.getReplyWatsApp());
+
+          ReplyDto replyDto = new ReplyDto(-1, -1, -1);
+          if (StringUtils.isNotBlank(fullJobVO.getReplyEmail())) {
+            replyDto.setReplyEmail(EnumReactions.REPLY_VIA_EMAIL.getId());
+          }
+          if (StringUtils.isNotBlank(fullJobVO.getReplyPhone())) {
+            replyDto.setReplyEmail(EnumReactions.REPLY_VIA_PHONE.getId());
+          }
+          if (StringUtils.isNotBlank(fullJobVO.getReplyWatsApp())) {
+            replyDto.setReplyEmail(EnumReactions.REPLY_VIA_WATSAPP.getId());
+          }
+          genericPostResponse.setReplyDto(replyDto);
+
+          genericPostResponse.setShareDto(fullJobVO.getShareDto());
+
           genericPostResponse.setPostedOn(DateUtils.getPostedOnDate(fullJobVO.getCreatedDate()));
           genericPostResponse.setContent(BaseUtil.trimContent(fullJobVO.getContent()));
 
