@@ -31,6 +31,21 @@ public class UserServiceImpl implements UserService {
   @Autowired
   UserDao userDao;
 
+  @Override
+  public UserResponse findById(Long id) {
+    UserResponse userResponse = null;
+    User user = getUserDao().findById(id);
+    if (null != user) {
+      userResponse = new UserResponse();
+      userResponse.setId(user.getId());
+      userResponse.setEmail(user.getEmail());
+      userResponse.setName(user.getAccountName());
+      userResponse.setPasswordChecksum(user.getPasswordChecksum());
+      userResponse.setInstituteId(user.getInstituteId());
+    }
+    return userResponse;
+  }
+
   public UserResponse findByEmail(String email) {
     UserResponse userResponse = null;
     User user = getUserDao().findByEmail(email);

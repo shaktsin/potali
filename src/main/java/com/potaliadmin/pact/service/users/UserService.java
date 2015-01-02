@@ -11,6 +11,8 @@ import com.potaliadmin.dto.web.response.user.UserResponse;
  */
 public interface UserService {
 
+  UserResponse findById(Long id);
+
   UserResponse findByEmail(String email);
 
   UserResponse signUp(UserSignUpRequest userSignUpRequest);
