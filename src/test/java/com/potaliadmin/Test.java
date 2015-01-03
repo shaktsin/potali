@@ -1,5 +1,8 @@
 package com.potaliadmin;
 
+import org.glassfish.jersey.media.multipart.ContentDisposition;
+import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
+
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -9,15 +12,22 @@ import java.util.concurrent.Executors;
 public class Test {
 
   public static void main(String[] args) {
+
+    //ContentDisposition contentDisposition = new ContentDisposition("image/png", "3_profile_susi.png",null,null,null ,495);
+
+    ContentDisposition contentDisposition =
+        FormDataContentDisposition.name("image/png").fileName("3_profile_susi.png").size(495).build();
+
+    System.out.println(contentDisposition.toString());
     //int i =12345;
     //char c = '%';
     //boolean isControl = Character.isISOControl(c);
     //System.out.println(isControl);
 
-    String str = "com.hk.exception.HealthkartPaymentGatewayException: Mandatory fields missing , response is: {\"status\":0,\"msg\":\"0 out of 1 Transactions Fetched Successfully\",\"transaction_details\":{\"1038069-329013\":{\"mihpayid\":\"Not Found\",\"status\":\"Not Found\"}}}";
-    str = str.replaceAll("[{]", "");
-    str = str.replaceAll("[}]","");
-    System.out.println(str);
+    //String str = "com.hk.exception.HealthkartPaymentGatewayException: Mandatory fields missing , response is: {\"status\":0,\"msg\":\"0 out of 1 Transactions Fetched Successfully\",\"transaction_details\":{\"1038069-329013\":{\"mihpayid\":\"Not Found\",\"status\":\"Not Found\"}}}";
+    //str = str.replaceAll("[{]", "");
+    //str = str.replaceAll("[}]","");
+    //System.out.println(str);
 
 
 

@@ -1,6 +1,9 @@
 package com.potaliadmin.dto.web.request.user;
 
+import com.potaliadmin.dto.internal.image.ImageDto;
 import com.potaliadmin.dto.web.request.framework.GenericRequest;
+
+import java.util.List;
 
 /**
  * Created by Shakti Singh on 1/2/15.
@@ -11,7 +14,7 @@ public class UserProfileUpdateRequest extends GenericRequest {
   private String lastName;
   private String accountName;
   private Integer yearOfGrad;
-  private String imageLocation;
+  private List<ImageDto> imageDtoList;
 
   public UserProfileUpdateRequest() {
   }
@@ -57,11 +60,11 @@ public class UserProfileUpdateRequest extends GenericRequest {
     this.yearOfGrad = yearOfGrad;
   }
 
-  public String getImageLocation() {
-    return imageLocation;
+  public List<ImageDto> getImageDtoList() {
+    return imageDtoList;
   }
 
-  public void setImageLocation(String imageLocation) {
-    this.imageLocation = imageLocation;
+  public void setImageDtoList(List<ImageDto> imageDtoList) {
+    this.imageDtoList = imageDtoList;
   }
 }

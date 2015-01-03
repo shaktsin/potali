@@ -1,8 +1,12 @@
 package com.potaliadmin.impl.service.user;
 
+import com.potaliadmin.constants.image.EnumBucket;
+import com.potaliadmin.constants.image.EnumImageSize;
+import com.potaliadmin.domain.image.Avatar;
 import com.potaliadmin.domain.user.User;
 import com.potaliadmin.dto.internal.cache.institute.InstituteVO;
 import com.potaliadmin.dto.internal.hibernate.user.UserSignUpQueryRequest;
+import com.potaliadmin.dto.internal.image.ImageDto;
 import com.potaliadmin.dto.web.request.user.UserProfileUpdateRequest;
 import com.potaliadmin.dto.web.request.user.UserSignUpRequest;
 import com.potaliadmin.dto.web.response.user.UserProfileUpdateResponse;
@@ -11,7 +15,9 @@ import com.potaliadmin.exceptions.InValidInputException;
 import com.potaliadmin.exceptions.PotaliRuntimeException;
 import com.potaliadmin.exceptions.UnAuthorizedAccessException;
 import com.potaliadmin.framework.cache.institute.InstituteCache;
+import com.potaliadmin.pact.dao.image.AvatarDao;
 import com.potaliadmin.pact.dao.user.UserDao;
+import com.potaliadmin.pact.framework.aws.UploadService;
 import com.potaliadmin.pact.service.users.LoginService;
 import com.potaliadmin.pact.service.users.UserService;
 import com.potaliadmin.security.Principal;
@@ -22,6 +28,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
+
 /**
  * Created by Shakti Singh on 10/6/14.
  */
@@ -30,6 +38,12 @@ public class UserServiceImpl implements UserService {
 
   @Autowired
   UserDao userDao;
+
+  @Autowired
+  UploadService uploadService;
+
+  @Autowired
+  AvatarDao avatarDao;
 
   @Override
   public UserResponse findById(Long id) {
@@ -124,6 +138,7 @@ public class UserServiceImpl implements UserService {
   }
 
   @Override
+  @Transactional
   public UserProfileUpdateResponse updateProfile(UserProfileUpdateRequest userProfileUpdateRequest) {
     if (!userProfileUpdateRequest.validate()) {
       throw new InValidInputException("INVALID INPUT!");
@@ -148,12 +163,59 @@ public class UserServiceImpl implements UserService {
       user.setYearOfGraduation(userProfileUpdateRequest.getYearOfGrad());
     }
 
+    List<ImageDto> imageDtoList = userProfileUpdateRequest.getImageDtoList();
+    boolean isImageUpdateSuccessful = false;
+    boolean shouldUpdateImage  = imageDtoList != null && imageDtoList.size() > 0;
+    if (shouldUpdateImage) {
+      boolean uploaded = getUploadService().uploadProfileImageFiles(EnumBucket.PROFILE_BUCKET.getName(), imageDtoList, true);
+      if (uploaded) {
+        for (ImageDto imageDto : imageDtoList) {
+          String url = getUploadService().getCanonicalPathOfResource(EnumBucket.PROFILE_BUCKET.getName(), imageDto.getFileName());
+          getAvatarDao().createAvatar(EnumImageSize.getImageSizeById(imageDto.getSize()), userResponse, url);
+        }
+        isImageUpdateSuccessful = true;
+      }
+    }
 
-
-    return null;
+    UserProfileUpdateResponse userProfileUpdateResponse = new UserProfileUpdateResponse();
+    if (shouldUpdateImage) {
+      if (isImageUpdateSuccessful) {
+        Avatar thumbNail = getAvatarDao().findAvatar(EnumImageSize.XS_SMALL, userResponse);
+        Avatar profileAvatar = getAvatarDao().findAvatar(EnumImageSize.MEDIUM, userResponse);
+        if (thumbNail != null) {
+          user.setProfileImage(thumbNail.getUrl());
+        }
+        user = (User)getUserDao().save(user);
+        userProfileUpdateResponse.setAccountName(user.getAccountName());
+        userProfileUpdateResponse.setGradYear(user.getYearOfGraduation());
+        if (profileAvatar != null) {
+          userProfileUpdateResponse.setProfileImageLink(profileAvatar.getUrl());
+        }
+      } else {
+        userProfileUpdateResponse.setException(Boolean.TRUE);
+        userProfileUpdateResponse.addMessage("Something went wrong,Please try again!");
+      }
+    } else {
+      user = (User)getUserDao().save(user);
+      Avatar avatar = getAvatarDao().findAvatar(EnumImageSize.MEDIUM, userResponse);
+      userProfileUpdateResponse.setAccountName(user.getAccountName());
+      userProfileUpdateResponse.setGradYear(user.getYearOfGraduation());
+      if (avatar != null) {
+        userProfileUpdateResponse.setProfileImageLink(avatar.getUrl());
+      }
+    }
+    return userProfileUpdateResponse;
   }
 
   public UserDao getUserDao() {
     return userDao;
+  }
+
+  public UploadService getUploadService() {
+    return uploadService;
+  }
+
+  public AvatarDao getAvatarDao() {
+    return avatarDao;
   }
 }

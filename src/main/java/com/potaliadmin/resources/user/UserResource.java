@@ -1,7 +1,10 @@
 package com.potaliadmin.resources.user;
 
 import com.potaliadmin.constants.DefaultConstants;
+import com.potaliadmin.constants.image.EnumBucket;
+import com.potaliadmin.constants.image.EnumImageSize;
 import com.potaliadmin.constants.request.RequestConstants;
+import com.potaliadmin.dto.internal.image.ImageDto;
 import com.potaliadmin.dto.web.request.user.UserProfileUpdateRequest;
 import com.potaliadmin.dto.web.request.user.UserSignUpRequest;
 import com.potaliadmin.dto.web.response.job.JobSearchResponse;
@@ -12,13 +15,18 @@ import com.potaliadmin.dto.web.response.user.UserResponse;
 import com.potaliadmin.impl.framework.properties.AppProperties;
 import com.potaliadmin.pact.service.job.JobService;
 import com.potaliadmin.pact.service.users.LoginService;
+import com.potaliadmin.pact.service.users.UserService;
 import com.potaliadmin.security.SecurityToken;
 import com.potaliadmin.util.BaseUtil;
+import com.potaliadmin.util.image.ImageNameBuilder;
+import com.potaliadmin.util.image.ImageProcessUtil;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.shiro.authz.annotation.RequiresAuthentication;
 import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
 import org.glassfish.jersey.media.multipart.FormDataParam;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -26,7 +34,9 @@ import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
+import java.awt.*;
 import java.io.*;
+import java.text.ParseException;
 
 /**
  * Created by Shakti Singh on 12/20/14.
@@ -34,6 +44,8 @@ import java.io.*;
 @Path("/user")
 @Component
 public class UserResource {
+
+  private static Logger logger = LoggerFactory.getLogger(UserResource.class);
 
   @Autowired
   LoginService loginService;
@@ -43,6 +55,9 @@ public class UserResource {
 
   @Autowired
   JobService jobService;
+
+  @Autowired
+  UserService userService;
 
   @POST
   @Path("/signUp")
@@ -147,11 +162,18 @@ public class UserResource {
   }
 
   @POST
-  @Path("/upload")
+  @Path("/update")
   @Produces("application/json")
   @RequiresAuthentication
   public UserProfileUpdateResponse updateProfile(UserProfileUpdateRequest userProfileUpdateRequest) {
-    return null;
+    try {
+      return getUserService().updateProfile(userProfileUpdateRequest);
+    } catch (Exception e) {
+      UserProfileUpdateResponse userProfileUpdateResponse = new UserProfileUpdateResponse();
+      userProfileUpdateResponse.setException(Boolean.TRUE);
+      userProfileUpdateResponse.addMessage(e.getMessage());
+      return userProfileUpdateResponse;
+    }
   }
 
 
@@ -163,7 +185,24 @@ public class UserResource {
   @Produces("application/json")
   @RequiresAuthentication
   public UserProfileUploadResponse uploadProfilePicture(@FormDataParam("file") InputStream uploadedInputStream,
-                                   @FormDataParam("file") FormDataContentDisposition fileDetail) {
+                                   @Context HttpServletRequest servletRequest) {
+
+
+    FormDataContentDisposition fileDetail;
+    try {
+       fileDetail = new FormDataContentDisposition(servletRequest.getHeader("Content-Disposition")) ;
+    } catch (ParseException e) {
+      UserProfileUploadResponse userProfileUploadResponse = new UserProfileUploadResponse();
+      userProfileUploadResponse.setException(Boolean.TRUE);
+      userProfileUploadResponse.addMessage("INVALID FILE");
+      return userProfileUploadResponse;
+    }
+    if (fileDetail.getSize() == -1) {
+      UserProfileUploadResponse userProfileUploadResponse = new UserProfileUploadResponse();
+      userProfileUploadResponse.setException(Boolean.TRUE);
+      userProfileUploadResponse.addMessage("INVALID REQUEST");
+      return userProfileUploadResponse;
+    }
 
     if (fileDetail.getSize() == -1) {
       UserProfileUploadResponse userProfileUploadResponse = new UserProfileUploadResponse();
@@ -186,7 +225,7 @@ public class UserResource {
       return userProfileUploadResponse;
     }
 
-    if (StringUtils.isBlank(fileDetail.getType()) || !DefaultConstants.ALLOWED_IMAGE_CONTENT_TYPE.contains(fileDetail.getType())) {
+    if (StringUtils.isBlank(fileDetail.getName()) || !DefaultConstants.ALLOWED_IMAGE_CONTENT_TYPE.contains(fileDetail.getName())) {
       UserProfileUploadResponse userProfileUploadResponse = new UserProfileUploadResponse();
       userProfileUploadResponse.setException(Boolean.TRUE);
       userProfileUploadResponse.addMessage("Unsupported Media Type!");
@@ -201,10 +240,9 @@ public class UserResource {
       return userProfileUploadResponse;
     }
 
-    String serverFileName = userResponse.getId() + DefaultConstants.NAME_SEPARATOR +
-        DefaultConstants.PROFILE+ DefaultConstants.NAME_SEPARATOR +fileDetail.getFileName();
-
-    String fullFileName = getAppProperties().getUploadPicPath() + serverFileName;
+    String serverFileName = userResponse.getId() +DefaultConstants.NAME_SEPARATOR +fileDetail.getFileName();
+    String rootPath = getAppProperties().getUploadPicPath() + File.separator + DefaultConstants.PROFILE;
+    String fullFileName = rootPath + File.separator + serverFileName;
 
     try {
 
@@ -227,6 +265,47 @@ public class UserResource {
       }
       out.flush();
       out.close();
+      uploadedInputStream.close();
+
+
+      // first resize the image
+      String reSizeSmallFileName = ImageProcessUtil.reSize(rootPath, serverFileName, EnumImageSize.XS_SMALL);
+      if (reSizeSmallFileName == null) {
+        UserProfileUploadResponse userProfileUploadResponse = new UserProfileUploadResponse();
+        userProfileUploadResponse.setException(Boolean.TRUE);
+        userProfileUploadResponse.addMessage("Could not upload file, Please try Again!");
+        return userProfileUploadResponse;
+      }
+
+      String mediumSizeSmallFileName = ImageProcessUtil.reSize(rootPath, serverFileName, EnumImageSize.MEDIUM);
+      if (mediumSizeSmallFileName == null) {
+        UserProfileUploadResponse userProfileUploadResponse = new UserProfileUploadResponse();
+        userProfileUploadResponse.setException(Boolean.TRUE);
+        userProfileUploadResponse.addMessage("Could not upload file, Please try Again!");
+        return userProfileUploadResponse;
+      }
+
+      // now delete the original file
+      //file.delete();
+      //boolean isDeleted = file.delete();
+      //logger.info("File is deleted ?"+isDeleted);
+
+      //FileUtils.forceDelete(file);
+
+      ImageDto smallImageDto = new ImageNameBuilder().addSize(EnumImageSize.XS_SMALL).addBucket(EnumBucket.PROFILE_BUCKET)
+          .addRootFolder(getAppProperties().getUploadPicPath())
+          .addUploadFolderName(DefaultConstants.PROFILE).addFileName(reSizeSmallFileName).build();
+
+      ImageDto mediumImageDto = new ImageNameBuilder().addSize(EnumImageSize.MEDIUM).addBucket(EnumBucket.PROFILE_BUCKET)
+          .addRootFolder(getAppProperties().getUploadPicPath())
+          .addUploadFolderName(DefaultConstants.PROFILE).addFileName(mediumSizeSmallFileName).build();
+
+
+      UserProfileUploadResponse userProfileUploadResponse = new UserProfileUploadResponse();
+      userProfileUploadResponse.setUploaded(true);
+      userProfileUploadResponse.addImageDto(smallImageDto);
+      userProfileUploadResponse.addImageDto(mediumImageDto);
+      return userProfileUploadResponse;
 
     } catch (IOException e) {
       UserProfileUploadResponse userProfileUploadResponse = new UserProfileUploadResponse();
@@ -234,12 +313,6 @@ public class UserResource {
       userProfileUploadResponse.addMessage("Could not upload file, Please try Again!");
       return userProfileUploadResponse;
     }
-
-    UserProfileUploadResponse userProfileUploadResponse = new UserProfileUploadResponse();
-    userProfileUploadResponse.setFileName(serverFileName);
-
-
-    return userProfileUploadResponse;
   }
 
 
@@ -255,5 +328,9 @@ public class UserResource {
 
   public JobService getJobService() {
     return jobService;
+  }
+
+  public UserService getUserService() {
+    return userService;
   }
 }
