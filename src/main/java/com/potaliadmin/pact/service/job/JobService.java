@@ -3,11 +3,14 @@ package com.potaliadmin.pact.service.job;
 import com.potaliadmin.dto.web.request.jobs.JobCreateRequest;
 import com.potaliadmin.dto.web.response.job.JobResponse;
 import com.potaliadmin.dto.web.response.job.JobSearchResponse;
+import com.potaliadmin.dto.web.response.job.PrepareJobCreateResponse;
 
 /**
  * Created by Shakti Singh on 12/20/14.
  */
 public interface JobService {
+
+  public PrepareJobCreateResponse prepareJobCreateRequest();
 
   public JobResponse createJob(JobCreateRequest jobCreateRequest);
 

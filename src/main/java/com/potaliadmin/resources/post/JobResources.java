@@ -5,6 +5,7 @@ import com.potaliadmin.constants.request.RequestConstants;
 import com.potaliadmin.dto.web.request.jobs.JobCreateRequest;
 import com.potaliadmin.dto.web.response.job.JobResponse;
 import com.potaliadmin.dto.web.response.job.JobSearchResponse;
+import com.potaliadmin.dto.web.response.job.PrepareJobCreateResponse;
 import com.potaliadmin.pact.service.job.JobService;
 import com.potaliadmin.util.BaseUtil;
 import org.apache.commons.lang.StringUtils;
@@ -27,6 +28,22 @@ public class JobResources {
 
   @Autowired
   JobService jobService;
+
+
+  @GET
+  @Path("/prepare")
+  @Produces("application/json")
+  @RequiresAuthentication
+  public PrepareJobCreateResponse prepareJobCreate() {
+    try {
+      return getJobService().prepareJobCreateRequest();
+    } catch (Exception e) {
+      PrepareJobCreateResponse prepareJobCreateResponse = new PrepareJobCreateResponse();
+      prepareJobCreateResponse.setException(true);
+      prepareJobCreateResponse.addMessage(e.getMessage());
+      return prepareJobCreateResponse;
+    }
+  }
 
 
   @POST

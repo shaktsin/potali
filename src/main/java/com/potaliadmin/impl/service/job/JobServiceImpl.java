@@ -2,6 +2,7 @@ package com.potaliadmin.impl.service.job;
 
 import com.potaliadmin.constants.DefaultConstants;
 import com.potaliadmin.constants.reactions.EnumReactions;
+import com.potaliadmin.domain.industry.Industry;
 import com.potaliadmin.domain.job.Job;
 import com.potaliadmin.domain.post.PostBlob;
 import com.potaliadmin.dto.internal.cache.address.CityVO;
@@ -14,6 +15,7 @@ import com.potaliadmin.dto.internal.cache.job.IndustryVO;
 import com.potaliadmin.dto.web.request.jobs.JobCreateRequest;
 import com.potaliadmin.dto.web.response.job.JobResponse;
 import com.potaliadmin.dto.web.response.job.JobSearchResponse;
+import com.potaliadmin.dto.web.response.job.PrepareJobCreateResponse;
 import com.potaliadmin.dto.web.response.post.GenericPostResponse;
 import com.potaliadmin.dto.web.response.post.ReplyDto;
 import com.potaliadmin.dto.web.response.user.UserDto;
@@ -73,6 +75,46 @@ public class JobServiceImpl implements JobService {
   private static final Long[] REMOVE_LIST = {EnumReactions.HIDE_THIS_POST.getId(), EnumReactions.MARK_AS_SPAM.getId()};
 
 
+  @Override
+  public PrepareJobCreateResponse prepareJobCreateRequest() {
+    UserResponse userResponse = getLoginService().getLoggedInUser();
+
+    List<CityDto> cityDtoList = new ArrayList<CityDto>();
+    List<CityVO> cityVOList = CityCache.getCache().getCityVO();
+    for (CityVO cityVO : cityVOList) {
+      CityDto cityDto = new CityDto();
+      cityDto.setId(cityVO.getId());
+      cityDto.setName(cityVO.getName());
+      cityDtoList.add(cityDto);
+    }
+
+    List<IndustryRolesVO> industryRolesVOList = IndustryRolesCache.getCache().getAllIndustryRolesVO();
+    List<IndustryRolesDto> industryRolesDtoList = new ArrayList<IndustryRolesDto>();
+    for (IndustryRolesVO industryRolesVO : industryRolesVOList) {
+      IndustryRolesDto industryRolesDto = new IndustryRolesDto();
+      industryRolesDto.setId(industryRolesVO.getId());
+      industryRolesDto.setName(industryRolesVO.getName());
+      industryRolesDto.setIndustryId(industryRolesVO.getId());
+      industryRolesDtoList.add(industryRolesDto);
+    }
+
+    List<IndustryDto> industryDtoList = new ArrayList<IndustryDto>();
+    List<IndustryVO> industryVOList = IndustryCache.getCache().getAllIndustryVO();
+    for (IndustryVO industryVO : industryVOList) {
+      IndustryDto industryDto = new IndustryDto();
+      industryDto.setId(industryVO.getId());
+      industryDto.setName(industryVO.getName());
+      industryDtoList.add(industryDto);
+    }
+
+    PrepareJobCreateResponse prepareJobCreateResponse = new PrepareJobCreateResponse();
+    prepareJobCreateResponse.setCityDtoList(cityDtoList);
+    prepareJobCreateResponse.setIndustryDtoList(industryDtoList);
+    prepareJobCreateResponse.setIndustryRolesDtoList(industryRolesDtoList);
+    prepareJobCreateResponse.setReplyEmail(getUserService().findById(userResponse.getId()).getEmail());
+
+    return prepareJobCreateResponse;
+  }
 
   public JobResponse createJob(JobCreateRequest jobCreateRequest) {
     if (!jobCreateRequest.validate()) {
