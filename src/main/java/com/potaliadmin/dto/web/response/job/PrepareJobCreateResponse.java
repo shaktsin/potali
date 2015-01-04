@@ -12,7 +12,7 @@ import java.util.List;
  */
 public class PrepareJobCreateResponse extends GenericBaseResponse {
 
-  private List<IndustryRolesDto> industryRolesDtoList;
+
   private List<IndustryDto> industryDtoList;
   private List<CityDto> cityDtoList;
   private String replyEmail;
@@ -20,13 +20,7 @@ public class PrepareJobCreateResponse extends GenericBaseResponse {
   private String replyWatsApp;
 
 
-  public List<IndustryRolesDto> getIndustryRolesDtoList() {
-    return industryRolesDtoList;
-  }
 
-  public void setIndustryRolesDtoList(List<IndustryRolesDto> industryRolesDtoList) {
-    this.industryRolesDtoList = industryRolesDtoList;
-  }
 
   public List<IndustryDto> getIndustryDtoList() {
     return industryDtoList;

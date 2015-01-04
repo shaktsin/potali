@@ -88,15 +88,15 @@ public class JobServiceImpl implements JobService {
       cityDtoList.add(cityDto);
     }
 
-    List<IndustryRolesVO> industryRolesVOList = IndustryRolesCache.getCache().getAllIndustryRolesVO();
-    List<IndustryRolesDto> industryRolesDtoList = new ArrayList<IndustryRolesDto>();
-    for (IndustryRolesVO industryRolesVO : industryRolesVOList) {
+    //List<IndustryRolesVO> industryRolesVOList = IndustryRolesCache.getCache().getAllIndustryRolesVO();
+
+    /*for (IndustryRolesVO industryRolesVO : industryRolesVOList) {
       IndustryRolesDto industryRolesDto = new IndustryRolesDto();
       industryRolesDto.setId(industryRolesVO.getId());
       industryRolesDto.setName(industryRolesVO.getName());
       industryRolesDto.setIndustryId(industryRolesVO.getId());
       industryRolesDtoList.add(industryRolesDto);
-    }
+    }*/
 
     List<IndustryDto> industryDtoList = new ArrayList<IndustryDto>();
     List<IndustryVO> industryVOList = IndustryCache.getCache().getAllIndustryVO();
@@ -105,12 +105,25 @@ public class JobServiceImpl implements JobService {
       industryDto.setId(industryVO.getId());
       industryDto.setName(industryVO.getName());
       industryDtoList.add(industryDto);
+
+      // get all roles
+      List<Long> rolesList = IndustryCache.getCache().getIndustryRolesListFromIndustryId(industryVO.getId());
+      List<IndustryRolesDto> industryRolesDtoList = new ArrayList<IndustryRolesDto>();
+      for (Long rolesId : rolesList) {
+        IndustryRolesVO industryRolesVO = IndustryRolesCache.getCache().getIndustryRolesVO(rolesId);
+        IndustryRolesDto industryRolesDto = new IndustryRolesDto();
+        industryRolesDto.setId(industryRolesVO.getId());
+        industryRolesDto.setName(industryRolesVO.getName());
+        industryRolesDto.setIndustryId(industryRolesVO.getId());
+        industryRolesDtoList.add(industryRolesDto);
+      }
+      industryDto.setIndustryRolesDtoList(industryRolesDtoList);
     }
 
     PrepareJobCreateResponse prepareJobCreateResponse = new PrepareJobCreateResponse();
     prepareJobCreateResponse.setCityDtoList(cityDtoList);
     prepareJobCreateResponse.setIndustryDtoList(industryDtoList);
-    prepareJobCreateResponse.setIndustryRolesDtoList(industryRolesDtoList);
+    //prepareJobCreateResponse.setIndustryRolesDtoList(industryRolesDtoList);
     prepareJobCreateResponse.setReplyEmail(getUserService().findById(userResponse.getId()).getEmail());
 
     return prepareJobCreateResponse;

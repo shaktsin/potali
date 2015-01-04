@@ -44,9 +44,14 @@ public class AppCacheServiceImpl implements AppCacheService {
     reloadIndustryCache();
     reloadCityCache();
     reloadIndustryRoles();
+    //reloadIndustryToIndustryRolesCache();
 
     logger.info("----------------- Local Cache Reloaded --------------------");
   }
+
+  /*private void reloadIndustryToIndustryRolesCache() {
+
+  }*/
 
   @SuppressWarnings("unchecked")
   private void reloadIndustryRoles() {
@@ -101,6 +106,10 @@ public class AppCacheServiceImpl implements AppCacheService {
     for (Industry industry : industryList) {
       IndustryVO industryVO = new IndustryVO(industry);
       industryCache.addIndustry(industryVO.getId(), industryVO);
+      // now set up industry to industry roles map
+      String query2 = "select indR.id from IndustryRoles indR where indR.industryId=?";
+      List<Long> rolesList = getBaseDao().findByQuery(query2, new Object[]{industry.getId()});
+      industryCache.addToIndustryToIndustryRolesMap(industry.getId(), rolesList);
     }
     industryCache.freeze();
   }

@@ -11,6 +11,7 @@ import java.util.*;
 public class IndustryCache implements LocalCache {
 
   private Map<Long, IndustryVO> industryVOMap = new HashMap<Long, IndustryVO>();
+  private Map<Long, List<Long>> industryToIndustryRoles= new HashMap<Long, List<Long>>();
   private static IndustryCache _mInstance;
 
   private IndustryCache() {}
@@ -46,6 +47,30 @@ public class IndustryCache implements LocalCache {
       industryVOList.add(getIndustryVO(instituteVOEntry.getKey()));
     }
     return industryVOList;
+  }
+
+
+
+  public void addToIndustryToIndustryRolesMap(Long industryId, Long industryRolesId) {
+    List<Long> rolesList = industryToIndustryRoles.get(industryId);
+    if (rolesList == null || rolesList.size() == 0) {
+      rolesList = new ArrayList<Long>();
+    }
+    rolesList.add(industryRolesId);
+    industryToIndustryRoles.put(industryId, rolesList);
+  }
+
+  public void addToIndustryToIndustryRolesMap(Long industryId, List<Long> indRolesList) {
+    List<Long> rolesList = industryToIndustryRoles.get(industryId);
+    if (rolesList == null || rolesList.size() == 0) {
+      rolesList = new ArrayList<Long>();
+    }
+    rolesList.addAll(indRolesList);
+    industryToIndustryRoles.put(industryId, rolesList);
+  }
+
+  public List<Long> getIndustryRolesListFromIndustryId(Long industryId) {
+    return industryToIndustryRoles.get(industryId);
   }
 
   @Override

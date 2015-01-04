@@ -1,5 +1,7 @@
 package com.potaliadmin.dto.internal.cache.es.job;
 
+import java.util.List;
+
 /**
  * Created by Shakti Singh on 12/26/14.
  */
@@ -8,6 +10,7 @@ public class IndustryDto {
   private Long id;
   private String name;
   private boolean selected;
+  private List<IndustryRolesDto> industryRolesDtoList;
 
   public Long getId() {
     return id;
@@ -31,5 +34,13 @@ public class IndustryDto {
 
   public void setSelected(boolean selected) {
     this.selected = selected;
+  }
+
+  public List<IndustryRolesDto> getIndustryRolesDtoList() {
+    return industryRolesDtoList;
+  }
+
+  public void setIndustryRolesDtoList(List<IndustryRolesDto> industryRolesDtoList) {
+    this.industryRolesDtoList = industryRolesDtoList;
   }
 }
