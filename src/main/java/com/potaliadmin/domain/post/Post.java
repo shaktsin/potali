@@ -17,10 +17,10 @@ public class Post implements Serializable {
   @Column(name = "id", unique = true, nullable = false)
   private Long id;
 
-  @Column(name = "subject", nullable = false,length = 200)
+  @Column(name = "subject", nullable = false,length = 500)
   private String subject;
 
-  @Column(name = "content", length = 500)
+  @Column(name = "content", length = 65535)
   private String content;
 
   @Column(name = "reply_email", length = 45)
