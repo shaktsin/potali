@@ -19,7 +19,7 @@ public class UserSignUpQueryRequest extends AbstractUserRequest {
     }
     this.lastName = userSignUpRequest.getLastName();
     this.accountName = userSignUpRequest.getAccountName();
-    if (null == accountName) {
+    if (null == accountName || StringUtils.isBlank(accountName)) {
       accountName = firstName;
     }
     this.gender =userSignUpRequest.getGender();
