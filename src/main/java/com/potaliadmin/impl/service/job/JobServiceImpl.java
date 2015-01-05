@@ -314,6 +314,8 @@ public class JobServiceImpl implements JobService {
     }
     jobSearchResponse.setJobCreateResponseList(genericPostResponseList);
     jobSearchResponse.setTotalResults(totalHits);
+    jobSearchResponse.setPerPage(perPage);
+    jobSearchResponse.setPageNo(pageNo);
 
     // set all cities
     List<CityDto> cityDtoList = new ArrayList<CityDto>();

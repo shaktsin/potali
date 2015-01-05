@@ -18,6 +18,8 @@ public class JobSearchResponse extends GenericBaseResponse {
   private List<IndustryRolesDto> industryRolesDtoList;
   private List<IndustryDto> industryDtoList;
   private long totalResults;
+  private long pageNo;
+  private long perPage;
 
   public List<GenericPostResponse> getJobCreateResponseList() {
     return jobCreateResponseList;
@@ -57,5 +59,21 @@ public class JobSearchResponse extends GenericBaseResponse {
 
   public void setTotalResults(long totalResults) {
     this.totalResults = totalResults;
+  }
+
+  public long getPageNo() {
+    return pageNo;
+  }
+
+  public void setPageNo(long pageNo) {
+    this.pageNo = pageNo;
+  }
+
+  public long getPerPage() {
+    return perPage;
+  }
+
+  public void setPerPage(long perPage) {
+    this.perPage = perPage;
   }
 }
