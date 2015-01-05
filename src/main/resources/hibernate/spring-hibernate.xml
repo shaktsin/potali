@@ -82,6 +82,7 @@
         <property name="initialSize">
             <value>50</value>
         </property>
+        <property name="testWhileIdle" value="true"/>
     </bean>
 
     <bean id="defaultHibernateInterceptor"

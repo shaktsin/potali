@@ -22,6 +22,15 @@ public class AppProperties {
   @Value("${UPLOAD_PIC}")
   private String uploadPicPath;
 
+  @Value("${AMAZON_PARENT_BUCKET}")
+  private String amazonPrimaryBucketName;
+
+  @Value("${S3_ACCESS_KEY}")
+  private String s3AccessKey;
+
+  @Value("${S3_SECRET_KEY}")
+  private String s3SecretKey;
+
   public boolean isDev() {
     return DEV.equalsIgnoreCase(env);
   }
@@ -36,5 +45,17 @@ public class AppProperties {
 
   public String getUploadPicPath() {
     return uploadPicPath;
+  }
+
+  public String getAmazonPrimaryBucketName() {
+    return amazonPrimaryBucketName;
+  }
+
+  public String getS3AccessKey() {
+    return s3AccessKey;
+  }
+
+  public String getS3SecretKey() {
+    return s3SecretKey;
   }
 }
