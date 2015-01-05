@@ -70,11 +70,11 @@ public class JobCreateRequest extends GenericRequest {
       isValid = false;
     }
 
-    if (isValid && timeSpecified && (from >= to)) {
+    if (isValid && timeSpecified && (from < to)) {
       isValid = false;
     }
 
-    if (isValid && salarySpecified && (salaryFrom >= salaryTo)) {
+    if (isValid && salarySpecified && (salaryFrom < salaryTo)) {
       isValid = false;
     }
 
