@@ -1,13 +1,16 @@
 package com.potaliadmin.resources.post;
 
 import com.potaliadmin.constants.DefaultConstants;
+import com.potaliadmin.constants.query.EnumSearchOperation;
 import com.potaliadmin.constants.request.RequestConstants;
 import com.potaliadmin.dto.web.request.jobs.JobCreateRequest;
+import com.potaliadmin.dto.web.request.jobs.JobSearchRequest;
 import com.potaliadmin.dto.web.response.job.JobResponse;
 import com.potaliadmin.dto.web.response.job.JobSearchResponse;
 import com.potaliadmin.dto.web.response.job.PrepareJobCreateResponse;
 import com.potaliadmin.pact.service.job.JobService;
 import com.potaliadmin.util.BaseUtil;
+import com.potaliadmin.util.DateUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.shiro.authz.annotation.RequiresAuthentication;
 import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
@@ -18,6 +21,7 @@ import org.springframework.stereotype.Component;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import java.io.InputStream;
+import java.util.Date;
 
 /**
  * Created by Shakti Singh on 12/16/14.
@@ -77,18 +81,11 @@ public class JobResources {
   }
 
 
-  @GET
+  @POST
   @Path("/list")
   @Produces("application/json")
   @RequiresAuthentication
-  public JobSearchResponse getJobs(@QueryParam(RequestConstants.LOCATION) String locationFilter,
-                      @QueryParam(RequestConstants.INDUSTRY) String industryFilter,
-                      @QueryParam(RequestConstants.ROLES) String rolesFilter,
-                      @QueryParam(RequestConstants.SALARY) String salaryFilter,
-                      @QueryParam(RequestConstants.EXP) String experienceFilter,
-                      @QueryParam(RequestConstants.PER_PAGE) @DefaultValue(DefaultConstants.AND_APP_PER_PAGE)int perPage,
-                      @QueryParam(RequestConstants.PAGE_NO) @DefaultValue(DefaultConstants.AND_APP_PAGE_NO)int pageNo,
-                      @QueryParam(RequestConstants.PLATE_FORM) @DefaultValue(DefaultConstants.PLATE_FROM) Long plateFormId) {
+  public JobSearchResponse getJobs(JobSearchRequest jobSearchRequest){
 
     String[] locationFilterList=null;
     String[] industryFiltersList = null;
@@ -96,25 +93,32 @@ public class JobResources {
     String[] salaryFilterList=null;
     String[] experienceFilterList=null;
     try {
-      if (StringUtils.isNotBlank(locationFilter)) {
-        locationFilterList = locationFilter.split(DefaultConstants.REQUEST_SEPARATOR);
+      if (StringUtils.isNotBlank(jobSearchRequest.getLocationFilter())) {
+        locationFilterList = jobSearchRequest.getLocationFilter().split(DefaultConstants.REQUEST_SEPARATOR);
       }
-      if (StringUtils.isNotBlank(rolesFilter)) {
-        rolesFilterList = rolesFilter.split(DefaultConstants.REQUEST_SEPARATOR);
+      if (StringUtils.isNotBlank(jobSearchRequest.getRolesFilter())) {
+        rolesFilterList = jobSearchRequest.getLocationFilter().split(DefaultConstants.REQUEST_SEPARATOR);
       }
-      if (StringUtils.isNotBlank(salaryFilter)) {
-        salaryFilterList = salaryFilter.split(DefaultConstants.REQUEST_SEPARATOR);
+      if (StringUtils.isNotBlank(jobSearchRequest.getSalaryFilter())) {
+        salaryFilterList = jobSearchRequest.getSalaryFilter().split(DefaultConstants.REQUEST_SEPARATOR);
       }
-      if (StringUtils.isNotBlank(experienceFilter)) {
-        experienceFilterList = experienceFilter.split(DefaultConstants.REQUEST_SEPARATOR);
+      if (StringUtils.isNotBlank(jobSearchRequest.getExperienceFilter())) {
+        experienceFilterList = jobSearchRequest.getExperienceFilter().split(DefaultConstants.REQUEST_SEPARATOR);
       }
-      if (StringUtils.isNotBlank(industryFilter)) {
-        industryFiltersList = industryFilter.split(DefaultConstants.REQUEST_SEPARATOR);
+      if (StringUtils.isNotBlank(jobSearchRequest.getIndustryFilter())) {
+        industryFiltersList = jobSearchRequest.getExperienceFilter().split(DefaultConstants.REQUEST_SEPARATOR);
+      }
+
+      EnumSearchOperation enumSearchOperation = EnumSearchOperation.getById(jobSearchRequest.getOperation());
+      Long postId = null;
+      if (enumSearchOperation != null) {
+        //date = DateUtils.convertFromString(jobSearchRequest.getPostDate());
+        postId = jobSearchRequest.getPostId();
       }
 
       return getJobService().searchJob(BaseUtil.convertToLong(locationFilterList),BaseUtil.convertToLong(rolesFilterList),
                                         BaseUtil.convertToLong(industryFiltersList),BaseUtil.convertToDouble(salaryFilterList),
-                                        BaseUtil.convertToInteger(experienceFilterList),perPage, pageNo);
+                                        BaseUtil.convertToInteger(experienceFilterList),enumSearchOperation, postId,jobSearchRequest.getPerPage(),jobSearchRequest.getPageNo());
 
 
 
@@ -136,7 +140,6 @@ public class JobResources {
 
 
   }*/
-
 
 
 

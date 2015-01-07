@@ -4,15 +4,23 @@ import com.potaliadmin.domain.reactions.PostReactions;
 import com.potaliadmin.dto.internal.cache.es.post.PostReactionVO;
 import com.potaliadmin.dto.web.request.posts.PostReactionRequest;
 import com.potaliadmin.dto.web.response.post.GenericPostReactionResponse;
+import com.potaliadmin.dto.web.response.post.PostSyncResponse;
 import com.potaliadmin.dto.web.response.user.UserResponse;
 import com.potaliadmin.exceptions.InValidInputException;
 import com.potaliadmin.exceptions.UnAuthorizedAccessException;
+import com.potaliadmin.framework.cache.ESCacheManager;
 import com.potaliadmin.pact.dao.post.PostReactionDao;
 import com.potaliadmin.pact.service.cache.ESCacheService;
 import com.potaliadmin.pact.service.post.PostService;
 import com.potaliadmin.pact.service.users.LoginService;
+import org.elasticsearch.action.count.CountResponse;
+import org.elasticsearch.index.query.FilterBuilders;
+import org.elasticsearch.index.query.QueryBuilders;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+
+import java.util.Date;
 
 /**
  * Created by Shakti Singh on 12/28/14.
@@ -30,6 +38,8 @@ public class PostServiceImpl implements PostService {
   ESCacheService esCacheService;
 
   public static final String REACTION_INDEX = "post_reactions";
+  private static final String INDEX = "ofc";
+  private static final String JOB_TYPE = "job";
 
   @Override
   public GenericPostReactionResponse postReaction(PostReactionRequest postReactionRequest) {
@@ -58,6 +68,25 @@ public class PostServiceImpl implements PostService {
       genericPostReactionResponse.setSuccess(Boolean.FALSE);
     }
     return genericPostReactionResponse;
+  }
+
+  @Override
+  public PostSyncResponse syncPost(Long postId) {
+    PostSyncResponse postSyncResponse = new PostSyncResponse();
+
+
+    CountResponse countResponse = ESCacheManager.getInstance().getClient()
+        .prepareCount(INDEX).setTypes(JOB_TYPE)
+        .setQuery(QueryBuilders.rangeQuery("postId").gt(postId).includeLower(true).includeUpper(false))
+        .execute().actionGet();
+
+    if (countResponse.status().getStatus() == HttpStatus.OK.value()) {
+      postSyncResponse.setJobCount(countResponse.getCount());
+    } else {
+      postSyncResponse.setException(true);
+      postSyncResponse.addMessage("Something went wrong, please try again");
+    }
+    return postSyncResponse;
   }
 
   public LoginService getLoginService() {

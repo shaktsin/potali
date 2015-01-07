@@ -10,6 +10,7 @@ public class DateUtils {
 
   public static final String DEFAULT_DATE_FORMAT = "yyyy-MM-dd'T'HH:mm:ss";
   public static final String POSTED_ON_PATTERN = "d MMM yyyy, hh:mm aaa";
+  public static final String DEFAULT_ES_DATE_FORMAT = "yyyy/MM/dd HH:mm:ss";
   public static SimpleDateFormat sdf;
 
   static {
@@ -23,5 +24,10 @@ public class DateUtils {
 
   public static void main(String[] args) {
     System.out.println(getPostedOnDate(new Date()));
+  }
+
+  public static Date convertFromString(String dateStr) throws Exception {
+    sdf.applyPattern(POSTED_ON_PATTERN);
+    return sdf.parse(dateStr);
   }
 }

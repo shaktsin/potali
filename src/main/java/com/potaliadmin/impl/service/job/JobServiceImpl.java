@@ -1,6 +1,7 @@
 package com.potaliadmin.impl.service.job;
 
 import com.potaliadmin.constants.DefaultConstants;
+import com.potaliadmin.constants.query.EnumSearchOperation;
 import com.potaliadmin.constants.reactions.EnumReactions;
 import com.potaliadmin.domain.industry.Industry;
 import com.potaliadmin.domain.job.Job;
@@ -46,6 +47,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -193,7 +195,8 @@ public class JobServiceImpl implements JobService {
 
 
   public JobSearchResponse searchJob(Long[] locationList, Long[] rolesList,Long[] industryList,
-                                     Double[] salaryRange,Integer[] experienceRange, int perPage, int pageNo) {
+                                     Double[] salaryRange,Integer[] experienceRange, EnumSearchOperation searchOperation,
+                                     Long postId,int perPage, int pageNo) {
 
     long totalHits=0;
 
@@ -205,6 +208,14 @@ public class JobServiceImpl implements JobService {
 
     JobSearchResponse jobSearchResponse= new JobSearchResponse();
     AndFilterBuilder andFilterBuilder = new AndFilterBuilder();
+    // load more
+    if (searchOperation != null && postId != null) {
+      if (EnumSearchOperation.NEWER.getId() == searchOperation.getId()) {
+        andFilterBuilder.add(FilterBuilders.rangeFilter("postId").gt(postId).includeLower(true).includeUpper(false));
+      } else {
+        andFilterBuilder.add(FilterBuilders.rangeFilter("postId").lt(postId).includeLower(false).includeUpper(true));
+      }
+    }
 
     // hide all mark as hidden and spam posts from list
     OrFilterBuilder orFilterBuilder = new OrFilterBuilder();
