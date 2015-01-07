@@ -211,9 +211,9 @@ public class JobServiceImpl implements JobService {
     // load more
     if (searchOperation != null && postId != null) {
       if (EnumSearchOperation.NEWER.getId() == searchOperation.getId()) {
-        andFilterBuilder.add(FilterBuilders.rangeFilter("postId").gt(postId).includeLower(true).includeUpper(false));
+        andFilterBuilder.add(FilterBuilders.rangeFilter("postId").gt(postId).lte(postId+perPage));
       } else {
-        andFilterBuilder.add(FilterBuilders.rangeFilter("postId").lt(postId).includeLower(false).includeUpper(true));
+        andFilterBuilder.add(FilterBuilders.rangeFilter("postId").lt(postId).gte(postId-perPage));
       }
     }
 
