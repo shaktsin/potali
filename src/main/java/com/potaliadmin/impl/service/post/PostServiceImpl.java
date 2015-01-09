@@ -77,7 +77,7 @@ public class PostServiceImpl implements PostService {
 
     CountResponse countResponse = ESCacheManager.getInstance().getClient()
         .prepareCount(INDEX).setTypes(JOB_TYPE)
-        .setQuery(QueryBuilders.rangeQuery("postId").gt(postId).includeLower(true).includeUpper(false))
+        .setQuery(QueryBuilders.rangeQuery("postId").gt(postId).includeLower(false).includeUpper(false))
         .execute().actionGet();
 
     if (countResponse.status().getStatus() == HttpStatus.OK.value()) {
