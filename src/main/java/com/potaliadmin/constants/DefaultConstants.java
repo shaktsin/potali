@@ -20,6 +20,8 @@ public class DefaultConstants
   public static final String PLATE_FROM = "0";
   public static final int AND_APP_PER_PAGE = 12;
   public static final int AND_APP_PAGE_NO = 0;
+  public static final String AND_APP_PER_PAGE_STR = "12";
+  public static final String AND_APP_PAGE_NO_STR = "0";
 
   public static final String REQUEST_SEPARATOR="~";
   public static final Double MAX_SALARY = 9999999999D;

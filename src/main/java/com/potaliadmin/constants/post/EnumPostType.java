@@ -5,9 +5,9 @@ package com.potaliadmin.constants.post;
  */
 public enum  EnumPostType {
 
-  JOBS(1, "Jobs"),
-  CLASSIFIED(2, "Classifieds"),
-  MEETUPS(3, "Meetups");
+  JOBS(0, "Jobs"),
+  CLASSIFIED(1, "Classifieds"),
+  MEETUPS(2, "Meetups");
 
   private int id;
   private String name;

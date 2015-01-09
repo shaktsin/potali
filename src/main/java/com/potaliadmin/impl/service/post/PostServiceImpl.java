@@ -4,6 +4,7 @@ import com.potaliadmin.domain.reactions.PostReactions;
 import com.potaliadmin.dto.internal.cache.es.post.PostReactionVO;
 import com.potaliadmin.dto.web.request.posts.PostReactionRequest;
 import com.potaliadmin.dto.web.response.post.GenericPostReactionResponse;
+import com.potaliadmin.dto.web.response.post.PostResponse;
 import com.potaliadmin.dto.web.response.post.PostSyncResponse;
 import com.potaliadmin.dto.web.response.user.UserResponse;
 import com.potaliadmin.exceptions.InValidInputException;
@@ -14,8 +15,7 @@ import com.potaliadmin.pact.service.cache.ESCacheService;
 import com.potaliadmin.pact.service.post.PostService;
 import com.potaliadmin.pact.service.users.LoginService;
 import org.elasticsearch.action.count.CountResponse;
-import org.elasticsearch.index.query.FilterBuilders;
-import org.elasticsearch.index.query.QueryBuilders;
+import org.elasticsearch.index.query.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -87,6 +87,25 @@ public class PostServiceImpl implements PostService {
       postSyncResponse.addMessage("Something went wrong, please try again");
     }
     return postSyncResponse;
+  }
+
+  @Override
+  public PostResponse fetchImportantPosts(int pageNo, int perPage) {
+    long totalHits=0;
+    UserResponse userResponse = getLoginService().getLoggedInUser();
+
+    if (userResponse == null) {
+      throw new InValidInputException("USER CANNOT BE NULL");
+    }
+
+
+
+    FilterBuilders.boolFilter().must();
+    //boolFilterBuilder.must(FilterBuilders.ter);
+    //HasChildFilterBuilder hasChildFilterBuilder = FilterBuilders.hasChildFilter();
+
+
+    return null;
   }
 
   public LoginService getLoginService() {
