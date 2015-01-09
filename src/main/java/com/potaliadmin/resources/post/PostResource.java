@@ -42,6 +42,14 @@ public class PostResource {
     }
   }
 
+  @POST
+  @Path("/imp")
+  @Produces("application/json")
+  @RequiresAuthentication
+  public void fetchImportantPosts() {
+
+  }
+
 
   @POST
   @Path("/post/sync")

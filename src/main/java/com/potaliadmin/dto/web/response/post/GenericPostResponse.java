@@ -17,6 +17,7 @@ public class GenericPostResponse extends GenericBaseResponse {
   private UserDto userDto;
   private ReplyDto replyDto;
   private ShareDto shareDto;
+  private int postType;
 
 
   public Long getPostId() {
@@ -73,5 +74,13 @@ public class GenericPostResponse extends GenericBaseResponse {
 
   public void setShareDto(ShareDto shareDto) {
     this.shareDto = shareDto;
+  }
+
+  public int getPostType() {
+    return postType;
+  }
+
+  public void setPostType(int postType) {
+    this.postType = postType;
   }
 }
