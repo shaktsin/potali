@@ -281,7 +281,7 @@ public class JobServiceImpl implements JobService {
 
     // put sorting
     SearchResponse response = ESCacheManager.getInstance().getClient().prepareSearch(INDEX)
-        .setPostFilter(andFilterBuilder).addSort("createdDate", SortOrder.DESC)
+        .setPostFilter(andFilterBuilder).addSort("postId", SortOrder.DESC)
         .setFrom(pageNo).setSize(perPage).execute().actionGet();
 
     List<GenericPostResponse> genericPostResponseList = new ArrayList<GenericPostResponse>();
