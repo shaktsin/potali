@@ -1,5 +1,8 @@
 package com.potaliadmin.framework.cache;
 
+import com.potaliadmin.constants.cluster.EnumCluster;
+import com.potaliadmin.dto.internal.cache.cluster.ClusterVO;
+import com.potaliadmin.framework.cache.cluster.ClusterCache;
 import com.potaliadmin.impl.framework.ServiceLocatorFactory;
 import com.potaliadmin.impl.framework.properties.AppProperties;
 import org.elasticsearch.client.Client;
@@ -12,6 +15,8 @@ import org.elasticsearch.node.NodeBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+
+import java.util.List;
 
 /**
  * Created by Shakti Singh on 12/23/14.
@@ -43,7 +48,13 @@ public class ESCacheManager {
       //node = NodeBuilder.nodeBuilder().clusterName(clusterName).data(false).client(true).node();
       //client = node.client();
       Settings settings = ImmutableSettings.settingsBuilder().put("cluster.name", clusterName).build();
-      client = new TransportClient(settings).addTransportAddress(new InetSocketTransportAddress("localhost", 9300));
+      TransportClient transportClient = new TransportClient(settings);
+      List<ClusterVO> clusterVOList = ClusterCache.getCache().getAllActiveClusterByType(EnumCluster.ELASTIC_SEARCH.getName());
+      for (ClusterVO clusterVO : clusterVOList) {
+        transportClient.addTransportAddress(new InetSocketTransportAddress(clusterVO.getHost(), Integer.parseInt(clusterVO.getPort())));
+      }
+
+      client = (Client) transportClient;
     } catch (Exception e) {
       e.printStackTrace();
     }

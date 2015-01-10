@@ -1,5 +1,6 @@
 package com.potaliadmin.impl.service.user;
 
+import com.potaliadmin.constants.cache.MemCacheNS;
 import com.potaliadmin.constants.image.EnumBucket;
 import com.potaliadmin.constants.image.EnumImageSize;
 import com.potaliadmin.domain.image.Avatar;
@@ -18,6 +19,7 @@ import com.potaliadmin.framework.cache.institute.InstituteCache;
 import com.potaliadmin.pact.dao.image.AvatarDao;
 import com.potaliadmin.pact.dao.user.UserDao;
 import com.potaliadmin.pact.framework.aws.UploadService;
+import com.potaliadmin.pact.service.cache.MemCacheService;
 import com.potaliadmin.pact.service.users.LoginService;
 import com.potaliadmin.pact.service.users.UserService;
 import com.potaliadmin.security.Principal;
@@ -45,9 +47,17 @@ public class UserServiceImpl implements UserService {
   @Autowired
   AvatarDao avatarDao;
 
+  @Autowired
+  MemCacheService memCacheService;
+
   @Override
   public UserResponse findById(Long id) {
-    UserResponse userResponse = null;
+    UserResponse userResponse =(UserResponse) getMemCacheService().get(MemCacheNS.USER_BY_ID, id.toString());
+    // first try to find out from cache
+    if (userResponse != null) {
+      return userResponse;
+    }
+    // otherwise fetch from database
     User user = getUserDao().findById(id);
     if (null != user) {
       userResponse = new UserResponse();
@@ -57,12 +67,22 @@ public class UserServiceImpl implements UserService {
       userResponse.setPasswordChecksum(user.getPasswordChecksum());
       userResponse.setInstituteId(user.getInstituteId());
       userResponse.setImage(user.getProfileImage());
+
+      // put in memcache
+      getMemCacheService().put(MemCacheNS.USER_BY_ID, user.getId().toString(), userResponse);
     }
     return userResponse;
   }
 
   public UserResponse findByEmail(String email) {
-    UserResponse userResponse = null;
+    UserResponse userResponse = (UserResponse) getMemCacheService().get(MemCacheNS.USER_BY_EMAIL, email);
+
+    // first try to find out from cache
+    if (userResponse != null) {
+      return userResponse;
+    }
+    // otherwise fetch from database
+
     User user = getUserDao().findByEmail(email);
     if (null != user) {
       userResponse = new UserResponse();
@@ -72,6 +92,9 @@ public class UserServiceImpl implements UserService {
       userResponse.setPasswordChecksum(user.getPasswordChecksum());
       userResponse.setInstituteId(user.getInstituteId());
       userResponse.setImage(user.getProfileImage());
+
+      // put in memcache
+      getMemCacheService().put(MemCacheNS.USER_BY_ID, user.getId().toString(), userResponse);
     }
     return userResponse;
   }
@@ -127,6 +150,10 @@ public class UserServiceImpl implements UserService {
     userResponse.setName(user.getAccountName());
     userResponse.setInstituteId(user.getInstituteId());
     userResponse.setImage(user.getProfileImage());
+
+    // put in mem cache
+    getMemCacheService().put(MemCacheNS.USER_BY_ID, user.getId().toString(), userResponse);
+    getMemCacheService().put(MemCacheNS.USER_BY_EMAIL, user.getEmail(), userResponse);
 
     return userResponse;
   }
@@ -204,6 +231,23 @@ public class UserServiceImpl implements UserService {
         userProfileUpdateResponse.setProfileImageLink(avatar.getUrl());
       }
     }
+
+    // update cache too
+    // put in mem cache
+    getMemCacheService().remove(MemCacheNS.USER_BY_ID, userResponse.getId().toString());
+    getMemCacheService().remove(MemCacheNS.USER_BY_EMAIL, userResponse.getEmail());
+
+    userResponse.setId(user.getId());
+    userResponse.setName(user.getAccountName());
+    userResponse.setEmail(user.getEmail());
+    userResponse.setPasswordChecksum(user.getPasswordChecksum());
+    userResponse.setInstituteId(user.getInstituteId());
+    userResponse.setImage(user.getProfileImage());
+
+    getMemCacheService().put(MemCacheNS.USER_BY_ID, user.getId().toString(), userResponse);
+    getMemCacheService().put(MemCacheNS.USER_BY_EMAIL, user.getEmail(), userResponse);
+
+
     return userProfileUpdateResponse;
   }
 
@@ -217,5 +261,9 @@ public class UserServiceImpl implements UserService {
 
   public AvatarDao getAvatarDao() {
     return avatarDao;
+  }
+
+  public MemCacheService getMemCacheService() {
+    return memCacheService;
   }
 }
