@@ -51,7 +51,7 @@ public class AppCacheServiceImpl implements AppCacheService {
   @Override
   public void reloadAll() {
     logger.info("----------------- Reloading All Cache --------------------");
-
+    reloadCacheClusters();
     reloadInstituteCache();
     reloadIndustryCache();
     reloadCityCache();
