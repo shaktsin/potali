@@ -208,6 +208,7 @@ public class JobServiceImpl implements JobService {
 
     JobSearchResponse jobSearchResponse= new JobSearchResponse();
     AndFilterBuilder andFilterBuilder = new AndFilterBuilder();
+    andFilterBuilder.add(FilterBuilders.termFilter("userInstituteId", userResponse.getInstituteId()));
     // load more
     if (searchOperation != null && postId != null) {
       if (EnumSearchOperation.NEWER.getId() == searchOperation.getId()) {
@@ -294,6 +295,10 @@ public class JobServiceImpl implements JobService {
           // set User
           UserResponse postUser = getUserService().findById(fullJobVO.getUserId());
           GenericPostResponse genericPostResponse = new GenericPostResponse(fullJobVO, postUser);
+          // check if job is set important
+          boolean isImp = getEsCacheService().isPostMarkedImportant(fullJobVO.getPostId(), userResponse.getId());
+          genericPostResponse.setImportant(isImp);
+
           genericPostResponseList.add(genericPostResponse);
         }
       }

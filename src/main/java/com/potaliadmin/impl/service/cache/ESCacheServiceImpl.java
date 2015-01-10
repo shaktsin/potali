@@ -2,16 +2,19 @@ package com.potaliadmin.impl.service.cache;
 
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.potaliadmin.constants.reactions.EnumReactions;
 import com.potaliadmin.dto.internal.cache.es.framework.GenericPostVO;
 import com.potaliadmin.dto.internal.cache.es.framework.GenericVO;
 import com.potaliadmin.dto.internal.cache.es.job.FullJobVO;
 import com.potaliadmin.framework.cache.ESCacheManager;
 import com.potaliadmin.pact.service.cache.ESCacheService;
+import org.elasticsearch.action.count.CountResponse;
 import org.elasticsearch.action.get.GetResponse;
 import org.elasticsearch.action.index.IndexRequestBuilder;
 import org.elasticsearch.action.index.IndexResponse;
 import org.elasticsearch.action.search.SearchResponse;
-import org.elasticsearch.index.query.FilterBuilder;
+import org.elasticsearch.index.query.*;
+import org.elasticsearch.rest.RestStatus;
 import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.SearchHits;
 import org.slf4j.Logger;
@@ -27,6 +30,8 @@ public class ESCacheServiceImpl implements ESCacheService {
   private static Logger logger = LoggerFactory.getLogger(ESCacheServiceImpl.class);
   private static ObjectMapper objectMapper;
   private static final String INDEX = "ofc";
+  public static final String REACTION_INDEX = "post_reactions";
+  private static final String JOB_TYPE = "job";
 
   static {
     objectMapper = new ObjectMapper();
@@ -74,6 +79,24 @@ public class ESCacheServiceImpl implements ESCacheService {
       logger.info("Some exception occurred while parsing data ",e);
       return null;
     }
+  }
+
+  @Override
+  public boolean isPostMarkedImportant(Long postId, Long userId) {
+    BoolFilterBuilder boolFilterBuilder = FilterBuilders.boolFilter();
+    boolFilterBuilder.must(FilterBuilders.termFilter("userId", userId));
+    boolFilterBuilder.must(FilterBuilders.termFilter("reactionId", EnumReactions.MARK_AS_IMPORTANT.getId()));
+    boolFilterBuilder.must(FilterBuilders.termFilter("postId", postId));
+    HasChildFilterBuilder hasChildFilterBuilder = FilterBuilders.hasChildFilter(REACTION_INDEX, boolFilterBuilder);
+
+    SearchResponse searchResponse = ESCacheManager.getInstance().getClient()
+        .prepareSearch(INDEX).setTypes(JOB_TYPE)
+        .setPostFilter(hasChildFilterBuilder).execute().actionGet();
+
+    if (searchResponse != null && RestStatus.OK.getStatus() == searchResponse.status().getStatus()) {
+      return searchResponse.getHits().getTotalHits() > 0;
+    }
+    return false;
   }
 
 }

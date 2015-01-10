@@ -15,4 +15,8 @@ public interface ESCacheService {
   public Object parseResponse(SearchHit searchHit, Class responseClass);
 
   public Object parseResponse(GetResponse getResponse, Class responseClass);
+
+  /*TODO do it in better fashion through Aggregations  */
+  public boolean isPostMarkedImportant(Long postId, Long userId);
+
 }
