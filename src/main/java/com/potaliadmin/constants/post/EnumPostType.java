@@ -1,20 +1,33 @@
 package com.potaliadmin.constants.post;
 
+import com.potaliadmin.dto.internal.cache.es.job.FullJobVO;
+
 /**
  * Created by Shakti Singh on 1/9/15.
  */
 public enum  EnumPostType {
 
-  JOBS(0, "Jobs"),
-  CLASSIFIED(1, "Classifieds"),
-  MEETUPS(2, "Meetups");
+  JOBS(0, "job", FullJobVO.class),
+  CLASSIFIED(1, "classifieds", null),
+  MEETUPS(2, "meetups", null);
 
   private int id;
   private String name;
+  private Class aClass;
 
-  EnumPostType(int id, String name) {
+  EnumPostType(int id, String name, Class aClass) {
     this.id = id;
     this.name = name;
+    this.aClass = aClass;
+  }
+
+  public static EnumPostType getPostTypeByName(String name) {
+    for (EnumPostType postType : EnumPostType.values()) {
+      if (postType.getName().equalsIgnoreCase(name)) {
+        return postType;
+      }
+    }
+    return JOBS;
   }
 
   public int getId() {
@@ -31,5 +44,13 @@ public enum  EnumPostType {
 
   public void setName(String name) {
     this.name = name;
+  }
+
+  public Class getaClass() {
+    return aClass;
+  }
+
+  public void setaClass(Class aClass) {
+    this.aClass = aClass;
   }
 }

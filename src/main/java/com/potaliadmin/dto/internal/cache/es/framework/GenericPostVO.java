@@ -1,7 +1,14 @@
 package com.potaliadmin.dto.internal.cache.es.framework;
 
+
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonSubTypes;
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import com.fasterxml.jackson.annotation.JsonTypeName;
 import com.potaliadmin.constants.DefaultConstants;
+import com.potaliadmin.dto.internal.cache.es.job.FullJobVO;
+import com.potaliadmin.dto.web.response.post.ShareDto;
+
 
 import java.util.Date;
 
@@ -18,6 +25,7 @@ public class GenericPostVO extends GenericVO {
   private String replyEmail;
   private String replyPhone;
   private String replyWatsApp;
+  private ShareDto shareDto;
   @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = DefaultConstants.DEFAULT_ES_DATE_FORMAT, timezone = "IST")
   private Date createdDate;
   @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = DefaultConstants.DEFAULT_ES_DATE_FORMAT, timezone = "IST")
@@ -112,4 +120,11 @@ public class GenericPostVO extends GenericVO {
     this.updatedDate = updatedDate;
   }
 
+  public ShareDto getShareDto() {
+    return shareDto;
+  }
+
+  public void setShareDto(ShareDto shareDto) {
+    this.shareDto = shareDto;
+  }
 }

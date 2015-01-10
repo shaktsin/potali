@@ -1,5 +1,6 @@
 package com.potaliadmin.impl.service.cache;
 
+
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.potaliadmin.dto.internal.cache.es.framework.GenericPostVO;
 import com.potaliadmin.dto.internal.cache.es.framework.GenericVO;
@@ -29,6 +30,7 @@ public class ESCacheServiceImpl implements ESCacheService {
 
   static {
     objectMapper = new ObjectMapper();
+    //objectMapper.registerSubtypes(FullJobVO.class);
   }
 
   @Override

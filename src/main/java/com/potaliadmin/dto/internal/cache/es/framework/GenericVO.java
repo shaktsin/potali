@@ -1,8 +1,13 @@
 package com.potaliadmin.dto.internal.cache.es.framework;
 
+import com.fasterxml.jackson.annotation.JsonSubTypes;
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import com.potaliadmin.dto.internal.cache.es.job.FullJobVO;
+
 /**
  * Created by Shakti Singh on 12/28/14.
  */
+
 public class GenericVO {
 
   private Long id;

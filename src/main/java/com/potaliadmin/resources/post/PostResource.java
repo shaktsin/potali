@@ -1,6 +1,6 @@
 package com.potaliadmin.resources.post;
 
-import com.potaliadmin.constants.DefaultConstants;
+import com.potaliadmin.dto.web.request.posts.BookMarkPostRequest;
 import com.potaliadmin.dto.web.request.posts.PostReactionRequest;
 import com.potaliadmin.dto.web.request.posts.PostSyncRequest;
 import com.potaliadmin.dto.web.response.post.PostResponse;
@@ -39,14 +39,34 @@ public class PostResource {
     }
   }
 
-  @GET
+  @POST
   @Path("/imp")
   @Produces("application/json")
   @RequiresAuthentication
-  public PostResponse fetchImportantPosts(@QueryParam("pageNo") @DefaultValue(DefaultConstants.AND_APP_PAGE_NO_STR)int pageNo,
-                                         @QueryParam("perPage") @DefaultValue(DefaultConstants.AND_APP_PER_PAGE_STR)int perPage) {
+  public PostResponse fetchPostsByReactionIds(BookMarkPostRequest bookMarkPostRequest) {
+    try {
+      return getPostService().fetchPostsByReactionId(bookMarkPostRequest);
+    } catch (Exception e) {
+      PostResponse postResponse = new PostResponse();
+      postResponse.setException(Boolean.TRUE);
+      postResponse.addMessage(e.getMessage());
+      return postResponse;
+    }
+  }
 
-     return null;
+  @POST
+  @Path("/myposts")
+  @Produces("application/json")
+  @RequiresAuthentication
+  public PostResponse myPosts(BookMarkPostRequest bookMarkPostRequest) {
+    try {
+      return getPostService().fetchMyPosts(bookMarkPostRequest);
+    } catch (Exception e) {
+      PostResponse postResponse = new PostResponse();
+      postResponse.setException(Boolean.TRUE);
+      postResponse.addMessage(e.getMessage());
+      return postResponse;
+    }
   }
 
 

@@ -1,9 +1,14 @@
 package com.potaliadmin.impl.service.post;
 
+import com.potaliadmin.constants.post.EnumPostType;
+import com.potaliadmin.constants.reactions.EnumReactions;
 import com.potaliadmin.domain.reactions.PostReactions;
+import com.potaliadmin.dto.internal.cache.es.framework.GenericPostVO;
 import com.potaliadmin.dto.internal.cache.es.post.PostReactionVO;
+import com.potaliadmin.dto.web.request.posts.BookMarkPostRequest;
 import com.potaliadmin.dto.web.request.posts.PostReactionRequest;
 import com.potaliadmin.dto.web.response.post.GenericPostReactionResponse;
+import com.potaliadmin.dto.web.response.post.GenericPostResponse;
 import com.potaliadmin.dto.web.response.post.PostResponse;
 import com.potaliadmin.dto.web.response.post.PostSyncResponse;
 import com.potaliadmin.dto.web.response.user.UserResponse;
@@ -14,13 +19,23 @@ import com.potaliadmin.pact.dao.post.PostReactionDao;
 import com.potaliadmin.pact.service.cache.ESCacheService;
 import com.potaliadmin.pact.service.post.PostService;
 import com.potaliadmin.pact.service.users.LoginService;
+import com.potaliadmin.pact.service.users.UserService;
 import org.elasticsearch.action.count.CountResponse;
+import org.elasticsearch.action.search.MultiSearchRequestBuilder;
+import org.elasticsearch.action.search.SearchRequestBuilder;
+import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.index.query.*;
+import org.elasticsearch.rest.RestStatus;
+import org.elasticsearch.search.SearchHit;
+import org.elasticsearch.search.SearchHits;
+import org.elasticsearch.search.sort.SortOrder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 /**
  * Created by Shakti Singh on 12/28/14.
@@ -29,13 +44,13 @@ import java.util.Date;
 public class PostServiceImpl implements PostService {
 
   @Autowired
-  LoginService loginService;
-
-  @Autowired
   PostReactionDao postReactionDao;
 
   @Autowired
   ESCacheService esCacheService;
+
+  @Autowired
+  UserService userService;
 
   public static final String REACTION_INDEX = "post_reactions";
   private static final String INDEX = "ofc";
@@ -49,7 +64,7 @@ public class PostServiceImpl implements PostService {
     if (!postReactionRequest.validate()) {
       throw new InValidInputException("Not a valid input");
     }
-    UserResponse userResponse = getLoginService().getLoggedInUser();
+    UserResponse userResponse = getUserService().getLoggedInUser();
     if (userResponse == null) {
       throw new UnAuthorizedAccessException("UnAuthorized Action!");
     }
@@ -90,26 +105,98 @@ public class PostServiceImpl implements PostService {
   }
 
   @Override
-  public PostResponse fetchImportantPosts(int pageNo, int perPage) {
+  public PostResponse fetchPostsByReactionId(BookMarkPostRequest bookMarkPostRequest) {
     long totalHits=0;
-    UserResponse userResponse = getLoginService().getLoggedInUser();
+    int pageNo = bookMarkPostRequest.getPageNo();
+    int perPage = bookMarkPostRequest.getPerPage();
+
+    UserResponse userResponse = getUserService().getLoggedInUser();
 
     if (userResponse == null) {
       throw new InValidInputException("USER CANNOT BE NULL");
     }
+    BoolFilterBuilder boolFilterBuilder = FilterBuilders.boolFilter();
+    boolFilterBuilder.must(FilterBuilders.termFilter("userId", userResponse.getId()));
+    boolFilterBuilder.must(FilterBuilders.termFilter("reactionId", bookMarkPostRequest.getActionId()));
+    HasChildFilterBuilder hasChildFilterBuilder = FilterBuilders.hasChildFilter(REACTION_INDEX, boolFilterBuilder);
+
+    SearchResponse searchResponse = ESCacheManager.getInstance().getClient()
+                                  .prepareSearch(INDEX).setTypes(JOB_TYPE)
+                                  .setPostFilter(hasChildFilterBuilder).addSort("postId", SortOrder.DESC)
+                                  .setFrom(pageNo * perPage).setSize(perPage).execute().actionGet();
 
 
+    List<GenericPostResponse> genericPostResponseList = new ArrayList<GenericPostResponse>();
+    if (searchResponse != null && RestStatus.OK.getStatus() == searchResponse.status().getStatus()) {
+      SearchHits searchHits = searchResponse.getHits();
+      totalHits = searchHits.getTotalHits();
 
-    FilterBuilders.boolFilter().must();
-    //boolFilterBuilder.must(FilterBuilders.ter);
-    //HasChildFilterBuilder hasChildFilterBuilder = FilterBuilders.hasChildFilter();
+      for (SearchHit searchHit : searchHits) {
+        Class rClass = EnumPostType.getPostTypeByName(searchHit.getType()).getaClass();
+        GenericPostVO genericPostVO = (GenericPostVO)getEsCacheService().parseResponse(searchHit, rClass);
+        if (genericPostVO != null) {
+          UserResponse postUser = getUserService().findById(genericPostVO.getUserId());
+          GenericPostResponse genericPostResponse = new GenericPostResponse(genericPostVO, postUser);
+          genericPostResponse.setPostType(EnumPostType.getPostTypeByName(searchHit.getType()).getId());
+          genericPostResponseList.add(genericPostResponse);
+        }
+      }
+    }
 
-
-    return null;
+    PostResponse postResponse = new PostResponse();
+    postResponse.setPosts(genericPostResponseList);
+    postResponse.setPageNo(pageNo);
+    postResponse.setPerPage(perPage);
+    postResponse.setTotalResults(totalHits);
+    return postResponse;
   }
 
-  public LoginService getLoginService() {
-    return loginService;
+  @Override
+  public PostResponse fetchMyPosts(BookMarkPostRequest bookMarkPostRequest) {
+    long totalHits=0;
+    int pageNo = bookMarkPostRequest.getPageNo();
+    int perPage = bookMarkPostRequest.getPerPage();
+
+    UserResponse userResponse = getUserService().getLoggedInUser();
+
+    if (userResponse == null) {
+      throw new InValidInputException("USER CANNOT BE NULL");
+    }
+    TermFilterBuilder termFilterBuilder = FilterBuilders.termFilter("userId", userResponse.getId());
+
+    SearchResponse searchResponse = ESCacheManager.getInstance().getClient()
+        .prepareSearch(INDEX).setTypes(JOB_TYPE)
+        .setPostFilter(termFilterBuilder).addSort("postId", SortOrder.DESC)
+        .setFrom(pageNo * perPage).setSize(perPage).execute().actionGet();
+
+
+    List<GenericPostResponse> genericPostResponseList = new ArrayList<GenericPostResponse>();
+    if (searchResponse != null && RestStatus.OK.getStatus() == searchResponse.status().getStatus()) {
+      SearchHits searchHits = searchResponse.getHits();
+      totalHits = searchHits.getTotalHits();
+
+      for (SearchHit searchHit : searchHits) {
+        Class rClass = EnumPostType.getPostTypeByName(searchHit.getType()).getaClass();
+        GenericPostVO genericPostVO = (GenericPostVO)getEsCacheService().parseResponse(searchHit, rClass);
+        if (genericPostVO != null) {
+          UserResponse postUser = getUserService().findById(genericPostVO.getUserId());
+          GenericPostResponse genericPostResponse = new GenericPostResponse(genericPostVO, postUser);
+          genericPostResponse.setPostType(EnumPostType.getPostTypeByName(searchHit.getType()).getId());
+          genericPostResponseList.add(genericPostResponse);
+        }
+      }
+    }
+
+    PostResponse postResponse = new PostResponse();
+    postResponse.setPosts(genericPostResponseList);
+    postResponse.setPageNo(pageNo);
+    postResponse.setPerPage(perPage);
+    postResponse.setTotalResults(totalHits);
+    return postResponse;
+  }
+
+  public UserService getUserService() {
+    return userService;
   }
 
   public PostReactionDao getPostReactionDao() {

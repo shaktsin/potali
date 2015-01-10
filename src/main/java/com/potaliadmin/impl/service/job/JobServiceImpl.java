@@ -291,34 +291,9 @@ public class JobServiceImpl implements JobService {
       for (SearchHit searchHit : searchHits) {
         FullJobVO fullJobVO = (FullJobVO)getEsCacheService().parseResponse(searchHit, FullJobVO.class);
         if (fullJobVO != null) {
-          GenericPostResponse genericPostResponse = new GenericPostResponse();
-          genericPostResponse.setPostId(fullJobVO.getPostId());
-          genericPostResponse.setSubject(fullJobVO.getSubject());
-
-          ReplyDto replyDto = new ReplyDto(-1, -1, -1);
-          if (StringUtils.isNotBlank(fullJobVO.getReplyEmail())) {
-            replyDto.setReplyEmail(EnumReactions.REPLY_VIA_EMAIL.getId());
-          }
-          if (StringUtils.isNotBlank(fullJobVO.getReplyPhone())) {
-            replyDto.setReplyEmail(EnumReactions.REPLY_VIA_PHONE.getId());
-          }
-          if (StringUtils.isNotBlank(fullJobVO.getReplyWatsApp())) {
-            replyDto.setReplyEmail(EnumReactions.REPLY_VIA_WATSAPP.getId());
-          }
-          genericPostResponse.setReplyDto(replyDto);
-
-          genericPostResponse.setShareDto(fullJobVO.getShareDto());
-
-          genericPostResponse.setPostedOn(DateUtils.getPostedOnDate(fullJobVO.getCreatedDate()));
-          genericPostResponse.setContent(BaseUtil.trimContent(fullJobVO.getContent()));
-
           // set User
           UserResponse postUser = getUserService().findById(fullJobVO.getUserId());
-          UserDto userDto = new UserDto();
-          userDto.setName(postUser.getName());
-          userDto.setId(postUser.getId());
-          userDto.setImage(postUser.getImage());
-          genericPostResponse.setUserDto(userDto);
+          GenericPostResponse genericPostResponse = new GenericPostResponse(fullJobVO, postUser);
           genericPostResponseList.add(genericPostResponse);
         }
       }

@@ -1,5 +1,6 @@
 package com.potaliadmin.pact.service.post;
 
+import com.potaliadmin.dto.web.request.posts.BookMarkPostRequest;
 import com.potaliadmin.dto.web.request.posts.PostReactionRequest;
 import com.potaliadmin.dto.web.response.post.GenericPostReactionResponse;
 import com.potaliadmin.dto.web.response.post.PostResponse;
@@ -16,5 +17,7 @@ public interface PostService {
 
   PostSyncResponse syncPost(Long postId);
 
-  PostResponse fetchImportantPosts(int pageNo, int perPage);
+  PostResponse fetchPostsByReactionId(BookMarkPostRequest bookMarkPostRequest);
+
+  PostResponse fetchMyPosts(BookMarkPostRequest bookMarkPostRequest);
 }

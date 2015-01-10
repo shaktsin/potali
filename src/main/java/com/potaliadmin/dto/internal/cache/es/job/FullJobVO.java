@@ -1,5 +1,7 @@
 package com.potaliadmin.dto.internal.cache.es.job;
 
+
+import com.fasterxml.jackson.annotation.JsonTypeName;
 import com.potaliadmin.domain.address.City;
 import com.potaliadmin.domain.industry.IndustryRoles;
 import com.potaliadmin.domain.job.Job;
@@ -7,6 +9,7 @@ import com.potaliadmin.domain.post.PostBlob;
 import com.potaliadmin.dto.internal.cache.es.framework.GenericPostVO;
 import com.potaliadmin.dto.web.response.post.ShareDto;
 import com.potaliadmin.framework.cache.industry.IndustryCache;
+
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -25,7 +28,7 @@ public class FullJobVO extends GenericPostVO {
   private boolean timeSpecified;
   private List<CityDto> locationList;
   private List<IndustryRolesDto> industryRolesList;
-  private ShareDto shareDto;
+
 
   public FullJobVO() {
     super();
@@ -55,7 +58,8 @@ public class FullJobVO extends GenericPostVO {
     tempShareDto.setShareEmail(job.getShareEmail());
     tempShareDto.setSharePhone(job.getSharePhone());
     tempShareDto.setShareWatsApp(job.getShareWatsApp());
-    this.shareDto = tempShareDto;
+    //super.setShareDto(tempShareDto);
+    this.setShareDto(tempShareDto);
 
     List<CityDto> cityDtoList = new ArrayList<CityDto>();
     for (City city : job.getCitySet()) {
@@ -144,13 +148,5 @@ public class FullJobVO extends GenericPostVO {
 
   public void setIndustryRolesList(List<IndustryRolesDto> industryRolesList) {
     this.industryRolesList = industryRolesList;
-  }
-
-  public ShareDto getShareDto() {
-    return shareDto;
-  }
-
-  public void setShareDto(ShareDto shareDto) {
-    this.shareDto = shareDto;
   }
 }
