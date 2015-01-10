@@ -6,4 +6,9 @@ package com.potaliadmin.pact.service.cache;
 public interface AppCacheService {
 
   public void reloadAll();
+
+  /*
+  * remove later
+  * */
+  public void reloadUser();
 }

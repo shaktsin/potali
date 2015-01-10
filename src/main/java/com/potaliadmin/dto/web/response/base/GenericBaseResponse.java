@@ -3,13 +3,14 @@ package com.potaliadmin.dto.web.response.base;
 import com.potaliadmin.constants.json.DtoJsonConstants;
 import com.potaliadmin.framework.json.JSONObject;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
 /**
  * Created by Shakti Singh on 10/6/14.
  */
-public class GenericBaseResponse /*extends JSONObject*/ {
+public class GenericBaseResponse implements Serializable/*extends JSONObject*/ {
 
   boolean exception;
   List<String> messages = new ArrayList<String>();
