@@ -43,6 +43,22 @@ public class PostResource {
   @Path("/imp")
   @Produces("application/json")
   @RequiresAuthentication
+  public PostResponse postComment(BookMarkPostRequest bookMarkPostRequest) {
+    try {
+      return getPostService().fetchPostsByReactionId(bookMarkPostRequest);
+    } catch (Exception e) {
+      PostResponse postResponse = new PostResponse();
+      postResponse.setException(Boolean.TRUE);
+      postResponse.addMessage(e.getMessage());
+      return postResponse;
+    }
+  }
+
+
+  @POST
+  @Path("/comment")
+  @Produces("application/json")
+  @RequiresAuthentication
   public PostResponse fetchPostsByReactionIds(BookMarkPostRequest bookMarkPostRequest) {
     try {
       return getPostService().fetchPostsByReactionId(bookMarkPostRequest);

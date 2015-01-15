@@ -224,7 +224,7 @@ public class JobServiceImpl implements JobService {
     MatchAllFilterBuilder matchAllFilterBuilder = new MatchAllFilterBuilder();
     HasChildFilterBuilder hasChildFilterBuilder = new HasChildFilterBuilder(POST_REACTIONS, matchAllFilterBuilder);
     orFilterBuilder.add(FilterBuilders.notFilter(hasChildFilterBuilder));
-    orFilterBuilder.add(FilterBuilders.notFilter(FilterBuilders.termFilter("userId", userResponse.getId())));
+    //orFilterBuilder.add(FilterBuilders.notFilter(FilterBuilders.termFilter("userId", userResponse.getId())));
 
 
     BoolFilterBuilder boolFilterBuilder = new BoolFilterBuilder();

@@ -1,11 +1,13 @@
 package com.potaliadmin.impl.service.post;
 
+import com.potaliadmin.constants.cache.ESIndexKeys;
 import com.potaliadmin.constants.post.EnumPostType;
 import com.potaliadmin.constants.reactions.EnumReactions;
 import com.potaliadmin.domain.reactions.PostReactions;
 import com.potaliadmin.dto.internal.cache.es.framework.GenericPostVO;
 import com.potaliadmin.dto.internal.cache.es.post.PostReactionVO;
 import com.potaliadmin.dto.web.request.posts.BookMarkPostRequest;
+import com.potaliadmin.dto.web.request.posts.PostCommentRequest;
 import com.potaliadmin.dto.web.request.posts.PostReactionRequest;
 import com.potaliadmin.dto.web.response.post.GenericPostReactionResponse;
 import com.potaliadmin.dto.web.response.post.GenericPostResponse;
@@ -52,9 +54,7 @@ public class PostServiceImpl implements PostService {
   @Autowired
   UserService userService;
 
-  public static final String REACTION_INDEX = "post_reactions";
-  private static final String INDEX = "ofc";
-  private static final String JOB_TYPE = "job";
+
 
   @Override
   public GenericPostReactionResponse postReaction(PostReactionRequest postReactionRequest) {
@@ -76,7 +76,7 @@ public class PostServiceImpl implements PostService {
     GenericPostReactionResponse genericPostReactionResponse = new GenericPostReactionResponse();
     if (postReactions != null) {
       PostReactionVO postReactionVO = new PostReactionVO(postReactions);
-      boolean published = getEsCacheService().put(REACTION_INDEX, postReactionVO, postReactionVO.getPostId());
+      boolean published = getEsCacheService().put(ESIndexKeys.REACTION_INDEX, postReactionVO, postReactionVO.getPostId());
       // for comments and other things do something else
       genericPostReactionResponse.setSuccess(published);
     } else {
@@ -91,7 +91,7 @@ public class PostServiceImpl implements PostService {
 
 
     CountResponse countResponse = ESCacheManager.getInstance().getClient()
-        .prepareCount(INDEX).setTypes(JOB_TYPE)
+        .prepareCount(ESIndexKeys.INDEX).setTypes(ESIndexKeys.JOB_TYPE)
         .setQuery(QueryBuilders.rangeQuery("postId").gt(postId).includeLower(false).includeUpper(false))
         .execute().actionGet();
 
@@ -102,6 +102,25 @@ public class PostServiceImpl implements PostService {
       postSyncResponse.addMessage("Something went wrong, please try again");
     }
     return postSyncResponse;
+  }
+
+  @Override
+  public GenericPostReactionResponse postComment(PostCommentRequest postCommentRequest) {
+    if (postCommentRequest != null && !postCommentRequest.validate()) {
+      throw new InValidInputException("INVALID_REQUEST");
+    }
+
+    UserResponse userResponse = getUserService().getLoggedInUser();
+
+    if (userResponse == null) {
+      throw new InValidInputException("USER CANNOT BE NULL");
+    }
+
+    // first post reaction
+
+
+
+    return null;
   }
 
   @Override
@@ -118,10 +137,10 @@ public class PostServiceImpl implements PostService {
     BoolFilterBuilder boolFilterBuilder = FilterBuilders.boolFilter();
     boolFilterBuilder.must(FilterBuilders.termFilter("userId", userResponse.getId()));
     boolFilterBuilder.must(FilterBuilders.termFilter("reactionId", bookMarkPostRequest.getActionId()));
-    HasChildFilterBuilder hasChildFilterBuilder = FilterBuilders.hasChildFilter(REACTION_INDEX, boolFilterBuilder);
+    HasChildFilterBuilder hasChildFilterBuilder = FilterBuilders.hasChildFilter(ESIndexKeys.REACTION_INDEX, boolFilterBuilder);
 
     SearchResponse searchResponse = ESCacheManager.getInstance().getClient()
-                                  .prepareSearch(INDEX).setTypes(JOB_TYPE)
+                                  .prepareSearch(ESIndexKeys.INDEX).setTypes(ESIndexKeys.JOB_TYPE)
                                   .setPostFilter(hasChildFilterBuilder).addSort("postId", SortOrder.DESC)
                                   .setFrom(pageNo * perPage).setSize(perPage).execute().actionGet();
 
@@ -165,7 +184,7 @@ public class PostServiceImpl implements PostService {
     TermFilterBuilder termFilterBuilder = FilterBuilders.termFilter("userId", userResponse.getId());
 
     SearchResponse searchResponse = ESCacheManager.getInstance().getClient()
-        .prepareSearch(INDEX).setTypes(JOB_TYPE)
+        .prepareSearch(ESIndexKeys.INDEX).setTypes(ESIndexKeys.JOB_TYPE)
         .setPostFilter(termFilterBuilder).addSort("postId", SortOrder.DESC)
         .setFrom(pageNo * perPage).setSize(perPage).execute().actionGet();
 

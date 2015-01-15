@@ -19,13 +19,13 @@ public class Comment implements Serializable {
   @Column(name = "comment", nullable = false, length = 65535)
   private String comment;
 
-  @Temporal(TemporalType.DATE)
+  @Temporal(TemporalType.TIMESTAMP)
   @Column(name = "created_date", nullable = false)
   private Date createDate = new Date();
 
   @Temporal(TemporalType.TIMESTAMP)
   @Column(name = "updated_date")
-  private Date updatedDate;
+  private Date updatedDate = new Date();
 
   @Column(name = "post_id", nullable = false)
   private Long postId;
