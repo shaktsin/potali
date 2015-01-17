@@ -8,4 +8,8 @@ public class ESIndexKeys {
   public static final String INDEX = "ofc";
   public static final String REACTION_INDEX = "post_reactions";
   public static final String JOB_TYPE = "job";
+
+
+  //generic post
+  public static final String POST = "post";
 }
