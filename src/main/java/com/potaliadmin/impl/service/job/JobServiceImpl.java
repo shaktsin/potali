@@ -36,6 +36,7 @@ import com.potaliadmin.pact.dao.job.JobDao;
 import com.potaliadmin.pact.dao.post.PostBlobDao;
 import com.potaliadmin.pact.service.cache.ESCacheService;
 import com.potaliadmin.pact.service.job.JobService;
+import com.potaliadmin.pact.service.post.PostService;
 import com.potaliadmin.pact.service.users.LoginService;
 import com.potaliadmin.pact.service.users.UserService;
 import com.potaliadmin.util.BaseUtil;
@@ -82,6 +83,8 @@ public class JobServiceImpl implements JobService {
 
   @Autowired
   UserService userService;
+  @Autowired
+  PostService postService;
 
   private static final String INDEX = "ofc";
   private static final String TYPE = "job";
@@ -368,6 +371,8 @@ public class JobServiceImpl implements JobService {
       PostVO postVO = (PostVO) baseElasticVO;
       UserResponse postUser = getUserService().findById(postVO.getUserId());
       GenericPostResponse genericPostResponse = new GenericPostResponse(postVO, postUser);
+      boolean isImp = getPostService().isPostImportantForUser(postId, userResponse.getId());
+      genericPostResponse.setImportant(isImp);
       genericPostResponseList.add(genericPostResponse);
     }
 
@@ -548,5 +553,9 @@ public class JobServiceImpl implements JobService {
 
   public BaseESService getBaseESService() {
     return baseESService;
+  }
+
+  public PostService getPostService() {
+    return postService;
   }
 }

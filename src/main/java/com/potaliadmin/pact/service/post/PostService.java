@@ -24,4 +24,6 @@ public interface PostService {
   PostResponse fetchMyPosts(BookMarkPostRequest bookMarkPostRequest);
 
   CommentListResponse getAllComments(AllPostReactionRequest allPostReactionRequest);
+
+  boolean isPostImportantForUser(Long postId, Long userId);
 }

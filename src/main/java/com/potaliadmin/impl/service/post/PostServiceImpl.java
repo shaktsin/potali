@@ -199,7 +199,7 @@ public class PostServiceImpl implements PostService {
     boolFilterBuilder.must(FilterBuilders.termFilter("reactionId", bookMarkPostRequest.getActionId()));
     HasChildFilterBuilder hasChildFilterBuilder = FilterBuilders.hasChildFilter(ESIndexKeys.REACTION_INDEX, boolFilterBuilder);
 
-    SearchResponse searchResponse = ESCacheManager.getInstance().getClient()
+    /*SearchResponse searchResponse = ESCacheManager.getInstance().getClient()
                                   .prepareSearch(ESIndexKeys.INDEX).setTypes(ESIndexKeys.JOB_TYPE)
                                   .setPostFilter(hasChildFilterBuilder).addSort("postId", SortOrder.DESC)
                                   .setFrom(pageNo * perPage).setSize(perPage).execute().actionGet();
@@ -226,6 +226,24 @@ public class PostServiceImpl implements PostService {
     postResponse.setPosts(genericPostResponseList);
     postResponse.setPageNo(pageNo);
     postResponse.setPerPage(perPage);
+    postResponse.setTotalResults(totalHits);*/
+
+    ESSearchFilter esSearchFilter =
+        new ESSearchFilter().setFilterBuilder(hasChildFilterBuilder).addSortedMap("postId", SortOrder.DESC).setPageNo(pageNo).setPerPage(perPage);
+
+    ESSearchResponse esSearchResponse = getBaseESService().search(esSearchFilter, PostVO.class);
+    List<BaseElasticVO> baseElasticVOs = esSearchResponse.getBaseElasticVOs();
+    List<GenericPostResponse> genericPostResponseList = new ArrayList<GenericPostResponse>();
+    for (BaseElasticVO baseElasticVO : baseElasticVOs) {
+      PostVO postVO = (PostVO) baseElasticVO;
+      UserResponse postUser = getUserService().findById(postVO.getUserId());
+      GenericPostResponse genericPostResponse = new GenericPostResponse(postVO, postUser);
+      genericPostResponseList.add(genericPostResponse);
+    }
+    PostResponse postResponse = new PostResponse();
+    postResponse.setPosts(genericPostResponseList);
+    postResponse.setPageNo(pageNo);
+    postResponse.setPerPage(perPage);
     postResponse.setTotalResults(totalHits);
     return postResponse;
   }
@@ -243,29 +261,18 @@ public class PostServiceImpl implements PostService {
     }
     TermFilterBuilder termFilterBuilder = FilterBuilders.termFilter("userId", userResponse.getId());
 
-    SearchResponse searchResponse = ESCacheManager.getInstance().getClient()
-        .prepareSearch(ESIndexKeys.INDEX).setTypes(ESIndexKeys.JOB_TYPE)
-        .setPostFilter(termFilterBuilder).addSort("postId", SortOrder.DESC)
-        .setFrom(pageNo * perPage).setSize(perPage).execute().actionGet();
+    ESSearchFilter esSearchFilter =
+        new ESSearchFilter().setFilterBuilder(termFilterBuilder).addSortedMap("postId", SortOrder.DESC).setPageNo(pageNo).setPerPage(perPage);
 
-
+    ESSearchResponse esSearchResponse = getBaseESService().search(esSearchFilter, PostVO.class);
+    List<BaseElasticVO> baseElasticVOs = esSearchResponse.getBaseElasticVOs();
     List<GenericPostResponse> genericPostResponseList = new ArrayList<GenericPostResponse>();
-    if (searchResponse != null && RestStatus.OK.getStatus() == searchResponse.status().getStatus()) {
-      SearchHits searchHits = searchResponse.getHits();
-      totalHits = searchHits.getTotalHits();
-
-      for (SearchHit searchHit : searchHits) {
-        Class rClass = EnumPostType.getPostTypeByName(searchHit.getType()).getaClass();
-        GenericPostVO genericPostVO = (GenericPostVO)getEsCacheService().parseResponse(searchHit, rClass);
-        if (genericPostVO != null) {
-          UserResponse postUser = getUserService().findById(genericPostVO.getUserId());
-          GenericPostResponse genericPostResponse = new GenericPostResponse(genericPostVO, postUser);
-          genericPostResponse.setPostType(EnumPostType.getPostTypeByName(searchHit.getType()).getId());
-          genericPostResponseList.add(genericPostResponse);
-        }
-      }
+    for (BaseElasticVO baseElasticVO : baseElasticVOs) {
+      PostVO postVO = (PostVO) baseElasticVO;
+      UserResponse postUser = getUserService().findById(postVO.getUserId());
+      GenericPostResponse genericPostResponse = new GenericPostResponse(postVO, postUser);
+      genericPostResponseList.add(genericPostResponse);
     }
-
     PostResponse postResponse = new PostResponse();
     postResponse.setPosts(genericPostResponseList);
     postResponse.setPageNo(pageNo);
@@ -315,6 +322,19 @@ public class PostServiceImpl implements PostService {
 
     }
     return commentListResponse;
+  }
+
+  @Override
+  public boolean isPostImportantForUser(Long postId, Long userId) {
+    boolean isImp = false;
+    AndFilterBuilder andFilterBuilder = FilterBuilders.andFilter(FilterBuilders.termFilter("userId", userId),
+        FilterBuilders.termFilter("postId", postId), FilterBuilders.termFilter("reactionId", EnumReactions.MARK_AS_IMPORTANT.getId()));
+
+    ESSearchFilter esSearchFilter =
+        new ESSearchFilter().setFilterBuilder(andFilterBuilder);
+
+    ESSearchResponse esSearchResponse = getBaseESService().search(esSearchFilter, PostReactionVO.class);
+    return esSearchResponse.getTotalResults() > 0;
   }
 
   private GenericPostReactionResponse generatePostReactionResponse(PostVO postVO, PostReactionVO postReactionVO) {
