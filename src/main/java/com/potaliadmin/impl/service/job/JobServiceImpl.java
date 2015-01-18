@@ -1,6 +1,7 @@
 package com.potaliadmin.impl.service.job;
 
 import com.potaliadmin.constants.DefaultConstants;
+import com.potaliadmin.constants.post.EnumPostType;
 import com.potaliadmin.constants.query.EnumSearchOperation;
 import com.potaliadmin.constants.reactions.EnumReactions;
 import com.potaliadmin.domain.industry.Industry;
@@ -17,6 +18,8 @@ import com.potaliadmin.dto.web.request.jobs.JobCreateRequest;
 import com.potaliadmin.dto.web.response.job.JobResponse;
 import com.potaliadmin.dto.web.response.job.JobSearchResponse;
 import com.potaliadmin.dto.web.response.job.PrepareJobCreateResponse;
+import com.potaliadmin.dto.web.response.post.CommentListResponse;
+import com.potaliadmin.dto.web.response.post.CommentResponse;
 import com.potaliadmin.dto.web.response.post.GenericPostResponse;
 import com.potaliadmin.dto.web.response.post.ReplyDto;
 import com.potaliadmin.dto.web.response.user.UserDto;
@@ -26,6 +29,9 @@ import com.potaliadmin.framework.cache.ESCacheManager;
 import com.potaliadmin.framework.cache.address.CityCache;
 import com.potaliadmin.framework.cache.industry.IndustryCache;
 import com.potaliadmin.framework.cache.industry.IndustryRolesCache;
+import com.potaliadmin.framework.elasticsearch.BaseESService;
+import com.potaliadmin.framework.elasticsearch.ESSearchFilter;
+import com.potaliadmin.framework.elasticsearch.response.ESSearchResponse;
 import com.potaliadmin.pact.dao.job.JobDao;
 import com.potaliadmin.pact.dao.post.PostBlobDao;
 import com.potaliadmin.pact.service.cache.ESCacheService;
@@ -34,6 +40,10 @@ import com.potaliadmin.pact.service.users.LoginService;
 import com.potaliadmin.pact.service.users.UserService;
 import com.potaliadmin.util.BaseUtil;
 import com.potaliadmin.util.DateUtils;
+import com.potaliadmin.vo.BaseElasticVO;
+import com.potaliadmin.vo.comment.CommentVO;
+import com.potaliadmin.vo.job.JobVO;
+import com.potaliadmin.vo.post.PostVO;
 import org.apache.commons.lang.StringUtils;
 import org.elasticsearch.action.get.GetResponse;
 import org.elasticsearch.action.search.SearchResponse;
@@ -67,6 +77,8 @@ public class JobServiceImpl implements JobService {
 
   @Autowired
   ESCacheService esCacheService;
+  @Autowired
+  BaseESService baseESService;
 
   @Autowired
   UserService userService;
@@ -153,7 +165,7 @@ public class JobServiceImpl implements JobService {
       return jobResponse;
     }
 
-    //push in ES
+    /*//push in ES
     FullJobVO fullJobVO = new FullJobVO(job, postBlob);
     boolean published = getEsCacheService().put("job", fullJobVO, null);
 
@@ -164,7 +176,30 @@ public class JobServiceImpl implements JobService {
       return jobResponse;
     }
 
-    return createJobResponse(fullJobVO, userResponse);
+    return createJobResponse(fullJobVO, userResponse);*/
+
+    PostVO postVO = new PostVO(job, postBlob);
+    postVO.setPostType(EnumPostType.JOBS.getId());
+    boolean published = getBaseESService().put(postVO);
+    if (published) {
+      JobVO jobVO = new JobVO(job);
+      boolean isJobPublished = getBaseESService().put(jobVO);
+      if (!isJobPublished) {
+        getBaseESService().delete(postVO.getId(), PostVO.class);
+        JobResponse jobResponse = new JobResponse();
+        jobResponse.setException(true);
+        jobResponse.addMessage("Something unexpected occurred ! Try Again");
+        return jobResponse;
+      }
+      return createJobResponse(postVO, jobVO, userResponse);
+    } else {
+      JobResponse jobResponse = new JobResponse();
+      jobResponse.setException(true);
+      jobResponse.addMessage("Something unexpected occurred ! Try Again");
+      return jobResponse;
+    }
+
+
   }
 
   @Override
@@ -178,7 +213,7 @@ public class JobServiceImpl implements JobService {
       throw new InValidInputException("Post Id cannot be null");
     }
 
-    GetResponse getResponse = ESCacheManager.getInstance().getClient()
+    /*GetResponse getResponse = ESCacheManager.getInstance().getClient()
         .prepareGet(INDEX, TYPE, postId.toString()).execute().actionGet();
 
 
@@ -189,6 +224,46 @@ public class JobServiceImpl implements JobService {
       JobResponse jobResponse = new JobResponse();
       jobResponse.setException(Boolean.TRUE);
       jobResponse.addMessage("Don't find any record with specified id");
+      return jobResponse;
+    }*/
+
+    PostVO postVO = (PostVO)getBaseESService().get(postId, null,PostVO.class);
+    JobVO jobVO = (JobVO)getBaseESService().get(postId, postId,JobVO.class);
+    if (postVO != null && jobVO != null) {
+      JobResponse jobResponse = createJobResponse(postVO, jobVO, userResponse);
+
+      TermFilterBuilder termFilterBuilder = FilterBuilders.termFilter("parentId", postVO.getPostId());
+
+      ESSearchFilter esSearchFilter =
+          new ESSearchFilter().setFilterBuilder(termFilterBuilder).addSortedMap("id", SortOrder.DESC)
+          .setPageNo(DefaultConstants.AND_APP_PAGE_NO).setPerPage(DefaultConstants.AND_APP_PER_PAGE);
+
+      ESSearchResponse esSearchResponse = getBaseESService().search(esSearchFilter, CommentVO.class);
+      if (esSearchResponse.getTotalResults() > 0) {
+        CommentListResponse commentListResponse = new CommentListResponse();
+        List<CommentResponse> commentResponses = new ArrayList<CommentResponse>();
+        for (BaseElasticVO baseElasticVO : esSearchResponse.getBaseElasticVOs()) {
+          CommentVO commentVO = (CommentVO) baseElasticVO;
+          CommentResponse commentResponse = new CommentResponse();
+          commentResponse.setContent(commentVO.getComment());
+          UserResponse commentUser = getUserService().findById(commentVO.getUserId());
+          UserDto userDto = new UserDto(commentUser);
+          commentResponse.setUserDto(userDto);
+          commentResponse.setPostId(Long.parseLong(commentVO.getParentId()));
+          commentResponse.setCommentedOn(DateUtils.getPostedOnDate(commentVO.getCommentedOn()));
+          commentResponses.add(commentResponse);
+        }
+        commentListResponse.setReorderCommentResponse(commentResponses);
+        commentListResponse.setPageNo(DefaultConstants.AND_APP_PAGE_NO);
+        commentListResponse.setPerPage(DefaultConstants.AND_APP_PER_PAGE);
+        commentListResponse.setTotalResults(esSearchResponse.getTotalResults());
+        jobResponse.setCommentListResponse(commentListResponse);
+      }
+      return jobResponse;
+    } else {
+      JobResponse jobResponse = new JobResponse();
+      jobResponse.setException(true);
+      jobResponse.addMessage("Something unexpected occurred ! Try Again");
       return jobResponse;
     }
   }
@@ -280,12 +355,28 @@ public class JobServiceImpl implements JobService {
       ));
     }
 
-    // put sorting
+
+    ESSearchFilter esSearchFilter = new ESSearchFilter().setFilterBuilder(andFilterBuilder)
+        .addSortedMap("id", SortOrder.DESC).setPageNo(pageNo).setPerPage(perPage);
+
+    ESSearchResponse esSearchResponse = getBaseESService().search(esSearchFilter, PostVO.class);
+
+    List<BaseElasticVO> postVOList = esSearchResponse.getBaseElasticVOs();
+
+    List<GenericPostResponse> genericPostResponseList = new ArrayList<GenericPostResponse>();
+    for (BaseElasticVO baseElasticVO : postVOList) {
+      PostVO postVO = (PostVO) baseElasticVO;
+      UserResponse postUser = getUserService().findById(postVO.getUserId());
+      GenericPostResponse genericPostResponse = new GenericPostResponse(postVO, postUser);
+      genericPostResponseList.add(genericPostResponse);
+    }
+
+    /*// put sorting
     SearchResponse response = ESCacheManager.getInstance().getClient().prepareSearch(INDEX)
         .setPostFilter(andFilterBuilder).addSort("postId", SortOrder.DESC)
         .setFrom(pageNo).setSize(perPage).execute().actionGet();
 
-    List<GenericPostResponse> genericPostResponseList = new ArrayList<GenericPostResponse>();
+
     if (response != null && RestStatus.OK.getStatus() == response.status().getStatus()) {
       SearchHits searchHits = response.getHits();
       totalHits = searchHits.getTotalHits();
@@ -302,9 +393,9 @@ public class JobServiceImpl implements JobService {
           genericPostResponseList.add(genericPostResponse);
         }
       }
-    }
+    }*/
     jobSearchResponse.setJobCreateResponseList(genericPostResponseList);
-    jobSearchResponse.setTotalResults(totalHits);
+    jobSearchResponse.setTotalResults(esSearchResponse.getTotalResults());
     jobSearchResponse.setPerPage(perPage);
     jobSearchResponse.setPageNo(pageNo);
 
@@ -359,6 +450,7 @@ public class JobServiceImpl implements JobService {
     return jobSearchResponse;
   }
 
+  //TODO: Depricate it
   private JobResponse createJobResponse(FullJobVO fullJobVO, UserResponse userResponse) {
     JobResponse jobResponse = new JobResponse();
     jobResponse.setPostId(fullJobVO.getPostId());
@@ -396,6 +488,44 @@ public class JobServiceImpl implements JobService {
     return jobResponse;
   }
 
+
+  private JobResponse createJobResponse(PostVO postVO, JobVO jobVO, UserResponse userResponse) {
+    JobResponse jobResponse = new JobResponse();
+    jobResponse.setPostId(postVO.getPostId());
+    jobResponse.setSubject(postVO.getSubject());
+    jobResponse.setContent(postVO.getContent());
+    jobResponse.setTo(jobVO.getTo());
+    jobResponse.setFrom(jobVO.getFrom());
+    jobResponse.setSalaryFrom(jobVO.getSalaryFrom());
+    jobResponse.setSalaryTo(jobVO.getSalaryTo());
+    jobResponse.setPostedOn(DateUtils.getPostedOnDate(postVO.getCreatedDate()));
+    //jobResponse.setReplyEmail(fullJobVO.getReplyEmail());
+    //jobResponse.setReplyPhone(fullJobVO.getReplyPhone());
+    //jobResponse.setReplyWatsApp(fullJobVO.getReplyWatsApp());
+
+    ReplyDto replyDto = new ReplyDto(-1, -1, -1);
+    if (StringUtils.isNotBlank(postVO.getReplyEmail())) {
+      replyDto.setReplyEmail(EnumReactions.REPLY_VIA_EMAIL.getId());
+    }
+    if (StringUtils.isNotBlank(postVO.getReplyPhone())) {
+      replyDto.setReplyEmail(EnumReactions.REPLY_VIA_PHONE.getId());
+    }
+    if (StringUtils.isNotBlank(postVO.getReplyWatsApp())) {
+      replyDto.setReplyEmail(EnumReactions.REPLY_VIA_WATSAPP.getId());
+    }
+    jobResponse.setReplyDto(replyDto);
+
+    jobResponse.setShareDto(postVO.getShareDto());
+
+    jobResponse.setLocations(jobVO.getLocationList());
+    jobResponse.setIndustryRolesDtoList(jobVO.getIndustryRolesList());
+    UserDto userDto = new UserDto();
+    userDto.setId(userResponse.getId());
+    userDto.setName(userResponse.getName());
+    jobResponse.setUserDto(userDto);
+    return jobResponse;
+  }
+
   public LoginService getLoginService() {
     return loginService;
   }
@@ -414,5 +544,9 @@ public class JobServiceImpl implements JobService {
 
   public UserService getUserService() {
     return userService;
+  }
+
+  public BaseESService getBaseESService() {
+    return baseESService;
   }
 }

@@ -1,5 +1,6 @@
 package com.potaliadmin.dto.web.response.user;
 
+
 /**
  * Created by Shakti Singh on 12/24/14.
  */
@@ -8,6 +9,14 @@ public class UserDto {
   private Long id;
   private String name;
   private String image;
+
+  public UserDto() {}
+
+  public UserDto(UserResponse userResponse) {
+    this.id = userResponse.getId();
+    this.name = userResponse.getName();
+    this.image = userResponse.getImage();
+  }
 
   public Long getId() {
     return id;

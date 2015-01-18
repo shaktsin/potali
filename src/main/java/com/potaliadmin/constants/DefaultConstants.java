@@ -38,4 +38,6 @@ public class DefaultConstants
 
   public static final List<String> ALLOWED_IMAGE_CONTENT_TYPE = Arrays.asList("image/png", "image/jpg", "image/jpeg");
   public static final String PROFILE = "profile";
+
+  public static final String SHARE_SUFFIX = "Shared By OfCampus";
 }

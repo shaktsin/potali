@@ -1,11 +1,7 @@
 package com.potaliadmin.resources.post;
 
-import com.potaliadmin.dto.web.request.posts.BookMarkPostRequest;
-import com.potaliadmin.dto.web.request.posts.PostReactionRequest;
-import com.potaliadmin.dto.web.request.posts.PostSyncRequest;
-import com.potaliadmin.dto.web.response.post.PostResponse;
-import com.potaliadmin.dto.web.response.post.GenericPostReactionResponse;
-import com.potaliadmin.dto.web.response.post.PostSyncResponse;
+import com.potaliadmin.dto.web.request.posts.*;
+import com.potaliadmin.dto.web.response.post.*;
 import com.potaliadmin.pact.service.post.PostService;
 import org.apache.shiro.authz.annotation.RequiresAuthentication;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -43,7 +39,7 @@ public class PostResource {
   @Path("/imp")
   @Produces("application/json")
   @RequiresAuthentication
-  public PostResponse postComment(BookMarkPostRequest bookMarkPostRequest) {
+  public PostResponse fetchPostsByReactionIds(BookMarkPostRequest bookMarkPostRequest) {
     try {
       return getPostService().fetchPostsByReactionId(bookMarkPostRequest);
     } catch (Exception e) {
@@ -59,14 +55,14 @@ public class PostResource {
   @Path("/comment")
   @Produces("application/json")
   @RequiresAuthentication
-  public PostResponse fetchPostsByReactionIds(BookMarkPostRequest bookMarkPostRequest) {
+  public CommentResponse postComment(PostCommentRequest postCommentRequest) {
     try {
-      return getPostService().fetchPostsByReactionId(bookMarkPostRequest);
+      return getPostService().postComment(postCommentRequest);
     } catch (Exception e) {
-      PostResponse postResponse = new PostResponse();
-      postResponse.setException(Boolean.TRUE);
-      postResponse.addMessage(e.getMessage());
-      return postResponse;
+      CommentResponse commentResponse = new CommentResponse();
+      commentResponse.setException(Boolean.TRUE);
+      commentResponse.addMessage(e.getMessage());
+      return commentResponse;
     }
   }
 
@@ -106,6 +102,21 @@ public class PostResource {
       postSyncResponse.setException(true);
       postSyncResponse.addMessage(e.getMessage());
       return postSyncResponse;
+    }
+  }
+
+  @POST
+  @Path("/comment/all")
+  @Produces("application/json")
+  @RequiresAuthentication
+  public CommentListResponse getAllComments(AllPostReactionRequest allPostReactionRequest) {
+    try {
+      return getPostService().getAllComments(allPostReactionRequest);
+    } catch (Exception e) {
+      CommentListResponse commentListResponse = new CommentListResponse();
+      commentListResponse.setException(true);
+      commentListResponse.addMessage(e.getMessage());
+      return commentListResponse;
     }
   }
 

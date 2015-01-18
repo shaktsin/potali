@@ -7,6 +7,7 @@ import com.potaliadmin.dto.web.response.user.UserDto;
 import com.potaliadmin.dto.web.response.user.UserResponse;
 import com.potaliadmin.util.BaseUtil;
 import com.potaliadmin.util.DateUtils;
+import com.potaliadmin.vo.post.PostVO;
 import org.apache.commons.lang.StringUtils;
 
 import java.util.Date;
@@ -50,6 +51,37 @@ public class GenericPostResponse extends GenericBaseResponse {
 
     this.setPostedOn(DateUtils.getPostedOnDate(genericPostVO.getCreatedDate()));
     this.setContent(BaseUtil.trimContent(genericPostVO.getContent()));
+
+    // set User
+    //UserResponse postUser = getUserService().findById(fullJobVO.getUserId());
+    UserDto userDto = new UserDto();
+    userDto.setName(postUser.getName());
+    userDto.setId(postUser.getId());
+    userDto.setImage(postUser.getImage());
+    this.setUserDto(userDto);
+
+  }
+
+  public GenericPostResponse(PostVO postVO, UserResponse postUser) {
+    this.setPostId(postVO.getPostId());
+    this.setSubject(postVO.getSubject());
+
+    ReplyDto replyDto = new ReplyDto(-1, -1, -1);
+    if (StringUtils.isNotBlank(postVO.getReplyEmail())) {
+      replyDto.setReplyEmail(EnumReactions.REPLY_VIA_EMAIL.getId());
+    }
+    if (StringUtils.isNotBlank(postVO.getReplyPhone())) {
+      replyDto.setReplyEmail(EnumReactions.REPLY_VIA_PHONE.getId());
+    }
+    if (StringUtils.isNotBlank(postVO.getReplyWatsApp())) {
+      replyDto.setReplyEmail(EnumReactions.REPLY_VIA_WATSAPP.getId());
+    }
+    this.setReplyDto(replyDto);
+
+    this.setShareDto(postVO.getShareDto());
+
+    this.setPostedOn(DateUtils.getPostedOnDate(postVO.getCreatedDate()));
+    this.setContent(BaseUtil.trimContent(postVO.getContent()));
 
     // set User
     //UserResponse postUser = getUserService().findById(fullJobVO.getUserId());

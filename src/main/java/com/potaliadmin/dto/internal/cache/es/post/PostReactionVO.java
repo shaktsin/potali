@@ -2,11 +2,14 @@ package com.potaliadmin.dto.internal.cache.es.post;
 
 import com.potaliadmin.domain.reactions.PostReactions;
 import com.potaliadmin.dto.internal.cache.es.framework.GenericVO;
+import com.potaliadmin.framework.elasticsearch.annotation.ElasticEntity;
+import com.potaliadmin.vo.BaseElasticVO;
 
 /**
  * Created by Shakti Singh on 12/28/14.
  */
-public class PostReactionVO extends GenericVO {
+@ElasticEntity(type = "post_reactions", parentType = "post")
+public class PostReactionVO /*extends GenericVO*/ extends BaseElasticVO {
 
   private Long reactionId;
   private Long postId;
@@ -17,6 +20,7 @@ public class PostReactionVO extends GenericVO {
 
   public PostReactionVO(PostReactions postReactions) {
     super(postReactions.getId());
+    this.setParentId(postReactions.getPostId().toString());
     this.reactionId = postReactions.getReactionId();
     this.postId = postReactions.getPostId();
     this.userId = postReactions.getUserId();

@@ -1,17 +1,24 @@
 package com.potaliadmin.vo;
 
+import java.util.List;
+
 /**
  * Created by Shakti Singh on 1/16/15.
  */
-public abstract class BaseElasticVO {
+public class BaseElasticVO {
 
   private Long id;
+  private String parentId;
 
-  protected BaseElasticVO(Long id) {
+
+  public BaseElasticVO() {
+
+  }
+
+  public BaseElasticVO(Long id) {
     this.id = id;
   }
 
-  public abstract String getType();
 
   public Long getId() {
     return id;
@@ -19,5 +26,13 @@ public abstract class BaseElasticVO {
 
   public void setId(Long id) {
     this.id = id;
+  }
+
+  public String getParentId() {
+    return parentId;
+  }
+
+  public void setParentId(String parentId) {
+    this.parentId = parentId;
   }
 }

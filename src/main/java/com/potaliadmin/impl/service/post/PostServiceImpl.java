@@ -1,27 +1,37 @@
 package com.potaliadmin.impl.service.post;
 
+import com.potaliadmin.constants.DefaultConstants;
 import com.potaliadmin.constants.cache.ESIndexKeys;
 import com.potaliadmin.constants.post.EnumPostType;
 import com.potaliadmin.constants.reactions.EnumReactions;
+import com.potaliadmin.domain.comment.Comment;
 import com.potaliadmin.domain.reactions.PostReactions;
 import com.potaliadmin.dto.internal.cache.es.framework.GenericPostVO;
 import com.potaliadmin.dto.internal.cache.es.post.PostReactionVO;
+import com.potaliadmin.dto.web.request.posts.AllPostReactionRequest;
 import com.potaliadmin.dto.web.request.posts.BookMarkPostRequest;
 import com.potaliadmin.dto.web.request.posts.PostCommentRequest;
 import com.potaliadmin.dto.web.request.posts.PostReactionRequest;
-import com.potaliadmin.dto.web.response.post.GenericPostReactionResponse;
-import com.potaliadmin.dto.web.response.post.GenericPostResponse;
-import com.potaliadmin.dto.web.response.post.PostResponse;
-import com.potaliadmin.dto.web.response.post.PostSyncResponse;
+import com.potaliadmin.dto.web.response.post.*;
+import com.potaliadmin.dto.web.response.user.UserDto;
 import com.potaliadmin.dto.web.response.user.UserResponse;
 import com.potaliadmin.exceptions.InValidInputException;
+import com.potaliadmin.exceptions.PotaliRuntimeException;
 import com.potaliadmin.exceptions.UnAuthorizedAccessException;
 import com.potaliadmin.framework.cache.ESCacheManager;
+import com.potaliadmin.framework.elasticsearch.BaseESService;
+import com.potaliadmin.framework.elasticsearch.ESSearchFilter;
+import com.potaliadmin.framework.elasticsearch.response.ESSearchResponse;
+import com.potaliadmin.pact.dao.post.PostCommentDao;
 import com.potaliadmin.pact.dao.post.PostReactionDao;
 import com.potaliadmin.pact.service.cache.ESCacheService;
 import com.potaliadmin.pact.service.post.PostService;
 import com.potaliadmin.pact.service.users.LoginService;
 import com.potaliadmin.pact.service.users.UserService;
+import com.potaliadmin.util.DateUtils;
+import com.potaliadmin.vo.BaseElasticVO;
+import com.potaliadmin.vo.comment.CommentVO;
+import com.potaliadmin.vo.post.PostVO;
 import org.elasticsearch.action.count.CountResponse;
 import org.elasticsearch.action.search.MultiSearchRequestBuilder;
 import org.elasticsearch.action.search.SearchRequestBuilder;
@@ -31,6 +41,8 @@ import org.elasticsearch.rest.RestStatus;
 import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.SearchHits;
 import org.elasticsearch.search.sort.SortOrder;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -45,14 +57,18 @@ import java.util.List;
 @Service
 public class PostServiceImpl implements PostService {
 
+  private Logger logger = LoggerFactory.getLogger(PostServiceImpl.class);
+
   @Autowired
   PostReactionDao postReactionDao;
-
   @Autowired
   ESCacheService esCacheService;
-
+  @Autowired
+  BaseESService baseESService;
   @Autowired
   UserService userService;
+  @Autowired
+  PostCommentDao postCommentDao;
 
 
 
@@ -69,23 +85,40 @@ public class PostServiceImpl implements PostService {
       throw new UnAuthorizedAccessException("UnAuthorized Action!");
     }
 
+    // first check if there is any post of this ID
+    PostVO postVO = (PostVO) getBaseESService().get(postReactionRequest.getPostId(), null , PostVO.class);
+    if (postVO == null) {
+      throw new PotaliRuntimeException("NO POST FOUND FOR POST ID "+postReactionRequest.getPostId());
+    }
+
     // first put in db and then in ES
     PostReactions postReactions = getPostReactionDao().createPostReaction(postReactionRequest.getActionId(),
         postReactionRequest.getPostId(), userResponse.getId());
 
-    GenericPostReactionResponse genericPostReactionResponse = new GenericPostReactionResponse();
+
     if (postReactions != null) {
       PostReactionVO postReactionVO = new PostReactionVO(postReactions);
-      boolean published = getEsCacheService().put(ESIndexKeys.REACTION_INDEX, postReactionVO, postReactionVO.getPostId());
+      //boolean published = getEsCacheService().put(ESIndexKeys.REACTION_INDEX, postReactionVO, postReactionVO.getPostId());
+      boolean published = getBaseESService().put(postReactionVO);
       // for comments and other things do something else
-      genericPostReactionResponse.setSuccess(published);
+      //genericPostReactionResponse.setSuccess(published);
+      if (published) {
+        return generatePostReactionResponse(postVO, postReactionVO);
+      } else {
+        GenericPostReactionResponse genericPostReactionResponse = new GenericPostReactionResponse();
+        genericPostReactionResponse.setSuccess(Boolean.FALSE);
+        return genericPostReactionResponse;
+      }
+
     } else {
+      GenericPostReactionResponse genericPostReactionResponse = new GenericPostReactionResponse();
       genericPostReactionResponse.setSuccess(Boolean.FALSE);
+      return genericPostReactionResponse;
     }
-    return genericPostReactionResponse;
   }
 
   @Override
+  @Deprecated
   public PostSyncResponse syncPost(Long postId) {
     PostSyncResponse postSyncResponse = new PostSyncResponse();
 
@@ -105,22 +138,49 @@ public class PostServiceImpl implements PostService {
   }
 
   @Override
-  public GenericPostReactionResponse postComment(PostCommentRequest postCommentRequest) {
-    if (postCommentRequest != null && !postCommentRequest.validate()) {
+  public CommentResponse postComment(PostCommentRequest postCommentRequest) {
+    if (postCommentRequest == null || !postCommentRequest.validate()) {
       throw new InValidInputException("INVALID_REQUEST");
     }
 
     UserResponse userResponse = getUserService().getLoggedInUser();
 
     if (userResponse == null) {
-      throw new InValidInputException("USER CANNOT BE NULL");
+      throw new PotaliRuntimeException("USER CANNOT BE NULL");
     }
 
-    // first post reaction
+    // first get the post reaction
+    PostReactionVO postReactionVO = (PostReactionVO)getBaseESService().get(postCommentRequest.getPostReactionId(),
+        postCommentRequest.getPostId(), PostReactionVO.class);
 
+    if (postReactionVO == null) {
+      throw new PotaliRuntimeException("Something went wrong, Please Try Again!");
+    }
 
+    Comment comment = getPostCommentDao().createComment(postCommentRequest, userResponse);
+    if (comment == null) {
+      logger.error("Error in saving comment for post reaction id "+postCommentRequest.getPostReactionId());
+      throw new PotaliRuntimeException("Something went wrong, Please Try Again!");
+    }
 
-    return null;
+    CommentVO commentVO = new CommentVO(comment);
+    boolean published = getBaseESService().put(commentVO);
+    if (published) {
+      CommentResponse commentResponse = new CommentResponse();
+      commentResponse.setContent(commentVO.getComment());
+      UserDto userDto = new UserDto(userResponse);
+      commentResponse.setUserDto(userDto);
+      commentResponse.setPostId(Long.parseLong(commentVO.getParentId()));
+      commentResponse.setCommentedOn(DateUtils.getPostedOnDate(commentVO.getCommentedOn()));
+      return commentResponse;
+    } else {
+      CommentResponse commentResponse = new CommentResponse();
+      commentResponse.setException(true);
+      commentResponse.addMessage("Something went wrong, Please Try Again!");
+      return commentResponse;
+
+    }
+
   }
 
   @Override
@@ -214,6 +274,88 @@ public class PostServiceImpl implements PostService {
     return postResponse;
   }
 
+  @Override
+  public CommentListResponse getAllComments(AllPostReactionRequest allPostReactionRequest) {
+    if (allPostReactionRequest == null || !allPostReactionRequest.validate()) {
+      throw new InValidInputException("POST_ID_IS_NULL");
+    }
+
+    // first check if there is any post of this ID
+    PostVO postVO = (PostVO) getBaseESService().get(allPostReactionRequest.getPostId(), null , PostVO.class);
+    if (postVO == null) {
+      throw new PotaliRuntimeException("NO POST FOUND FOR POST ID "+allPostReactionRequest.getPostId());
+    }
+
+    TermFilterBuilder termFilterBuilder = FilterBuilders.termFilter("parentId", postVO.getPostId());
+
+    ESSearchFilter esSearchFilter =
+        new ESSearchFilter().setFilterBuilder(termFilterBuilder).addSortedMap("id", SortOrder.ASC)
+            .setPageNo(DefaultConstants.AND_APP_PAGE_NO).setPerPage(DefaultConstants.AND_APP_PER_PAGE);
+
+    ESSearchResponse esSearchResponse = getBaseESService().search(esSearchFilter, CommentVO.class);
+    CommentListResponse commentListResponse = new CommentListResponse();
+    if (esSearchResponse.getTotalResults() > 0) {
+
+      List<CommentResponse> commentResponses = new ArrayList<CommentResponse>();
+      for (BaseElasticVO baseElasticVO : esSearchResponse.getBaseElasticVOs()) {
+        CommentVO commentVO = (CommentVO) baseElasticVO;
+        CommentResponse commentResponse = new CommentResponse();
+        commentResponse.setContent(commentVO.getComment());
+        UserResponse commentUser = getUserService().findById(commentVO.getUserId());
+        UserDto userDto = new UserDto(commentUser);
+        commentResponse.setUserDto(userDto);
+        commentResponse.setPostId(Long.parseLong(commentVO.getParentId()));
+        commentResponse.setCommentedOn(DateUtils.getPostedOnDate(commentVO.getCommentedOn()));
+        commentResponses.add(commentResponse);
+      }
+      commentListResponse.setCommentResponseList(commentResponses);
+      commentListResponse.setPageNo(DefaultConstants.AND_APP_PAGE_NO);
+      commentListResponse.setPerPage(DefaultConstants.AND_APP_PER_PAGE);
+      commentListResponse.setTotalResults(esSearchResponse.getTotalResults());
+
+    }
+    return commentListResponse;
+  }
+
+  private GenericPostReactionResponse generatePostReactionResponse(PostVO postVO, PostReactionVO postReactionVO) {
+
+    if (EnumReactions.REPLY_VIA_EMAIL.getId().equals(postReactionVO.getReactionId())) {
+      ReplyEmailReactionResponse replyEmailReactionResponse = new ReplyEmailReactionResponse();
+      replyEmailReactionResponse.setSuccess(true);
+      replyEmailReactionResponse.setReplyEmail(postVO.getReplyEmail());
+      return replyEmailReactionResponse;
+    } else if (EnumReactions.REPLY_VIA_PHONE.getId().equals(postReactionVO.getReactionId())) {
+      ReplyPhoneEmailReactionResponse replyPhoneEmailReactionResponse = new ReplyPhoneEmailReactionResponse();
+      replyPhoneEmailReactionResponse.setSuccess(true);
+      replyPhoneEmailReactionResponse.setReplyPhone(postVO.getReplyPhone());
+      return replyPhoneEmailReactionResponse;
+    } else if (EnumReactions.REPLY_VIA_WATSAPP.getId().equals(postReactionVO.getReactionId())) {
+      ReplyWatsAppReactionResponse replyWatsAppReactionResponse = new ReplyWatsAppReactionResponse();
+      replyWatsAppReactionResponse.setSuccess(true);
+      replyWatsAppReactionResponse.setWatsApp(postVO.getReplyWatsApp());
+      return replyWatsAppReactionResponse;
+    } else if (EnumReactions.SHARE_VIA_EMAIL.getId().equals(postReactionVO.getReactionId()) ||
+        EnumReactions.SHARE_VIA_PHONE.getId().equals(postReactionVO.getReactionId()) ||
+        EnumReactions.SHARE_VIA_WATSAPP.getId().equals(postReactionVO.getReactionId())) {
+
+      ShareReactionResponse shareReactionResponse = new ShareReactionResponse();
+      shareReactionResponse.setSuccess(true);
+      shareReactionResponse.setContent(postVO.getContent());
+      return shareReactionResponse;
+
+    } else if (EnumReactions.COMMENT.getId().equals(postReactionVO.getReactionId())) {
+      CommentPostReactionResponse commentPostReactionResponse = new CommentPostReactionResponse();
+      commentPostReactionResponse.setSuccess(true);
+      commentPostReactionResponse.setPostReactionId(postReactionVO.getId());
+      return commentPostReactionResponse;
+    } else {
+      GenericPostReactionResponse genericPostReactionResponse = new GenericPostReactionResponse();
+      genericPostReactionResponse.setSuccess(true);
+      return genericPostReactionResponse;
+    }
+
+  }
+
   public UserService getUserService() {
     return userService;
   }
@@ -224,5 +366,13 @@ public class PostServiceImpl implements PostService {
 
   public ESCacheService getEsCacheService() {
     return esCacheService;
+  }
+
+  public BaseESService getBaseESService() {
+    return baseESService;
+  }
+
+  public PostCommentDao getPostCommentDao() {
+    return postCommentDao;
   }
 }

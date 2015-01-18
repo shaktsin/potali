@@ -3,14 +3,19 @@ package com.potaliadmin.vo.post;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.potaliadmin.constants.DefaultConstants;
 import com.potaliadmin.constants.cache.ESIndexKeys;
+import com.potaliadmin.domain.post.Post;
+import com.potaliadmin.domain.post.PostBlob;
 import com.potaliadmin.dto.web.response.post.ShareDto;
+import com.potaliadmin.framework.elasticsearch.annotation.ElasticEntity;
 import com.potaliadmin.vo.BaseElasticVO;
 
+import java.io.Serializable;
 import java.util.Date;
 
 /**
  * Created by Shakti Singh on 1/16/15.
  */
+@ElasticEntity(type = "post")
 public class PostVO extends BaseElasticVO {
 
   private Long userId;
@@ -22,18 +27,37 @@ public class PostVO extends BaseElasticVO {
   private String replyPhone;
   private String replyWatsApp;
   private ShareDto shareDto;
+  private int postType;
   @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = DefaultConstants.DEFAULT_ES_DATE_FORMAT, timezone = "IST")
   private Date createdDate;
   @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = DefaultConstants.DEFAULT_ES_DATE_FORMAT, timezone = "IST")
   private Date updatedDate;
 
+  public PostVO() {}
+
   public PostVO(Long id) {
     super(id);
   }
 
-  @Override
-  public String getType() {
-    return ESIndexKeys.POST;
+  public PostVO(Post post, PostBlob postBlob) {
+    super(post.getId());
+    postId = post.getId();
+    userId = post.getUserId();
+    userInstituteId = post.getUserInstituteId();
+    subject = post.getSubject();
+    content = postBlob.getContent();
+    replyEmail = post.getReplyEmail();
+    replyPhone = post.getReplyPhone();
+    replyWatsApp = post.getReplyWatsApp();
+    createdDate = post.getCreateDate();
+    updatedDate = post.getUpdatedDate();
+
+    ShareDto tempShareDto = new ShareDto();
+    tempShareDto.setShareEmail(post.getShareEmail());
+    tempShareDto.setSharePhone(post.getSharePhone());
+    tempShareDto.setShareWatsApp(post.getShareWatsApp());
+
+    shareDto = tempShareDto;
   }
 
   public Long getUserId() {
@@ -122,5 +146,13 @@ public class PostVO extends BaseElasticVO {
 
   public void setUpdatedDate(Date updatedDate) {
     this.updatedDate = updatedDate;
+  }
+
+  public int getPostType() {
+    return postType;
+  }
+
+  public void setPostType(int postType) {
+    this.postType = postType;
   }
 }
