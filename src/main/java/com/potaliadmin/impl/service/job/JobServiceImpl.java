@@ -371,7 +371,7 @@ public class JobServiceImpl implements JobService {
       PostVO postVO = (PostVO) baseElasticVO;
       UserResponse postUser = getUserService().findById(postVO.getUserId());
       GenericPostResponse genericPostResponse = new GenericPostResponse(postVO, postUser);
-      boolean isImp = getPostService().isPostImportantForUser(postId, userResponse.getId());
+      boolean isImp = getPostService().isPostImportantForUser(postVO.getPostId(), userResponse.getId());
       genericPostResponse.setImportant(isImp);
       genericPostResponseList.add(genericPostResponse);
     }

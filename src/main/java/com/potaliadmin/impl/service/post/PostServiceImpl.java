@@ -327,6 +327,14 @@ public class PostServiceImpl implements PostService {
   @Override
   public boolean isPostImportantForUser(Long postId, Long userId) {
     boolean isImp = false;
+
+    if (userId == null) {
+      throw new InValidInputException("USER_ID_CANNOT_BE_NULL");
+    }
+    if (postId == null) {
+      throw new InValidInputException("POST_ID_CANNOT_BE_NULL");
+    }
+
     AndFilterBuilder andFilterBuilder = FilterBuilders.andFilter(FilterBuilders.termFilter("userId", userId),
         FilterBuilders.termFilter("postId", postId), FilterBuilders.termFilter("reactionId", EnumReactions.MARK_AS_IMPORTANT.getId()));
 
