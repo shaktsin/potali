@@ -26,4 +26,6 @@ public interface PostService {
   CommentListResponse getAllComments(AllPostReactionRequest allPostReactionRequest);
 
   boolean isPostImportantForUser(Long postId, Long userId);
+
+  boolean postHasComments(Long postId);
 }

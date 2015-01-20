@@ -24,4 +24,10 @@ public class PostCommentDaoImpl extends BaseDaoImpl implements PostCommentDao {
     comment.setUserInstituteId(userResponse.getInstituteId());
     return (Comment)save(comment);
   }
+
+  @Override
+  public long getCommentOnPost(long postId) {
+    String query = "select count(*) from Comment c where c.postId = :postId";
+    return countByNamedParams(query, new String[]{"postId"}, new Object[]{postId});
+  }
 }

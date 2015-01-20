@@ -34,6 +34,7 @@ import com.potaliadmin.framework.elasticsearch.ESSearchFilter;
 import com.potaliadmin.framework.elasticsearch.response.ESSearchResponse;
 import com.potaliadmin.pact.dao.job.JobDao;
 import com.potaliadmin.pact.dao.post.PostBlobDao;
+import com.potaliadmin.pact.dao.post.PostCommentDao;
 import com.potaliadmin.pact.service.cache.ESCacheService;
 import com.potaliadmin.pact.service.job.JobService;
 import com.potaliadmin.pact.service.post.PostService;
@@ -85,6 +86,8 @@ public class JobServiceImpl implements JobService {
   UserService userService;
   @Autowired
   PostService postService;
+  @Autowired
+  PostCommentDao postCommentDao;
 
   private static final String INDEX = "ofc";
   private static final String TYPE = "job";
@@ -235,32 +238,35 @@ public class JobServiceImpl implements JobService {
     if (postVO != null && jobVO != null) {
       JobResponse jobResponse = createJobResponse(postVO, jobVO, userResponse);
 
-      TermFilterBuilder termFilterBuilder = FilterBuilders.termFilter("parentId", postVO.getPostId());
+      boolean hasComments = getPostService().postHasComments(postId);
+      if (hasComments) {
+        TermFilterBuilder termFilterBuilder = FilterBuilders.termFilter("parentId", postVO.getPostId());
 
-      ESSearchFilter esSearchFilter =
-          new ESSearchFilter().setFilterBuilder(termFilterBuilder).addSortedMap("id", SortOrder.DESC)
-          .setPageNo(DefaultConstants.AND_APP_PAGE_NO).setPerPage(DefaultConstants.AND_APP_PER_PAGE);
+        ESSearchFilter esSearchFilter =
+            new ESSearchFilter().setFilterBuilder(termFilterBuilder).addSortedMap("id", SortOrder.DESC)
+                .setPageNo(DefaultConstants.AND_APP_PAGE_NO).setPerPage(DefaultConstants.AND_APP_PER_PAGE);
 
-      ESSearchResponse esSearchResponse = getBaseESService().search(esSearchFilter, CommentVO.class);
-      if (esSearchResponse.getTotalResults() > 0) {
-        CommentListResponse commentListResponse = new CommentListResponse();
-        List<CommentResponse> commentResponses = new ArrayList<CommentResponse>();
-        for (BaseElasticVO baseElasticVO : esSearchResponse.getBaseElasticVOs()) {
-          CommentVO commentVO = (CommentVO) baseElasticVO;
-          CommentResponse commentResponse = new CommentResponse();
-          commentResponse.setContent(commentVO.getComment());
-          UserResponse commentUser = getUserService().findById(commentVO.getUserId());
-          UserDto userDto = new UserDto(commentUser);
-          commentResponse.setUserDto(userDto);
-          commentResponse.setPostId(Long.parseLong(commentVO.getParentId()));
-          commentResponse.setCommentedOn(DateUtils.getPostedOnDate(commentVO.getCommentedOn()));
-          commentResponses.add(commentResponse);
+        ESSearchResponse esSearchResponse = getBaseESService().search(esSearchFilter, CommentVO.class);
+        if (esSearchResponse.getTotalResults() > 0) {
+          CommentListResponse commentListResponse = new CommentListResponse();
+          List<CommentResponse> commentResponses = new ArrayList<CommentResponse>();
+          for (BaseElasticVO baseElasticVO : esSearchResponse.getBaseElasticVOs()) {
+            CommentVO commentVO = (CommentVO) baseElasticVO;
+            CommentResponse commentResponse = new CommentResponse();
+            commentResponse.setContent(commentVO.getComment());
+            UserResponse commentUser = getUserService().findById(commentVO.getUserId());
+            UserDto userDto = new UserDto(commentUser);
+            commentResponse.setUserDto(userDto);
+            commentResponse.setPostId(Long.parseLong(commentVO.getParentId()));
+            commentResponse.setCommentedOn(DateUtils.getPostedOnDate(commentVO.getCommentedOn()));
+            commentResponses.add(commentResponse);
+          }
+          commentListResponse.setReorderCommentResponse(commentResponses);
+          commentListResponse.setPageNo(DefaultConstants.AND_APP_PAGE_NO);
+          commentListResponse.setPerPage(DefaultConstants.AND_APP_PER_PAGE);
+          commentListResponse.setTotalResults(esSearchResponse.getTotalResults());
+          jobResponse.setCommentListResponse(commentListResponse);
         }
-        commentListResponse.setReorderCommentResponse(commentResponses);
-        commentListResponse.setPageNo(DefaultConstants.AND_APP_PAGE_NO);
-        commentListResponse.setPerPage(DefaultConstants.AND_APP_PER_PAGE);
-        commentListResponse.setTotalResults(esSearchResponse.getTotalResults());
-        jobResponse.setCommentListResponse(commentListResponse);
       }
       return jobResponse;
     } else {
@@ -557,5 +563,9 @@ public class JobServiceImpl implements JobService {
 
   public PostService getPostService() {
     return postService;
+  }
+
+  public PostCommentDao getPostCommentDao() {
+    return postCommentDao;
   }
 }

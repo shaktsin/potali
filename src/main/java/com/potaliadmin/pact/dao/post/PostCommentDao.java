@@ -11,4 +11,6 @@ import com.potaliadmin.pact.framework.BaseDao;
 public interface PostCommentDao extends BaseDao {
 
   Comment createComment(PostCommentRequest postCommentRequest, UserResponse userResponse);
+
+  long getCommentOnPost(long postId);
 }

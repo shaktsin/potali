@@ -345,6 +345,22 @@ public class PostServiceImpl implements PostService {
     return esSearchResponse.getTotalResults() > 0;
   }
 
+  @Override
+  public boolean postHasComments(Long postId) {
+    if (postId == null) {
+      throw new InValidInputException("POST_ID_CANNOT_BE_NULL");
+    }
+    AndFilterBuilder andFilterBuilder = FilterBuilders.andFilter(FilterBuilders.termFilter("postId", postId),
+        FilterBuilders.termFilter("reactionId", EnumReactions.COMMENT.getId()));
+
+    ESSearchFilter esSearchFilter =
+        new ESSearchFilter().setFilterBuilder(andFilterBuilder);
+
+    ESSearchResponse esSearchResponse = getBaseESService().search(esSearchFilter, PostReactionVO.class);
+
+    return esSearchResponse.getTotalResults() > 0;
+  }
+
   private GenericPostReactionResponse generatePostReactionResponse(PostVO postVO, PostReactionVO postReactionVO) {
 
     if (EnumReactions.REPLY_VIA_EMAIL.getId().equals(postReactionVO.getReactionId())) {
