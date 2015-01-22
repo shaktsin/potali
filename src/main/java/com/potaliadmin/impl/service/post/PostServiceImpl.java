@@ -150,11 +150,25 @@ public class PostServiceImpl implements PostService {
     }
 
     // first get the post reaction
-    PostReactionVO postReactionVO = (PostReactionVO)getBaseESService().get(postCommentRequest.getPostReactionId(),
-        postCommentRequest.getPostId(), PostReactionVO.class);
+    //PostReactionVO postReactionVO = (PostReactionVO)getBaseESService().get(postCommentRequest.getPostReactionId(),
+    //    postCommentRequest.getPostId(), PostReactionVO.class);
 
-    if (postReactionVO == null) {
-      throw new PotaliRuntimeException("Something went wrong, Please Try Again!");
+    // first check if there is any post of this ID
+    PostVO postVO = (PostVO) getBaseESService().get(postCommentRequest.getPostId(), null , PostVO.class);
+    if (postVO == null) {
+      throw new PotaliRuntimeException("NO POST FOUND FOR POST ID "+postCommentRequest.getPostId());
+    }
+
+    // first put in db and then in ES
+    PostReactions postReactions = getPostReactionDao().createPostReaction(EnumReactions.COMMENT.getId(),
+        postCommentRequest.getPostId(), userResponse.getId());
+
+    PostReactionVO postReactionVO = new PostReactionVO(postReactions);
+
+    boolean isPostReactionPublished = getBaseESService().put(postReactionVO);
+
+    if (!isPostReactionPublished) {
+      throw new PotaliRuntimeException("Some Problem in Posting Reaction "+postCommentRequest.getPostId());
     }
 
     Comment comment = getPostCommentDao().createComment(postCommentRequest, userResponse);

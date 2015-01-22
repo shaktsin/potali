@@ -8,16 +8,16 @@ import org.apache.commons.lang.StringUtils;
  */
 public class PostCommentRequest extends GenericRequest {
 
-  private Long postReactionId;
+  /*private Long postReactionId;*/
   private String comment;
   private Long postId;
 
   @Override
   public boolean validate() {
     boolean isValid = super.validate();
-    if (isValid && postReactionId == null ) {
+    /*if (isValid && postReactionId == null ) {
       isValid = false;
-    }
+    }*/
     if (isValid && postId == null ) {
       isValid = false;
     }
@@ -27,13 +27,13 @@ public class PostCommentRequest extends GenericRequest {
     return isValid;
   }
 
-  public Long getPostReactionId() {
+  /*public Long getPostReactionId() {
     return postReactionId;
   }
 
   public void setPostReactionId(Long postReactionId) {
     this.postReactionId = postReactionId;
-  }
+  }*/
 
   public Long getPostId() {
     return postId;
