@@ -173,7 +173,7 @@ public class PostServiceImpl implements PostService {
 
     Comment comment = getPostCommentDao().createComment(postCommentRequest, userResponse);
     if (comment == null) {
-      logger.error("Error in saving comment for post reaction id "+postCommentRequest.getPostReactionId());
+      logger.error("Error in saving comment for post id "+postCommentRequest.getPostId());
       throw new PotaliRuntimeException("Something went wrong, Please Try Again!");
     }
 
