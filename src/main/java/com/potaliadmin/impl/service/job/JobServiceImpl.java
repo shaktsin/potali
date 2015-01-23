@@ -253,6 +253,7 @@ public class JobServiceImpl implements JobService {
           for (BaseElasticVO baseElasticVO : esSearchResponse.getBaseElasticVOs()) {
             CommentVO commentVO = (CommentVO) baseElasticVO;
             CommentResponse commentResponse = new CommentResponse();
+            commentResponse.setCommentId(commentVO.getId());
             commentResponse.setContent(commentVO.getComment());
             UserResponse commentUser = getUserService().findById(commentVO.getUserId());
             UserDto userDto = new UserDto(commentUser);

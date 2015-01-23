@@ -10,11 +10,20 @@ import java.util.Date;
  */
 public class CommentResponse extends GenericBaseResponse {
 
+  private Long commentId;
   private String content;
   private Long postId;
   private UserDto userDto;
   private String commentedOn;
 
+
+  public Long getCommentId() {
+    return commentId;
+  }
+
+  public void setCommentId(Long commentId) {
+    this.commentId = commentId;
+  }
 
   public String getContent() {
     return content;
