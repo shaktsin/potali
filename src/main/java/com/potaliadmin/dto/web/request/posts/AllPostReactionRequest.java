@@ -9,6 +9,7 @@ import com.potaliadmin.dto.web.request.framework.GenericRequest;
 public class AllPostReactionRequest extends GenericRequest {
 
   private Long postId;
+  private Long commentId;
   private int pageNo = DefaultConstants.AND_APP_PAGE_NO;
   private int perPage = DefaultConstants.AND_APP_PER_PAGE;
 
@@ -44,4 +45,13 @@ public class AllPostReactionRequest extends GenericRequest {
   public void setPerPage(int perPage) {
     this.perPage = perPage;
   }
+
+  public Long getCommentId() {
+    return commentId;
+  }
+
+  public void setCommentId(Long commentId) {
+    this.commentId = commentId;
+  }
+
 }

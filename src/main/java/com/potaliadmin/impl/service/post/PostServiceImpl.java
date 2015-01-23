@@ -307,10 +307,15 @@ public class PostServiceImpl implements PostService {
       throw new PotaliRuntimeException("NO POST FOUND FOR POST ID "+allPostReactionRequest.getPostId());
     }
 
+    AndFilterBuilder andFilterBuilder = new AndFilterBuilder();
     TermFilterBuilder termFilterBuilder = FilterBuilders.termFilter("parentId", postVO.getPostId());
+    andFilterBuilder.add(termFilterBuilder);
+    andFilterBuilder.add(FilterBuilders.rangeFilter("id").
+        lt(allPostReactionRequest.getCommentId()).
+        gt(allPostReactionRequest.getCommentId() - allPostReactionRequest.getPerPage()));
 
     ESSearchFilter esSearchFilter =
-        new ESSearchFilter().setFilterBuilder(termFilterBuilder).addSortedMap("id", SortOrder.ASC)
+        new ESSearchFilter().setFilterBuilder(andFilterBuilder).addSortedMap("id", SortOrder.ASC)
             .setPageNo(DefaultConstants.AND_APP_PAGE_NO).setPerPage(DefaultConstants.AND_APP_PER_PAGE);
 
     ESSearchResponse esSearchResponse = getBaseESService().search(esSearchFilter, CommentVO.class);
