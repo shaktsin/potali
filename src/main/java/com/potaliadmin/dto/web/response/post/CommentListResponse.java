@@ -53,7 +53,7 @@ public class CommentListResponse extends GenericBaseResponse {
     Collections.sort(commentResponseList, new Comparator<CommentResponse>() {
       @Override
       public int compare(CommentResponse o1, CommentResponse o2) {
-        return o1.getPostId().intValue() - o2.getPostId().intValue();
+        return o2.getPostId().intValue() - o1.getPostId().intValue();
       }
     });
     this.commentResponseList = commentResponseList;
