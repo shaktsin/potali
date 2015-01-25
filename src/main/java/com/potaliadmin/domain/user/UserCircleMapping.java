@@ -7,8 +7,8 @@ import java.io.Serializable;
 /**
  * Created by shakti on 24/1/15.
  */
-@Entity
-@Table(name = "user_has_circle")
+//@Entity
+//@Table(name = "user_has_circle")
 public class UserCircleMapping implements Serializable {
 
   private Long userId;
