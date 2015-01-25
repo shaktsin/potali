@@ -327,6 +327,7 @@ public class PostServiceImpl implements PostService {
         CommentVO commentVO = (CommentVO) baseElasticVO;
         CommentResponse commentResponse = new CommentResponse();
         commentResponse.setContent(commentVO.getComment());
+        commentResponse.setCommentId(commentVO.getId());
         UserResponse commentUser = getUserService().findById(commentVO.getUserId());
         UserDto userDto = new UserDto(commentUser);
         commentResponse.setUserDto(userDto);
