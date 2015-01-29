@@ -11,6 +11,8 @@ public class ImageDto {
   private String fileName;
   private String canonicalName;
   private int size;
+  private String absolutePath;
+  private String relativePath;
 
   public String getFileName() {
     return fileName;
@@ -42,5 +44,21 @@ public class ImageDto {
 
   public void setType(int type) {
     this.type = type;
+  }
+
+  public String getAbsolutePath() {
+    return absolutePath;
+  }
+
+  public void setAbsolutePath(String absolutePath) {
+    this.absolutePath = absolutePath;
+  }
+
+  public String getRelativePath() {
+    return relativePath;
+  }
+
+  public void setRelativePath(String relativePath) {
+    this.relativePath = relativePath;
   }
 }

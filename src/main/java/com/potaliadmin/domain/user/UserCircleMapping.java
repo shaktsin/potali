@@ -1,44 +1,35 @@
 package com.potaliadmin.domain.user;
 
-import javax.persistence.Entity;
-import javax.persistence.Table;
+import javax.persistence.*;
 import java.io.Serializable;
 
 /**
  * Created by shakti on 24/1/15.
  */
-//@Entity
-//@Table(name = "user_has_circle")
+@Entity
+@Table(name = "user_has_circle")
+@NamedQueries({
+    @NamedQuery(name = "findByUser",query = "from UserCircleMapping u where u.userCircleMappingKey.userId = :userId"),
+    @NamedQuery(name = "findByCircle",query = "from UserCircleMapping u where u.userCircleMappingKey.circleId = :circleId"),
+    @NamedQuery(name = "findByCircleAdmin",query = "from UserCircleMapping u where u.userCircleMappingKey.circleId = :circleId and u.admin = true")
+})
 public class UserCircleMapping implements Serializable {
 
-  private Long userId;
-  private Long userInstituteId;
-  private Long circleId;
+  @Id
+  private UserCircleMappingKey userCircleMappingKey;
+
+  @Column(name = "admin",nullable = false)
   private boolean admin;
+
+  @Column(name = "authorized",nullable = false)
   private boolean authorised;
 
-  public Long getUserId() {
-    return userId;
+  public UserCircleMappingKey getUserCircleMappingKey() {
+    return userCircleMappingKey;
   }
 
-  public void setUserId(Long userId) {
-    this.userId = userId;
-  }
-
-  public Long getUserInstituteId() {
-    return userInstituteId;
-  }
-
-  public void setUserInstituteId(Long userInstituteId) {
-    this.userInstituteId = userInstituteId;
-  }
-
-  public Long getCircleId() {
-    return circleId;
-  }
-
-  public void setCircleId(Long circleId) {
-    this.circleId = circleId;
+  public void setUserCircleMappingKey(UserCircleMappingKey userCircleMappingKey) {
+    this.userCircleMappingKey = userCircleMappingKey;
   }
 
   public boolean isAdmin() {

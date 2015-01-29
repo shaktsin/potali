@@ -3,6 +3,7 @@ package com.potaliadmin;
 import org.glassfish.jersey.media.multipart.ContentDisposition;
 import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
 
+import java.util.Scanner;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -15,10 +16,32 @@ public class Test {
 
     //ContentDisposition contentDisposition = new ContentDisposition("image/png", "3_profile_susi.png",null,null,null ,495);
 
-    ContentDisposition contentDisposition =
-        FormDataContentDisposition.name("image/png").fileName("3_profile_susi.png").size(495).build();
+    /*ContentDisposition contentDisposition =
+        FormDataContentDisposition.name("image/png").fileName("3_profile_susi.png").size(495).build();*/
 
-    System.out.println(contentDisposition.toString());
+    //System.out.println(contentDisposition.toString());
+
+    Integer a = 0;
+    System.out.println("Please enter a number");
+    Scanner in = new Scanner(System.in);
+    a = in.nextInt();
+
+    boolean palindrome = false ;
+    String num = a.toString();
+    for (int i=0, j = num.length() - 1; i <= j ; i++, j--) {
+      palindrome = (num.charAt(i) == num.charAt(j));
+      if (!palindrome) break;
+    }
+
+    if (palindrome) {
+      System.out.println("Number "+num + " is a palindrome");
+    } else {
+      System.out.println("Number "+num + " is a not palindrome");
+    }
+
+
+
+
     //int i =12345;
     //char c = '%';
     //boolean isControl = Character.isISOControl(c);

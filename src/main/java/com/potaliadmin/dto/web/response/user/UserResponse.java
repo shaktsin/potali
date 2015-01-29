@@ -2,6 +2,7 @@ package com.potaliadmin.dto.web.response.user;
 
 import com.potaliadmin.constants.json.DtoJsonConstants;
 import com.potaliadmin.dto.web.response.base.GenericBaseResponse;
+import com.potaliadmin.vo.user.UserVO;
 
 import java.util.List;
 
@@ -16,6 +17,19 @@ public class UserResponse extends GenericBaseResponse {
   private String passwordChecksum;
   private Long instituteId;
   private String image;
+  private List<Long> circleList;
+
+  public UserResponse() {}
+
+  public UserResponse(UserVO userVO) {
+    id = userVO.getId();
+    name = userVO.getAccountName();
+    email = userVO.getEmail();
+    passwordChecksum = userVO.getChecksum();
+    instituteId = userVO.getInstitutionId();
+    image = userVO.getImage();
+    circleList = userVO.getCircleList();
+  }
 
   public Long getId() {
     return id;
@@ -63,6 +77,14 @@ public class UserResponse extends GenericBaseResponse {
 
   public void setImage(String image) {
     this.image = image;
+  }
+
+  public List<Long> getCircleList() {
+    return circleList;
+  }
+
+  public void setCircleList(List<Long> circleList) {
+    this.circleList = circleList;
   }
 
   /*@Override

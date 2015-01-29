@@ -1,5 +1,6 @@
 package com.potaliadmin.constants;
 
+import java.io.File;
 import java.util.Arrays;
 import java.util.List;
 
@@ -38,6 +39,9 @@ public class DefaultConstants
 
   public static final List<String> ALLOWED_IMAGE_CONTENT_TYPE = Arrays.asList("image/png", "image/jpg", "image/jpeg");
   public static final String PROFILE = "profile";
+  public static final String POST = "post";
+  public static final String IMAGE = "image";
+  public static final String JD ="jd";
 
   public static final String SHARE_SUFFIX = "Shared By OfCampus";
 }

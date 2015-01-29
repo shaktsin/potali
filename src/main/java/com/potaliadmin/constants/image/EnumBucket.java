@@ -5,7 +5,8 @@ package com.potaliadmin.constants.image;
  */
 public enum EnumBucket {
 
-  PROFILE_BUCKET(1,"profile");
+  PROFILE_BUCKET(1,"profile"),
+  POST_BUCKET(2, "post"),;
 
   private int id;
   private String name;

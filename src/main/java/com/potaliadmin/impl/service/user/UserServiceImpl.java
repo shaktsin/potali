@@ -1,5 +1,6 @@
 package com.potaliadmin.impl.service.user;
 
+import com.potaliadmin.constants.DefaultConstants;
 import com.potaliadmin.constants.cache.MemCacheNS;
 import com.potaliadmin.constants.image.EnumBucket;
 import com.potaliadmin.constants.image.EnumImageSize;
@@ -16,6 +17,9 @@ import com.potaliadmin.exceptions.InValidInputException;
 import com.potaliadmin.exceptions.PotaliRuntimeException;
 import com.potaliadmin.exceptions.UnAuthorizedAccessException;
 import com.potaliadmin.framework.cache.institute.InstituteCache;
+import com.potaliadmin.framework.elasticsearch.BaseESService;
+import com.potaliadmin.framework.elasticsearch.ESSearchFilter;
+import com.potaliadmin.framework.elasticsearch.response.ESSearchResponse;
 import com.potaliadmin.pact.dao.image.AvatarDao;
 import com.potaliadmin.pact.dao.user.UserDao;
 import com.potaliadmin.pact.framework.aws.UploadService;
@@ -24,8 +28,13 @@ import com.potaliadmin.pact.service.users.LoginService;
 import com.potaliadmin.pact.service.users.UserService;
 import com.potaliadmin.security.Principal;
 import com.potaliadmin.util.BaseUtil;
+import com.potaliadmin.vo.comment.CommentVO;
+import com.potaliadmin.vo.user.UserVO;
 import org.apache.commons.lang.StringUtils;
 import org.apache.shiro.SecurityUtils;
+import org.elasticsearch.index.query.FilterBuilders;
+import org.elasticsearch.index.query.TermFilterBuilder;
+import org.elasticsearch.search.sort.SortOrder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -50,9 +59,18 @@ public class UserServiceImpl implements UserService {
   @Autowired
   MemCacheService memCacheService;
 
+  @Autowired
+  BaseESService baseESService;
+
   @Override
   public UserResponse findById(Long id) {
-    UserResponse userResponse =(UserResponse) getMemCacheService().get(MemCacheNS.USER_BY_ID, id.toString());
+    UserResponse userResponse = null;
+    UserVO userVO = (UserVO)getBaseESService().get(id, null, UserVO.class);
+    if (userVO != null) {
+      userResponse = new UserResponse(userVO);
+    }
+
+    //UserResponse userResponse =(UserResponse) getMemCacheService().get(MemCacheNS.USER_BY_ID, id.toString());
     // first try to find out from cache
     if (userResponse != null) {
       return userResponse;
@@ -68,14 +86,26 @@ public class UserServiceImpl implements UserService {
       userResponse.setInstituteId(user.getInstituteId());
       userResponse.setImage(user.getProfileImage());
 
-      // put in memcache
-      getMemCacheService().put(MemCacheNS.USER_BY_ID, user.getId().toString(), userResponse);
+      // put in es
+      //getMemCacheService().put(MemCacheNS.USER_BY_ID, user.getId().toString(), userResponse);
+      userVO = new UserVO(user);
+      getBaseESService().put(userVO);
     }
     return userResponse;
   }
 
   public UserResponse findByEmail(String email) {
-    UserResponse userResponse = (UserResponse) getMemCacheService().get(MemCacheNS.USER_BY_EMAIL, email);
+    UserResponse userResponse = null;
+    TermFilterBuilder termFilterBuilder = FilterBuilders.termFilter("email", email);
+
+    ESSearchFilter esSearchFilter =  new ESSearchFilter().setFilterBuilder(termFilterBuilder);
+    ESSearchResponse esSearchResponse = getBaseESService().search(esSearchFilter, UserVO.class);
+    if (esSearchResponse.getTotalResults() > 0) {
+      UserVO userVO =(UserVO) esSearchResponse.getBaseElasticVOs().get(0);
+      userResponse = new UserResponse(userVO);
+    }
+
+    //UserResponse userResponse = (UserResponse) getMemCacheService().get(MemCacheNS.USER_BY_EMAIL, email);
 
     // first try to find out from cache
     if (userResponse != null) {
@@ -93,8 +123,10 @@ public class UserServiceImpl implements UserService {
       userResponse.setInstituteId(user.getInstituteId());
       userResponse.setImage(user.getProfileImage());
 
-      // put in memcache
-      getMemCacheService().put(MemCacheNS.USER_BY_ID, user.getId().toString(), userResponse);
+      // put in es
+      //getMemCacheService().put(MemCacheNS.USER_BY_ID, user.getId().toString(), userResponse);
+      UserVO userVO = new UserVO(user);
+      getBaseESService().put(userVO);
     }
     return userResponse;
   }
@@ -152,8 +184,16 @@ public class UserServiceImpl implements UserService {
     userResponse.setImage(user.getProfileImage());
 
     // put in mem cache
-    getMemCacheService().put(MemCacheNS.USER_BY_ID, user.getId().toString(), userResponse);
-    getMemCacheService().put(MemCacheNS.USER_BY_EMAIL, user.getEmail(), userResponse);
+    //getMemCacheService().put(MemCacheNS.USER_BY_ID, user.getId().toString(), userResponse);
+    //getMemCacheService().put(MemCacheNS.USER_BY_EMAIL, user.getEmail(), userResponse);
+
+    // put in elastic search
+    UserVO userVO = new UserVO(user);
+    boolean published = getBaseESService().put(userVO);
+    if (!published) {
+      throw new PotaliRuntimeException("Some Exception occurred in sign up! Please Try Again");
+    }
+
 
     return userResponse;
   }
@@ -265,5 +305,9 @@ public class UserServiceImpl implements UserService {
 
   public MemCacheService getMemCacheService() {
     return memCacheService;
+  }
+
+  public BaseESService getBaseESService() {
+    return baseESService;
   }
 }

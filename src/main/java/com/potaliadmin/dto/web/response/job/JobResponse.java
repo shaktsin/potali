@@ -4,6 +4,7 @@ import com.potaliadmin.dto.internal.cache.address.CityVO;
 import com.potaliadmin.dto.internal.cache.es.job.CityDto;
 import com.potaliadmin.dto.internal.cache.es.job.IndustryRolesDto;
 import com.potaliadmin.dto.web.response.base.GenericBaseResponse;
+import com.potaliadmin.dto.web.response.circle.CircleDto;
 import com.potaliadmin.dto.web.response.post.CommentListResponse;
 import com.potaliadmin.dto.web.response.post.GenericPostResponse;
 import com.potaliadmin.dto.web.response.post.ReplyDto;
@@ -25,7 +26,7 @@ public class JobResponse extends GenericPostResponse {
   private boolean isSalarySpecified;
   private List<CityDto> locations;
   private List<IndustryRolesDto> industryRolesDtoList;
-  private CommentListResponse commentListResponse;
+
 
 
 
@@ -91,13 +92,5 @@ public class JobResponse extends GenericPostResponse {
 
   public void setIndustryRolesDtoList(List<IndustryRolesDto> industryRolesDtoList) {
     this.industryRolesDtoList = industryRolesDtoList;
-  }
-
-  public CommentListResponse getCommentListResponse() {
-    return commentListResponse;
-  }
-
-  public void setCommentListResponse(CommentListResponse commentListResponse) {
-    this.commentListResponse = commentListResponse;
   }
 }

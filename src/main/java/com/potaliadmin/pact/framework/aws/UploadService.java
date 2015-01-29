@@ -13,4 +13,6 @@ public interface UploadService {
   String getCanonicalPathOfResource(String folderName, String fileName);
 
   boolean uploadProfileImageFiles(String secondaryBucketName, List<ImageDto> imageDtoList, boolean shouldDecrypt);
+
+  boolean uploadPostImages(Long postId, List<ImageDto> imageDtoList);
 }

@@ -7,7 +7,9 @@ import com.potaliadmin.framework.cache.industry.IndustryCache;
 import com.potaliadmin.framework.cache.industry.IndustryRolesCache;
 import com.potaliadmin.util.BaseUtil;
 import org.apache.commons.lang.StringUtils;
+import org.glassfish.jersey.media.multipart.FormDataBodyPart;
 
+import javax.xml.bind.annotation.XmlRootElement;
 import java.util.List;
 import java.util.Set;
 
@@ -17,6 +19,7 @@ import java.util.Set;
 public class JobCreateRequest extends GenericRequest {
 
   //private Long industryId;
+  private List<Long> circleList;
   private List<Long> industryRolesIdList;
   private int to;
   private int from;
@@ -35,6 +38,7 @@ public class JobCreateRequest extends GenericRequest {
   private ShareDto shareDto;
 
 
+
   public JobCreateRequest() {
   }
 
@@ -45,10 +49,10 @@ public class JobCreateRequest extends GenericRequest {
   @Override
   public boolean validate() {
     boolean isValid = super.validate();
-    if (isValid && (industryRolesIdList == null && !IndustryRolesCache.getCache().isValidList(industryRolesIdList))) {
+    if (isValid && (industryRolesIdList == null || !IndustryRolesCache.getCache().isValidList(industryRolesIdList))) {
       isValid = false;
     }
-    if (isValid && (locationIdList == null && !CityCache.getCache().isValidList(locationIdList))) {
+    if (isValid && (locationIdList == null || !CityCache.getCache().isValidList(locationIdList))) {
       isValid = false;
     }
 
@@ -207,5 +211,13 @@ public class JobCreateRequest extends GenericRequest {
 
   public void setShareDto(ShareDto shareDto) {
     this.shareDto = shareDto;
+  }
+
+  public List<Long> getCircleList() {
+    return circleList;
+  }
+
+  public void setCircleList(List<Long> circleList) {
+    this.circleList = circleList;
   }
 }

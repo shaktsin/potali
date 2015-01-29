@@ -5,9 +5,10 @@ package com.potaliadmin.constants.circle;
  */
 public enum CircleType {
 
-  YEAR(0, "Year"),
-  CHAPTER(1, "Chapter"),
-  CLUB(2, "Clubs"),
+  ALL(0,"EveryOne"),
+  YEAR(1, "Year"),
+  CHAPTER(2, "Chapter"),
+  CLUB(3, "Clubs"),
 
   ;
 
@@ -17,6 +18,26 @@ public enum CircleType {
   CircleType(Integer id, String name) {
     this.id = id;
     this.name = name;
+  }
+
+  public static boolean validCircle(Integer id) {
+    boolean valid = false;
+    for (CircleType circleType : CircleType.values()) {
+      if (circleType.getId().equals(id)) {
+        valid = true;
+        break;
+      }
+    }
+    return valid;
+  }
+
+  public static CircleType getById(Integer id) {
+    for (CircleType circleType : CircleType.values()) {
+      if (circleType.getId().equals(id)) {
+        return circleType;
+      }
+    }
+    return null;
   }
 
   public Integer getId() {

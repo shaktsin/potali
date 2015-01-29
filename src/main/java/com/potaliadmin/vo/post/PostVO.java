@@ -8,9 +8,11 @@ import com.potaliadmin.domain.post.PostBlob;
 import com.potaliadmin.dto.web.response.post.ShareDto;
 import com.potaliadmin.framework.elasticsearch.annotation.ElasticEntity;
 import com.potaliadmin.vo.BaseElasticVO;
+import com.potaliadmin.vo.circle.CircleVO;
 
 import java.io.Serializable;
 import java.util.Date;
+import java.util.List;
 
 /**
  * Created by Shakti Singh on 1/16/15.
@@ -32,6 +34,8 @@ public class PostVO extends BaseElasticVO {
   private Date createdDate;
   @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = DefaultConstants.DEFAULT_ES_DATE_FORMAT, timezone = "IST")
   private Date updatedDate;
+  private List<String> imageList;
+  private List<CircleVO> circleList;
 
   public PostVO() {}
 
@@ -154,5 +158,21 @@ public class PostVO extends BaseElasticVO {
 
   public void setPostType(int postType) {
     this.postType = postType;
+  }
+
+  public List<String> getImageList() {
+    return imageList;
+  }
+
+  public void setImageList(List<String> imageList) {
+    this.imageList = imageList;
+  }
+
+  public List<CircleVO> getCircleList() {
+    return circleList;
+  }
+
+  public void setCircleList(List<CircleVO> circleList) {
+    this.circleList = circleList;
   }
 }

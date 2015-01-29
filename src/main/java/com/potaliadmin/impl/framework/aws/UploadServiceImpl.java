@@ -6,6 +6,7 @@ import com.amazonaws.services.s3.transfer.MultipleFileUpload;
 import com.amazonaws.services.s3.transfer.TransferManager;
 import com.google.inject.internal.cglib.core.$TypeUtils;
 import com.potaliadmin.constants.DefaultConstants;
+import com.potaliadmin.constants.image.EnumBucket;
 import com.potaliadmin.dto.internal.image.ImageDto;
 import com.potaliadmin.framework.thread.ThreadManager;
 import com.potaliadmin.impl.framework.properties.AppProperties;
@@ -83,6 +84,43 @@ public class UploadServiceImpl implements UploadService {
     } finally {
       transferManager.shutdownNow();
     }
+    return uploaded;
+  }
+
+  @Override
+  public boolean uploadPostImages(Long postId, List<ImageDto> imageDtoList) {
+    boolean uploaded = false;
+    TransferManager transferManager = new TransferManager(basicAWSCredentials);
+    try {
+      String parentDirFilePath = getAppProperties().getUploadPicPath();
+
+      //String secondaryBucketName = File.separator + EnumBucket.POST_BUCKET.getName();
+
+      List<File> fileList = new ArrayList<File>();
+      for (ImageDto imageDto : imageDtoList) {
+        String fileName = imageDto.getCanonicalName();
+        File file = new File(fileName);
+        fileList.add(file);
+      }
+
+      File parentDir = new File(parentDirFilePath) ;
+
+      MultipleFileUpload multipleFileUpload = transferManager.uploadFileList(appProperties.getAmazonPrimaryBucketName(),
+          null, parentDir, fileList);
+
+      multipleFileUpload.waitForCompletion();
+
+      if (multipleFileUpload.isDone()) {
+        uploaded = true;
+      }
+
+    } catch (Exception e) {
+      logger.error("Error while uploading images to ",e);
+      uploaded = false;
+    }
+
+
+
     return uploaded;
   }
 

@@ -1,6 +1,7 @@
 package com.potaliadmin.impl.service.job;
 
 import com.potaliadmin.constants.DefaultConstants;
+import com.potaliadmin.constants.image.EnumBucket;
 import com.potaliadmin.constants.post.EnumPostType;
 import com.potaliadmin.constants.query.EnumSearchOperation;
 import com.potaliadmin.constants.reactions.EnumReactions;
@@ -14,7 +15,9 @@ import com.potaliadmin.dto.internal.cache.es.job.IndustryDto;
 import com.potaliadmin.dto.internal.cache.es.job.IndustryRolesDto;
 import com.potaliadmin.dto.internal.cache.job.IndustryRolesVO;
 import com.potaliadmin.dto.internal.cache.job.IndustryVO;
+import com.potaliadmin.dto.internal.image.CreateImageResponseDto;
 import com.potaliadmin.dto.web.request.jobs.JobCreateRequest;
+import com.potaliadmin.dto.web.response.circle.CircleDto;
 import com.potaliadmin.dto.web.response.job.JobResponse;
 import com.potaliadmin.dto.web.response.job.JobSearchResponse;
 import com.potaliadmin.dto.web.response.job.PrepareJobCreateResponse;
@@ -35,6 +38,7 @@ import com.potaliadmin.framework.elasticsearch.response.ESSearchResponse;
 import com.potaliadmin.pact.dao.job.JobDao;
 import com.potaliadmin.pact.dao.post.PostBlobDao;
 import com.potaliadmin.pact.dao.post.PostCommentDao;
+import com.potaliadmin.pact.framework.aws.UploadService;
 import com.potaliadmin.pact.service.cache.ESCacheService;
 import com.potaliadmin.pact.service.job.JobService;
 import com.potaliadmin.pact.service.post.PostService;
@@ -43,9 +47,11 @@ import com.potaliadmin.pact.service.users.UserService;
 import com.potaliadmin.util.BaseUtil;
 import com.potaliadmin.util.DateUtils;
 import com.potaliadmin.vo.BaseElasticVO;
+import com.potaliadmin.vo.circle.CircleVO;
 import com.potaliadmin.vo.comment.CommentVO;
 import com.potaliadmin.vo.job.JobVO;
 import com.potaliadmin.vo.post.PostVO;
+import com.potaliadmin.vo.user.UserVO;
 import org.apache.commons.lang.StringUtils;
 import org.elasticsearch.action.get.GetResponse;
 import org.elasticsearch.action.search.SearchResponse;
@@ -54,9 +60,11 @@ import org.elasticsearch.rest.RestStatus;
 import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.SearchHits;
 import org.elasticsearch.search.sort.SortOrder;
+import org.glassfish.jersey.media.multipart.FormDataBodyPart;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import javax.transaction.Transactional;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
@@ -88,6 +96,8 @@ public class JobServiceImpl implements JobService {
   PostService postService;
   @Autowired
   PostCommentDao postCommentDao;
+  @Autowired
+  UploadService uploadService;
 
   private static final String INDEX = "ofc";
   private static final String TYPE = "job";
@@ -140,16 +150,41 @@ public class JobServiceImpl implements JobService {
       industryDto.setIndustryRolesDtoList(industryRolesDtoList);
     }
 
+
+    UserVO userVO = (UserVO) getBaseESService().get(userResponse.getId(), null, UserVO.class);
+    if (userVO == null) {
+      PrepareJobCreateResponse prepareJobCreateResponse = new PrepareJobCreateResponse();
+      prepareJobCreateResponse.setException(true);
+      prepareJobCreateResponse.addMessage("Some exception occurred, please try again!");
+      return prepareJobCreateResponse;
+    }
+
+    List<Long> circleList = userVO.getCircleList();
+    List<CircleDto> circleDtoList = new ArrayList<CircleDto>();
+    for (Long circle : circleList) {
+      CircleVO circleVO = (CircleVO) getBaseESService().get(circle, null, CircleVO.class);
+      if (circleVO != null) {
+        CircleDto circleDto = new CircleDto();
+        circleDto.setId(circleVO.getId());
+        circleDto.setName(circleVO.getName());
+        circleDto.setSelected(false);
+        circleDtoList.add(circleDto);
+      }
+    }
+
+
     PrepareJobCreateResponse prepareJobCreateResponse = new PrepareJobCreateResponse();
     prepareJobCreateResponse.setCityDtoList(cityDtoList);
     prepareJobCreateResponse.setIndustryDtoList(industryDtoList);
     //prepareJobCreateResponse.setIndustryRolesDtoList(industryRolesDtoList);
     prepareJobCreateResponse.setReplyEmail(getUserService().findById(userResponse.getId()).getEmail());
+    prepareJobCreateResponse.setCircleDtoList(circleDtoList);
 
     return prepareJobCreateResponse;
   }
 
-  public JobResponse createJob(JobCreateRequest jobCreateRequest) {
+  @Transactional
+  public JobResponse createJob(JobCreateRequest jobCreateRequest,List<FormDataBodyPart> imgFiles,FormDataBodyPart jFile) {
     if (!jobCreateRequest.validate()) {
       throw new InValidInputException("Please input valid parameters");
     }
@@ -171,21 +206,41 @@ public class JobServiceImpl implements JobService {
       return jobResponse;
     }
 
-    /*//push in ES
-    FullJobVO fullJobVO = new FullJobVO(job, postBlob);
-    boolean published = getEsCacheService().put("job", fullJobVO, null);
-
-    if (!published) {
-      JobResponse jobResponse = new JobResponse();
-      jobResponse.setException(Boolean.TRUE);
-      jobResponse.addMessage("Some Internal Exception Occurred!");
-      return jobResponse;
+    // now upload images, trim images and upload them to amazon
+    List<CreateImageResponseDto> imageResponseDtoList = null;
+    if (imgFiles != null && !imgFiles.isEmpty()) {
+      imageResponseDtoList = getPostService().postImages(imgFiles, job.getId());
+      if (imageResponseDtoList == null || imageResponseDtoList.isEmpty()) {
+        JobResponse jobResponse = new JobResponse();
+        jobResponse.setException(Boolean.TRUE);
+        jobResponse.addMessage("Some Internal Exception Occurred!");
+        return jobResponse;
+      }
     }
 
-    return createJobResponse(fullJobVO, userResponse);*/
 
     PostVO postVO = new PostVO(job, postBlob);
     postVO.setPostType(EnumPostType.JOBS.getId());
+
+    // set images link
+    if (imageResponseDtoList != null) {
+      List<String> imageLinks = new ArrayList<String>();
+      for (CreateImageResponseDto createImageResponseDto : imageResponseDtoList) {
+        String imageLink = getUploadService().getCanonicalPathOfResource(EnumBucket.POST_BUCKET.getName(),
+            createImageResponseDto.getPath());
+        imageLinks.add(imageLink);
+      }
+      postVO.setImageList(imageLinks);
+    }
+
+    // set circle
+    List<CircleVO> circleVOList = new ArrayList<CircleVO>();
+    for (Long circleId : jobCreateRequest.getCircleList()) {
+      CircleVO circleVO = (CircleVO) getBaseESService().get(circleId, null , CircleVO.class);
+      circleVOList.add(circleVO);
+    }
+    postVO.setCircleList(circleVOList);
+
     boolean published = getBaseESService().put(postVO);
     if (published) {
       JobVO jobVO = new JobVO(job);
@@ -218,20 +273,6 @@ public class JobServiceImpl implements JobService {
     if (postId == null) {
       throw new InValidInputException("Post Id cannot be null");
     }
-
-    /*GetResponse getResponse = ESCacheManager.getInstance().getClient()
-        .prepareGet(INDEX, TYPE, postId.toString()).execute().actionGet();
-
-
-    if (getResponse.isExists()) {
-      FullJobVO fullJobVO = (FullJobVO) getEsCacheService().parseResponse(getResponse, FullJobVO.class);
-      return createJobResponse(fullJobVO, userResponse);
-    } else {
-      JobResponse jobResponse = new JobResponse();
-      jobResponse.setException(Boolean.TRUE);
-      jobResponse.addMessage("Don't find any record with specified id");
-      return jobResponse;
-    }*/
 
     PostVO postVO = (PostVO)getBaseESService().get(postId, null,PostVO.class);
     JobVO jobVO = (JobVO)getBaseESService().get(postId, postId,JobVO.class);
@@ -329,6 +370,12 @@ public class JobServiceImpl implements JobService {
     if (industryList != null && industryList.length > 0) {
       andFilterBuilder.add(FilterBuilders.inFilter("industryRolesList.industryId", industryList));
     }
+
+    if (userResponse.getCircleList() != null && userResponse.getCircleList().size() > 0) {
+      //Long[] circleArrayList = (Long[])userResponse.getCircleList().toArray();
+      andFilterBuilder.add(FilterBuilders.inFilter("circleList.id", userResponse.getCircleList().toArray()));
+    }
+
     if (salaryRange != null && salaryRange.length > 0) {
       double minSalary =salaryRange[0]!= null ? salaryRange[0] : DefaultConstants.MIN_SALARY;
       double maxSalary = (salaryRange.length > 1 && salaryRange[1] != null) ?
@@ -382,30 +429,6 @@ public class JobServiceImpl implements JobService {
       genericPostResponse.setImportant(isImp);
       genericPostResponseList.add(genericPostResponse);
     }
-
-    /*// put sorting
-    SearchResponse response = ESCacheManager.getInstance().getClient().prepareSearch(INDEX)
-        .setPostFilter(andFilterBuilder).addSort("postId", SortOrder.DESC)
-        .setFrom(pageNo).setSize(perPage).execute().actionGet();
-
-
-    if (response != null && RestStatus.OK.getStatus() == response.status().getStatus()) {
-      SearchHits searchHits = response.getHits();
-      totalHits = searchHits.getTotalHits();
-      for (SearchHit searchHit : searchHits) {
-        FullJobVO fullJobVO = (FullJobVO)getEsCacheService().parseResponse(searchHit, FullJobVO.class);
-        if (fullJobVO != null) {
-          // set User
-          UserResponse postUser = getUserService().findById(fullJobVO.getUserId());
-          GenericPostResponse genericPostResponse = new GenericPostResponse(fullJobVO, postUser);
-          // check if job is set important
-          boolean isImp = getEsCacheService().isPostMarkedImportant(fullJobVO.getPostId(), userResponse.getId());
-          genericPostResponse.setImportant(isImp);
-
-          genericPostResponseList.add(genericPostResponse);
-        }
-      }
-    }*/
     jobSearchResponse.setJobCreateResponseList(genericPostResponseList);
     jobSearchResponse.setTotalResults(esSearchResponse.getTotalResults());
     jobSearchResponse.setPerPage(perPage);
@@ -535,6 +558,20 @@ public class JobServiceImpl implements JobService {
     userDto.setId(userResponse.getId());
     userDto.setName(userResponse.getName());
     jobResponse.setUserDto(userDto);
+
+    jobResponse.setImages(postVO.getImageList());
+    List<CircleVO> circleVOs = postVO.getCircleList();
+
+    List<CircleDto> circleDtoList = new ArrayList<CircleDto>();
+    for (CircleVO circleVO : circleVOs) {
+      CircleDto circleDto = new CircleDto();
+      circleDto.setId(circleVO.getId());
+      circleDto.setName(circleVO.getName());
+      circleDto.setSelected(false);
+      circleDtoList.add(circleDto);
+    }
+
+    jobResponse.setCircleDtoList(circleDtoList);
     return jobResponse;
   }
 
@@ -568,5 +605,9 @@ public class JobServiceImpl implements JobService {
 
   public PostCommentDao getPostCommentDao() {
     return postCommentDao;
+  }
+
+  public UploadService getUploadService() {
+    return uploadService;
   }
 }

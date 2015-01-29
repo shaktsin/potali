@@ -13,8 +13,8 @@ public class ESSearchFilter {
 
   private FilterBuilder filterBuilder;
   private Map<String, SortOrder> sortOrderMap = new HashMap<String, SortOrder>();
-  private int pageNo;
-  private int perPage;
+  private int pageNo=0;
+  private int perPage=1;
 
   public FilterBuilder getFilterBuilder() {
     return filterBuilder;

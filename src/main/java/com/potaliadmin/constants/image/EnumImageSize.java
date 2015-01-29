@@ -6,7 +6,8 @@ package com.potaliadmin.constants.image;
 public enum EnumImageSize {
 
   XS_SMALL(1, 50, 50, "xs", "jpg"),
-  MEDIUM(2, 400, 400, "ms", "jpg");
+  MEDIUM(2, 400, 400, "ms", "jpg"),
+  FIT(3, 400, 450, "fit", "jpg"),;
 
   private int id;
   private int height;

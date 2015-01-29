@@ -1,13 +1,17 @@
 package com.potaliadmin.impl.service.post;
 
 import com.potaliadmin.constants.DefaultConstants;
+import com.potaliadmin.constants.attachment.EnumAttachmentType;
 import com.potaliadmin.constants.cache.ESIndexKeys;
-import com.potaliadmin.constants.post.EnumPostType;
+import com.potaliadmin.constants.image.EnumBucket;
+import com.potaliadmin.constants.image.EnumImageSize;
 import com.potaliadmin.constants.reactions.EnumReactions;
+import com.potaliadmin.domain.attachment.Attachment;
 import com.potaliadmin.domain.comment.Comment;
 import com.potaliadmin.domain.reactions.PostReactions;
-import com.potaliadmin.dto.internal.cache.es.framework.GenericPostVO;
 import com.potaliadmin.dto.internal.cache.es.post.PostReactionVO;
+import com.potaliadmin.dto.internal.image.CreateImageResponseDto;
+import com.potaliadmin.dto.internal.image.ImageDto;
 import com.potaliadmin.dto.web.request.posts.AllPostReactionRequest;
 import com.potaliadmin.dto.web.request.posts.BookMarkPostRequest;
 import com.potaliadmin.dto.web.request.posts.PostCommentRequest;
@@ -22,33 +26,34 @@ import com.potaliadmin.framework.cache.ESCacheManager;
 import com.potaliadmin.framework.elasticsearch.BaseESService;
 import com.potaliadmin.framework.elasticsearch.ESSearchFilter;
 import com.potaliadmin.framework.elasticsearch.response.ESSearchResponse;
+import com.potaliadmin.pact.dao.attachment.AttachmentDao;
 import com.potaliadmin.pact.dao.post.PostCommentDao;
 import com.potaliadmin.pact.dao.post.PostReactionDao;
+import com.potaliadmin.pact.framework.aws.UploadService;
+import com.potaliadmin.pact.framework.utils.FileUploadService;
 import com.potaliadmin.pact.service.cache.ESCacheService;
 import com.potaliadmin.pact.service.post.PostService;
-import com.potaliadmin.pact.service.users.LoginService;
 import com.potaliadmin.pact.service.users.UserService;
 import com.potaliadmin.util.DateUtils;
+import com.potaliadmin.util.image.ImageNameBuilder;
+import com.potaliadmin.util.image.ImageProcessUtil;
 import com.potaliadmin.vo.BaseElasticVO;
 import com.potaliadmin.vo.comment.CommentVO;
 import com.potaliadmin.vo.post.PostVO;
 import org.elasticsearch.action.count.CountResponse;
-import org.elasticsearch.action.search.MultiSearchRequestBuilder;
-import org.elasticsearch.action.search.SearchRequestBuilder;
-import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.index.query.*;
-import org.elasticsearch.rest.RestStatus;
-import org.elasticsearch.search.SearchHit;
-import org.elasticsearch.search.SearchHits;
 import org.elasticsearch.search.sort.SortOrder;
+import org.glassfish.jersey.media.multipart.FormDataBodyPart;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 
+import java.io.File;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
 /**
@@ -69,6 +74,12 @@ public class PostServiceImpl implements PostService {
   UserService userService;
   @Autowired
   PostCommentDao postCommentDao;
+  @Autowired
+  FileUploadService fileUploadService;
+  @Autowired
+  UploadService uploadService;
+  @Autowired
+  AttachmentDao attachmentDao;
 
 
 
@@ -213,37 +224,9 @@ public class PostServiceImpl implements PostService {
     boolFilterBuilder.must(FilterBuilders.termFilter("reactionId", bookMarkPostRequest.getActionId()));
     HasChildFilterBuilder hasChildFilterBuilder = FilterBuilders.hasChildFilter(ESIndexKeys.REACTION_INDEX, boolFilterBuilder);
 
-    /*SearchResponse searchResponse = ESCacheManager.getInstance().getClient()
-                                  .prepareSearch(ESIndexKeys.INDEX).setTypes(ESIndexKeys.JOB_TYPE)
-                                  .setPostFilter(hasChildFilterBuilder).addSort("postId", SortOrder.DESC)
-                                  .setFrom(pageNo * perPage).setSize(perPage).execute().actionGet();
-
-
-    List<GenericPostResponse> genericPostResponseList = new ArrayList<GenericPostResponse>();
-    if (searchResponse != null && RestStatus.OK.getStatus() == searchResponse.status().getStatus()) {
-      SearchHits searchHits = searchResponse.getHits();
-      totalHits = searchHits.getTotalHits();
-
-      for (SearchHit searchHit : searchHits) {
-        Class rClass = EnumPostType.getPostTypeByName(searchHit.getType()).getaClass();
-        GenericPostVO genericPostVO = (GenericPostVO)getEsCacheService().parseResponse(searchHit, rClass);
-        if (genericPostVO != null) {
-          UserResponse postUser = getUserService().findById(genericPostVO.getUserId());
-          GenericPostResponse genericPostResponse = new GenericPostResponse(genericPostVO, postUser);
-          genericPostResponse.setPostType(EnumPostType.getPostTypeByName(searchHit.getType()).getId());
-          genericPostResponseList.add(genericPostResponse);
-        }
-      }
-    }
-
-    PostResponse postResponse = new PostResponse();
-    postResponse.setPosts(genericPostResponseList);
-    postResponse.setPageNo(pageNo);
-    postResponse.setPerPage(perPage);
-    postResponse.setTotalResults(totalHits);*/
-
     ESSearchFilter esSearchFilter =
-        new ESSearchFilter().setFilterBuilder(hasChildFilterBuilder).addSortedMap("postId", SortOrder.DESC).setPageNo(pageNo).setPerPage(perPage);
+        new ESSearchFilter().setFilterBuilder(hasChildFilterBuilder)
+            .addSortedMap("postId", SortOrder.DESC).setPageNo(pageNo).setPerPage(perPage);
 
     ESSearchResponse esSearchResponse = getBaseESService().search(esSearchFilter, PostVO.class);
     List<BaseElasticVO> baseElasticVOs = esSearchResponse.getBaseElasticVOs();
@@ -381,6 +364,60 @@ public class PostServiceImpl implements PostService {
     return esSearchResponse.getTotalResults() > 0;
   }
 
+  @Override
+  @Transactional(propagation = Propagation.REQUIRED)
+  public List<CreateImageResponseDto> postImages(List<FormDataBodyPart> imageList, Long postId) {
+    boolean isUploadSuccessful = false;
+    boolean isUploadedToDisk = getFileUploadService().uploadPostImages(imageList, postId);
+    if (!isUploadedToDisk) {
+      logger.error("Image could not be downloaded to server from client for post "+postId);
+      throw new PotaliRuntimeException("Some internal exception occurred in posting");
+    }
+
+    // convert post images
+    List<ImageDto> imageDtoList = new ArrayList<ImageDto>();
+    Integer count = 0;
+    for (FormDataBodyPart image : imageList) {
+      String absolutePath = getFileUploadService().getAbsolutePath(postId);
+      String uploadRootPath = getFileUploadService().getUploadPath();
+      String relativePath = getFileUploadService().getRelativePath(postId);
+      String reSizedFileName = ImageProcessUtil.reSize(absolutePath, image.getContentDisposition().getFileName(),
+          EnumImageSize.FIT, count.toString());
+      if (reSizedFileName != null) {
+        ImageDto imageDto = new ImageNameBuilder().addBucket(EnumBucket.POST_BUCKET)
+            .addRootFolder(uploadRootPath).addUploadFolderName(relativePath).addFileName(reSizedFileName)
+            .addSize(EnumImageSize.FIT).build();
+
+        imageDtoList.add(imageDto);
+      }
+      count++;
+    }
+
+
+    boolean uploadedToAWS = getUploadService().uploadPostImages(postId, imageDtoList);
+    if (!uploadedToAWS) {
+      logger.error("Image could not be uploaded to aws from server "+postId);
+      throw new PotaliRuntimeException("Some internal exception occurred in posting");
+    }
+
+    List<CreateImageResponseDto> createImageResponseDtoList = new ArrayList<CreateImageResponseDto>();
+    for (ImageDto imageDto : imageDtoList) {
+      String path = postId + File.separator + imageDto.getFileName();
+      Attachment attachment = getAttachmentDao()
+          .createAttachment(EnumAttachmentType.IMAGE, path, EnumImageSize.getImageSizeById(imageDto.getSize()), postId);
+
+      if (attachment != null) {
+        CreateImageResponseDto createImageResponseDto = new CreateImageResponseDto();
+        createImageResponseDto.setPath(attachment.getPath());
+        createImageResponseDto.setEnumImageSize(EnumImageSize.getImageSizeById(attachment.getSize()));
+        createImageResponseDto.setId(attachment.getId());
+        createImageResponseDtoList.add(createImageResponseDto);
+      }
+
+    }
+    return createImageResponseDtoList;
+  }
+
   private GenericPostReactionResponse generatePostReactionResponse(PostVO postVO, PostReactionVO postReactionVO) {
 
     if (EnumReactions.REPLY_VIA_EMAIL.getId().equals(postReactionVO.getReactionId())) {
@@ -438,5 +475,17 @@ public class PostServiceImpl implements PostService {
 
   public PostCommentDao getPostCommentDao() {
     return postCommentDao;
+  }
+
+  public FileUploadService getFileUploadService() {
+    return fileUploadService;
+  }
+
+  public UploadService getUploadService() {
+    return uploadService;
+  }
+
+  public AttachmentDao getAttachmentDao() {
+    return attachmentDao;
   }
 }

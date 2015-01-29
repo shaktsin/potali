@@ -24,4 +24,6 @@ public interface BaseESService {
     public ESSearchResponse search(ESSearchFilter esSearchFilter, Class className);
 
     public boolean delete(Long id, Class className);
+
+    public boolean update(BaseElasticVO baseElasticVO);
 }

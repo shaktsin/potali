@@ -4,6 +4,7 @@ import com.potaliadmin.dto.internal.cache.es.job.CityDto;
 import com.potaliadmin.dto.internal.cache.es.job.IndustryDto;
 import com.potaliadmin.dto.internal.cache.es.job.IndustryRolesDto;
 import com.potaliadmin.dto.web.response.base.GenericBaseResponse;
+import com.potaliadmin.dto.web.response.circle.CircleDto;
 
 import java.util.List;
 
@@ -18,6 +19,7 @@ public class PrepareJobCreateResponse extends GenericBaseResponse {
   private String replyEmail;
   private String replyPhone;
   private String replyWatsApp;
+  private List<CircleDto> circleDtoList;
 
 
 
@@ -60,5 +62,13 @@ public class PrepareJobCreateResponse extends GenericBaseResponse {
 
   public void setReplyWatsApp(String replyWatsApp) {
     this.replyWatsApp = replyWatsApp;
+  }
+
+  public List<CircleDto> getCircleDtoList() {
+    return circleDtoList;
+  }
+
+  public void setCircleDtoList(List<CircleDto> circleDtoList) {
+    this.circleDtoList = circleDtoList;
   }
 }

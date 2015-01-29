@@ -19,10 +19,12 @@ import com.potaliadmin.framework.cache.cluster.ClusterCache;
 import com.potaliadmin.framework.cache.industry.IndustryCache;
 import com.potaliadmin.framework.cache.industry.IndustryRolesCache;
 import com.potaliadmin.framework.cache.institute.InstituteCache;
+import com.potaliadmin.framework.elasticsearch.BaseESService;
 import com.potaliadmin.impl.framework.properties.AppProperties;
 import com.potaliadmin.pact.framework.BaseDao;
 import com.potaliadmin.pact.service.cache.AppCacheService;
 import com.potaliadmin.pact.service.cache.MemCacheService;
+import com.potaliadmin.vo.user.UserVO;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -47,6 +49,9 @@ public class AppCacheServiceImpl implements AppCacheService {
 
   @Autowired
   MemCacheService memCacheService;
+
+  @Autowired
+  BaseESService baseESService;
 
   @Override
   public void reloadAll() {
@@ -146,16 +151,22 @@ public class AppCacheServiceImpl implements AppCacheService {
   public void reloadUser() {
     List<User> userList = getBaseDao().getAll(User.class);
     for (User user : userList) {
-      UserResponse userResponse = new UserResponse();
-      userResponse.setId(user.getId());
-      userResponse.setName(user.getAccountName());
-      userResponse.setEmail(user.getEmail());
-      userResponse.setPasswordChecksum(user.getPasswordChecksum());
-      userResponse.setInstituteId(user.getInstituteId());
-      userResponse.setImage(user.getProfileImage());
+      //UserResponse userResponse = new UserResponse();
+      //userResponse.setId(user.getId());
+      //userResponse.setName(user.getAccountName());
+      //userResponse.setEmail(user.getEmail());
+      //userResponse.setPasswordChecksum(user.getPasswordChecksum());
+      //userResponse.setInstituteId(user.getInstituteId());
+      //userResponse.setImage(user.getProfileImage());
 
-      getMemCacheService().put(MemCacheNS.USER_BY_ID, user.getId().toString(), userResponse);
-      getMemCacheService().put(MemCacheNS.USER_BY_EMAIL, user.getEmail(), userResponse);
+
+
+      //getMemCacheService().put(MemCacheNS.USER_BY_ID, user.getId().toString(), userResponse);
+      //getMemCacheService().put(MemCacheNS.USER_BY_EMAIL, user.getEmail(), userResponse);
+
+      UserVO userVO = new UserVO(user);
+      getBaseESService().put(userVO);
+
 
     }
   }
@@ -171,5 +182,9 @@ public class AppCacheServiceImpl implements AppCacheService {
 
   public MemCacheService getMemCacheService() {
     return memCacheService;
+  }
+
+  public BaseESService getBaseESService() {
+    return baseESService;
   }
 }

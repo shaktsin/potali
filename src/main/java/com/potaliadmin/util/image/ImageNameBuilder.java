@@ -53,13 +53,10 @@ public class ImageNameBuilder {
       imageDto.setSize(enumImageSize.getId());
       imageDto.setType(bucket.getId());
       imageDto.setFileName(fileName);
-      imageDto.setCanonicalName(ImageSecurity.encodeImage(tempFileName));
+      imageDto.setCanonicalName(tempFileName);
       return imageDto;
     }
     return null;
   }
-
-
-
 
 }

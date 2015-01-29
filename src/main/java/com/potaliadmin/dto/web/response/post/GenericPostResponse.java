@@ -3,14 +3,18 @@ package com.potaliadmin.dto.web.response.post;
 import com.potaliadmin.constants.reactions.EnumReactions;
 import com.potaliadmin.dto.internal.cache.es.framework.GenericPostVO;
 import com.potaliadmin.dto.web.response.base.GenericBaseResponse;
+import com.potaliadmin.dto.web.response.circle.CircleDto;
 import com.potaliadmin.dto.web.response.user.UserDto;
 import com.potaliadmin.dto.web.response.user.UserResponse;
 import com.potaliadmin.util.BaseUtil;
 import com.potaliadmin.util.DateUtils;
+import com.potaliadmin.vo.circle.CircleVO;
 import com.potaliadmin.vo.post.PostVO;
 import org.apache.commons.lang.StringUtils;
 
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 /**
  * Created by Shakti Singh on 12/20/14.
@@ -26,6 +30,9 @@ public class GenericPostResponse extends GenericBaseResponse {
   private ShareDto shareDto;
   private int postType;
   public boolean important;
+  private List<String> images;
+  private List<CircleDto> circleDtoList;
+  private CommentListResponse commentListResponse;
 
 
   public GenericPostResponse() {
@@ -90,6 +97,18 @@ public class GenericPostResponse extends GenericBaseResponse {
     userDto.setId(postUser.getId());
     userDto.setImage(postUser.getImage());
     this.setUserDto(userDto);
+
+    this.images = postVO.getImageList();
+
+    List<CircleDto> circleDtos = new ArrayList<CircleDto>();
+    for (CircleVO circleVO : postVO.getCircleList()) {
+      CircleDto circleDto = new CircleDto();
+      circleDto.setId(circleVO.getId());
+      circleDto.setName(circleVO.getName());
+      circleDtos.add(circleDto);
+    }
+
+    this.setCircleDtoList(circleDtos);
 
   }
 
@@ -163,5 +182,29 @@ public class GenericPostResponse extends GenericBaseResponse {
 
   public void setImportant(boolean important) {
     this.important = important;
+  }
+
+  public List<String> getImages() {
+    return images;
+  }
+
+  public void setImages(List<String> images) {
+    this.images = images;
+  }
+
+  public List<CircleDto> getCircleDtoList() {
+    return circleDtoList;
+  }
+
+  public void setCircleDtoList(List<CircleDto> circleDtoList) {
+    this.circleDtoList = circleDtoList;
+  }
+
+  public CommentListResponse getCommentListResponse() {
+    return commentListResponse;
+  }
+
+  public void setCommentListResponse(CommentListResponse commentListResponse) {
+    this.commentListResponse = commentListResponse;
   }
 }

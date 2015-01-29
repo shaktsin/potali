@@ -7,11 +7,11 @@ import java.util.Date;
 /**
  * Created by shakti on 22/1/15.
  */
-//@Entity
-//@Table(name = "circle")
+@Entity
+@Table(name = "circle")
 public class Circle implements Serializable {
 
-  /*@Id
+  @Id
   @GeneratedValue(strategy = GenerationType.AUTO)
   @Column(name = "id", unique = true, nullable = false)
   private Long id;
@@ -79,5 +79,5 @@ public class Circle implements Serializable {
 
   public void setUpdatedDate(Date updatedDate) {
     this.updatedDate = updatedDate;
-  }*/
+  }
 }

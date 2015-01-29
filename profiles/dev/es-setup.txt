@@ -62,3 +62,83 @@ GET /ofc/job/_search
 }
 
 
+PUT /ofc/_mapping/user
+{
+    "user" : {
+        "properties" : {
+            "email" : {
+                "type" : "string",
+                "index":"not_analyzed"
+            }
+        }
+    }
+}
+
+
+PUT /ofc/_mapping/user
+{
+    "user" : {
+        "properties" : {
+            "email" : {
+                "type" : "string",
+                "index":"not_analyzed"
+            }
+        }
+    }
+}
+
+PUT /ofc/_mapping/job
+{
+    "job" : {
+        "_parent": {
+           "type": "post"
+        }
+    }
+}
+
+PUT /ofc/_mapping/post_reactions
+{
+    "post_reactions" : {
+        "_parent": {
+           "type": "post"
+        }
+    }
+}
+
+PUT /ofc/_mapping/comment
+{
+    "comment" : {
+        "_parent": {
+           "type": "post"
+        }
+    }
+}
+GET /ofc/user/3
+GET /ofc/post/35
+GET /ofc/comment/2?parent=36
+
+GET /ofc/user/_search
+{
+  "from" : 0,
+  "size" : 1,
+  "post_filter" : {
+    "term" : {
+      "email" : "sushant@gmail.com"
+    }
+  }
+}
+
+GET /ofc/user/_search
+{
+    "query" : {
+         "term" : { "accountName": "susi" }
+     }
+}
+
+GET /ofc/user/_mapping
+
+DELETE /ofc/user
+
+
+
+POST /ofc/_flush

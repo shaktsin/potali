@@ -3,11 +3,9 @@ package com.potaliadmin.resources.user;
 import com.potaliadmin.constants.DefaultConstants;
 import com.potaliadmin.constants.image.EnumBucket;
 import com.potaliadmin.constants.image.EnumImageSize;
-import com.potaliadmin.constants.request.RequestConstants;
 import com.potaliadmin.dto.internal.image.ImageDto;
 import com.potaliadmin.dto.web.request.user.UserProfileUpdateRequest;
 import com.potaliadmin.dto.web.request.user.UserSignUpRequest;
-import com.potaliadmin.dto.web.response.job.JobSearchResponse;
 import com.potaliadmin.dto.web.response.user.UserProfileUpdateResponse;
 import com.potaliadmin.dto.web.response.user.UserProfileUploadResponse;
 import com.potaliadmin.dto.web.response.user.UserResourceResponse;
@@ -17,10 +15,8 @@ import com.potaliadmin.pact.service.job.JobService;
 import com.potaliadmin.pact.service.users.LoginService;
 import com.potaliadmin.pact.service.users.UserService;
 import com.potaliadmin.security.SecurityToken;
-import com.potaliadmin.util.BaseUtil;
 import com.potaliadmin.util.image.ImageNameBuilder;
 import com.potaliadmin.util.image.ImageProcessUtil;
-import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.shiro.authz.annotation.RequiresAuthentication;
 import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
@@ -34,7 +30,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
-import java.awt.*;
 import java.io.*;
 import java.text.ParseException;
 
@@ -269,7 +264,7 @@ public class UserResource {
 
 
       // first resize the image
-      String reSizeSmallFileName = ImageProcessUtil.reSize(rootPath, serverFileName, EnumImageSize.XS_SMALL);
+      String reSizeSmallFileName = ImageProcessUtil.reSize(rootPath, serverFileName, EnumImageSize.XS_SMALL,null );
       if (reSizeSmallFileName == null) {
         UserProfileUploadResponse userProfileUploadResponse = new UserProfileUploadResponse();
         userProfileUploadResponse.setException(Boolean.TRUE);
@@ -277,7 +272,7 @@ public class UserResource {
         return userProfileUploadResponse;
       }
 
-      String mediumSizeSmallFileName = ImageProcessUtil.reSize(rootPath, serverFileName, EnumImageSize.MEDIUM);
+      String mediumSizeSmallFileName = ImageProcessUtil.reSize(rootPath, serverFileName, EnumImageSize.MEDIUM,null );
       if (mediumSizeSmallFileName == null) {
         UserProfileUploadResponse userProfileUploadResponse = new UserProfileUploadResponse();
         userProfileUploadResponse.setException(Boolean.TRUE);

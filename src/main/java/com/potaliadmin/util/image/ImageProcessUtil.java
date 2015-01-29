@@ -2,6 +2,8 @@ package com.potaliadmin.util.image;
 
 import com.potaliadmin.constants.DefaultConstants;
 import com.potaliadmin.constants.image.EnumImageSize;
+import org.apache.commons.lang.StringUtils;
+import org.imgscalr.Scalr;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -29,7 +31,7 @@ public class ImageProcessUtil {
   public static final String finalFormat = "jpg";
   public static final String fileBreaker = ".";
 
-  public static String reSize(String filePath, String fileName, EnumImageSize enumImageSize) {
+  public static String reSize(String filePath, String fileName, EnumImageSize enumImageSize, String reNameFile) {
     String fullFileName = filePath + File.separator + fileName;
     String reSizedFileName = null;
     try {
@@ -37,10 +39,20 @@ public class ImageProcessUtil {
       int type = originalImage.getType() == 0? BufferedImage.TYPE_INT_ARGB : originalImage.getType();
 
       //BufferedImage resizeImageJpg = resizeImageWithHint(originalImage, type, enumImageSize);
-      BufferedImage resizeImageJpg =
-          getScaledInstance(originalImage, enumImageSize.getWidth(), enumImageSize.getHeight(), RenderingHints.VALUE_INTERPOLATION_BILINEAR, true);
+      BufferedImage resizeImageJpg = Scalr.resize(originalImage, Scalr.Method.SPEED, Scalr.Mode.FIT_TO_WIDTH,
+          150, 100, Scalr.OP_ANTIALIAS);
 
-      reSizedFileName = fileName + DefaultConstants.NAME_SEPARATOR+enumImageSize.getPrefix()+fileBreaker +enumImageSize.getFormat();
+
+          //getScaledInstance(originalImage, enumImageSize.getWidth(),
+          //    enumImageSize.getHeight(), RenderingHints.VALUE_INTERPOLATION_BILINEAR, true);
+
+      if (StringUtils.isBlank(reNameFile)) {
+        reNameFile = fileName;
+      }
+
+      reSizedFileName = reNameFile + DefaultConstants.NAME_SEPARATOR+enumImageSize.getPrefix()+
+          fileBreaker +enumImageSize.getFormat();
+
       String reSizedCanonicalName  = filePath + File.separator + reSizedFileName;
 
       //ImageIO.write(resizeImageJpg, enumImageSize.getFormat(), new File(reSizedCanonicalName));
