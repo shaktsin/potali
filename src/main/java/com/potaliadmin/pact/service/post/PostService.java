@@ -33,4 +33,9 @@ public interface PostService {
   boolean postHasComments(Long postId);
 
   List<CreateImageResponseDto> postImages(List<FormDataBodyPart> imageList, Long postId);
+
+  PostFiltersResponse getPostFilters();
+
+  GenericPostReactionResponse reverseReaction(PostReactionRequest postReactionRequest);
+
 }

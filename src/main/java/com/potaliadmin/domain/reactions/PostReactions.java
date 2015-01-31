@@ -1,6 +1,7 @@
 package com.potaliadmin.domain.reactions;
 
 import javax.persistence.*;
+import java.io.Serializable;
 import java.util.Date;
 
 /**
@@ -8,7 +9,10 @@ import java.util.Date;
  */
 @Entity
 @Table(name = "post_reaction")
-public class PostReactions {
+@NamedQueries(
+    @NamedQuery(name = "findByPostReactionAndUserAndPost",query = "from PostReactions pr where pr.postId = :postId and pr.userId = :userId and pr.reactionId = :reationId")
+)
+public class PostReactions implements Serializable {
 
   @Id
   @GeneratedValue(strategy = GenerationType.AUTO)

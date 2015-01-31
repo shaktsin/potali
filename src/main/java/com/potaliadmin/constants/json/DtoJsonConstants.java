@@ -24,4 +24,11 @@ public class DtoJsonConstants {
   public static final String THIRD_PARTY_AUTH = "thPartyAuth";
   public static final String PROVIDER = "provider";
 
+
+  //job filters
+  public static final String JOBS = "jobs";
+  public static final String SALARY = "Salary";
+  public static final String EXPERIENCE = "Experience";
+  public static final String GENERAL = "General";
+
 }

@@ -35,6 +35,23 @@ public class PostResource {
     }
   }
 
+
+  @POST
+  @Path("/react/reverse")
+  @Produces("application/json")
+  @RequiresAuthentication
+  public GenericPostReactionResponse reverseReaction(PostReactionRequest postReactionRequest) {
+    try {
+      return getPostService().reverseReaction(postReactionRequest);
+
+    } catch (Exception e) {
+      GenericPostReactionResponse genericPostReactionResponse = new GenericPostReactionResponse();
+      genericPostReactionResponse.setException(Boolean.TRUE);
+      genericPostReactionResponse.addMessage(e.getMessage());
+      return genericPostReactionResponse;
+    }
+  }
+
   @POST
   @Path("/imp")
   @Produces("application/json")
@@ -117,6 +134,22 @@ public class PostResource {
       commentListResponse.setException(true);
       commentListResponse.addMessage(e.getMessage());
       return commentListResponse;
+    }
+  }
+
+
+  @GET
+  @Path("/filters/all")
+  @Produces("application/json")
+  @RequiresAuthentication
+  public PostFiltersResponse getAllFilters() {
+    try {
+      return getPostService().getPostFilters();
+    } catch (Exception e) {
+      PostFiltersResponse postFiltersResponse = new PostFiltersResponse();
+      postFiltersResponse.setException(true);
+      postFiltersResponse.addMessage(e.getMessage());
+      return postFiltersResponse;
     }
   }
 

@@ -1,10 +1,12 @@
 package com.potaliadmin.pact.service.job;
 
 import com.potaliadmin.constants.query.EnumSearchOperation;
+import com.potaliadmin.dto.internal.filter.JobFilterDto;
 import com.potaliadmin.dto.web.request.jobs.JobCreateRequest;
 import com.potaliadmin.dto.web.response.job.JobResponse;
 import com.potaliadmin.dto.web.response.job.JobSearchResponse;
 import com.potaliadmin.dto.web.response.job.PrepareJobCreateResponse;
+import com.potaliadmin.dto.web.response.user.UserResponse;
 import org.glassfish.jersey.media.multipart.FormDataBodyPart;
 
 import java.util.Date;
@@ -24,4 +26,6 @@ public interface JobService {
   public JobSearchResponse searchJob(Long[] locationList, Long[] rolesList, Long[] industryList,
                                      Double[] salaryRange, Integer[] experienceRage, EnumSearchOperation searchOperation,
                                      Long postId, int perPage, int pageNo);
+
+  public JobFilterDto getJobFilters(UserResponse userResponse);
 }

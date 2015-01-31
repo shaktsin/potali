@@ -5,17 +5,26 @@ import com.potaliadmin.constants.attachment.EnumAttachmentType;
 import com.potaliadmin.constants.cache.ESIndexKeys;
 import com.potaliadmin.constants.image.EnumBucket;
 import com.potaliadmin.constants.image.EnumImageSize;
+import com.potaliadmin.constants.json.DtoJsonConstants;
 import com.potaliadmin.constants.reactions.EnumReactions;
 import com.potaliadmin.domain.attachment.Attachment;
 import com.potaliadmin.domain.comment.Comment;
 import com.potaliadmin.domain.reactions.PostReactions;
+import com.potaliadmin.dto.internal.cache.address.CityVO;
+import com.potaliadmin.dto.internal.cache.es.job.*;
 import com.potaliadmin.dto.internal.cache.es.post.PostReactionVO;
+import com.potaliadmin.dto.internal.cache.job.IndustryRolesVO;
+import com.potaliadmin.dto.internal.cache.job.IndustryVO;
+import com.potaliadmin.dto.internal.filter.BaseFilterDto;
+import com.potaliadmin.dto.internal.filter.GeneralFilterDto;
+import com.potaliadmin.dto.internal.filter.JobFilterDto;
 import com.potaliadmin.dto.internal.image.CreateImageResponseDto;
 import com.potaliadmin.dto.internal.image.ImageDto;
 import com.potaliadmin.dto.web.request.posts.AllPostReactionRequest;
 import com.potaliadmin.dto.web.request.posts.BookMarkPostRequest;
 import com.potaliadmin.dto.web.request.posts.PostCommentRequest;
 import com.potaliadmin.dto.web.request.posts.PostReactionRequest;
+import com.potaliadmin.dto.web.response.circle.CircleDto;
 import com.potaliadmin.dto.web.response.post.*;
 import com.potaliadmin.dto.web.response.user.UserDto;
 import com.potaliadmin.dto.web.response.user.UserResponse;
@@ -23,6 +32,9 @@ import com.potaliadmin.exceptions.InValidInputException;
 import com.potaliadmin.exceptions.PotaliRuntimeException;
 import com.potaliadmin.exceptions.UnAuthorizedAccessException;
 import com.potaliadmin.framework.cache.ESCacheManager;
+import com.potaliadmin.framework.cache.address.CityCache;
+import com.potaliadmin.framework.cache.industry.IndustryCache;
+import com.potaliadmin.framework.cache.industry.IndustryRolesCache;
 import com.potaliadmin.framework.elasticsearch.BaseESService;
 import com.potaliadmin.framework.elasticsearch.ESSearchFilter;
 import com.potaliadmin.framework.elasticsearch.response.ESSearchResponse;
@@ -38,10 +50,17 @@ import com.potaliadmin.util.DateUtils;
 import com.potaliadmin.util.image.ImageNameBuilder;
 import com.potaliadmin.util.image.ImageProcessUtil;
 import com.potaliadmin.vo.BaseElasticVO;
+import com.potaliadmin.vo.circle.CircleVO;
 import com.potaliadmin.vo.comment.CommentVO;
 import com.potaliadmin.vo.post.PostVO;
 import org.elasticsearch.action.count.CountResponse;
+import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.index.query.*;
+import org.elasticsearch.search.aggregations.AggregationBuilders;
+import org.elasticsearch.search.aggregations.metrics.max.Max;
+import org.elasticsearch.search.aggregations.metrics.max.MaxBuilder;
+import org.elasticsearch.search.aggregations.metrics.min.Min;
+import org.elasticsearch.search.aggregations.metrics.min.MinBuilder;
 import org.elasticsearch.search.sort.SortOrder;
 import org.glassfish.jersey.media.multipart.FormDataBodyPart;
 import org.slf4j.Logger;
@@ -54,7 +73,9 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Created by Shakti Singh on 12/28/14.
@@ -416,6 +437,194 @@ public class PostServiceImpl implements PostService {
 
     }
     return createImageResponseDtoList;
+  }
+
+  @Override
+  public PostFiltersResponse getPostFilters() {
+    UserResponse userResponse = getUserService().getLoggedInUser();
+
+    if (userResponse == null) {
+      throw new InValidInputException("USER CANNOT BE NULL");
+    }
+
+    PostFiltersResponse postFiltersResponse = new PostFiltersResponse();
+
+
+    List<Long> circleList = userResponse.getCircleList();
+    List<CircleDto> circleDtoList = new ArrayList<CircleDto>();
+    for (Long circle : circleList) {
+      CircleVO circleVO = (CircleVO) getBaseESService().get(circle, null, CircleVO.class);
+      if (circleVO != null) {
+        CircleDto circleDto = new CircleDto();
+        circleDto.setId(circleVO.getId());
+        circleDto.setName(circleVO.getName());
+        circleDto.setSelected(false);
+        circleDtoList.add(circleDto);
+      }
+    }
+
+    GeneralFilterDto generalFilterDto = new GeneralFilterDto(DtoJsonConstants.GENERAL);
+    generalFilterDto.setCircleDtoList(circleDtoList);
+    postFiltersResponse.setGenFilterDto(generalFilterDto);
+
+
+    JobFilterDto jobFilterDto = getJobFilters();
+
+    Map<String, BaseFilterDto> specificFilters = new HashMap<String, BaseFilterDto>();
+    specificFilters.put(DtoJsonConstants.JOBS, jobFilterDto);
+    postFiltersResponse.setSpecificFilterMap(specificFilters);
+
+    return postFiltersResponse;
+  }
+
+  @Override
+  @Transactional
+  public GenericPostReactionResponse reverseReaction(PostReactionRequest postReactionRequest) {
+    if (postReactionRequest == null) {
+      throw new InValidInputException("Post Reaction Request Cannot be null");
+    }
+    if (!postReactionRequest.validate()) {
+      throw new InValidInputException("Not a valid input");
+    }
+    UserResponse userResponse = getUserService().getLoggedInUser();
+    if (userResponse == null) {
+      throw new UnAuthorizedAccessException("UnAuthorized Action!");
+    }
+
+    Long reactionId = EnumReactions.MARK_AS_IMPORTANT.getId();
+    if (postReactionRequest.getActionId().equals(EnumReactions.MARK_AS_UN_IMPORTANT.getId())) {
+      reactionId = EnumReactions.MARK_AS_IMPORTANT.getId();
+    } else {
+      reactionId = EnumReactions.HIDE_THIS_POST.getId();
+    }
+
+
+    // first reverse it in DB and then In ES
+    PostReactions postReactions = getPostReactionDao().getPostReactionByReactionAndPostId(reactionId,
+        postReactionRequest.getPostId(), userResponse.getId());
+
+    if (postReactions != null) {
+      postReactions.setReactionId(postReactionRequest.getActionId());
+      getPostReactionDao().save(postReactions);
+    }
+
+
+    AndFilterBuilder andFilterBuilder = FilterBuilders.andFilter(FilterBuilders.termFilter("userId", userResponse.getId()),
+        FilterBuilders.termFilter("postId", postReactionRequest.getPostId()), FilterBuilders.termFilter("reactionId",reactionId));
+
+
+
+    ESSearchFilter esSearchFilter =
+        new ESSearchFilter().setFilterBuilder(andFilterBuilder);
+
+    ESSearchResponse esSearchResponse = getBaseESService().search(esSearchFilter, PostReactionVO.class);
+    boolean published = false;
+    List<BaseElasticVO> postReactionVOs = esSearchResponse.getBaseElasticVOs();
+    if (postReactionVOs != null && !postReactionVOs.isEmpty()) {
+      PostReactionVO postReactionVO = (PostReactionVO)postReactionVOs.get(0);
+      postReactionVO.setReactionId(postReactionRequest.getActionId());
+
+      published = getBaseESService().put(postReactionVO);
+    }
+
+    if (!published) {
+      throw new PotaliRuntimeException("Something went wrong! Please try again!");
+    }
+
+    GenericPostReactionResponse genericPostReactionResponse = new GenericPostReactionResponse();
+    genericPostReactionResponse.setSuccess(published);
+
+
+
+    return genericPostReactionResponse;
+  }
+
+  //tODO: remove later
+  private JobFilterDto getJobFilters() {
+    JobFilterDto jobFilterDto = new JobFilterDto(DtoJsonConstants.JOBS);
+
+    List<CityDto> cityDtoList = new ArrayList<CityDto>();
+    List<CityVO> cityVOList = CityCache.getCache().getCityVO();
+    for (CityVO cityVO : cityVOList) {
+      CityDto cityDto = new CityDto();
+      cityDto.setId(cityVO.getId());
+      cityDto.setName(cityVO.getName());
+      cityDtoList.add(cityDto);
+    }
+
+    //List<IndustryRolesVO> industryRolesVOList = IndustryRolesCache.getCache().getAllIndustryRolesVO();
+
+    /*for (IndustryRolesVO industryRolesVO : industryRolesVOList) {
+      IndustryRolesDto industryRolesDto = new IndustryRolesDto();
+      industryRolesDto.setId(industryRolesVO.getId());
+      industryRolesDto.setName(industryRolesVO.getName());
+      industryRolesDto.setIndustryId(industryRolesVO.getId());
+      industryRolesDtoList.add(industryRolesDto);
+    }*/
+
+    List<IndustryDto> industryDtoList = new ArrayList<IndustryDto>();
+    List<IndustryVO> industryVOList = IndustryCache.getCache().getAllIndustryVO();
+    List<IndustryRolesDto> industryRolesDtoList = new ArrayList<IndustryRolesDto>();
+    for (IndustryVO industryVO : industryVOList) {
+      IndustryDto industryDto = new IndustryDto();
+      industryDto.setId(industryVO.getId());
+      industryDto.setName(industryVO.getName());
+      industryDtoList.add(industryDto);
+
+      // get all roles
+      List<Long> rolesList = IndustryCache.getCache().getIndustryRolesListFromIndustryId(industryVO.getId());
+
+      for (Long rolesId : rolesList) {
+        IndustryRolesVO industryRolesVO = IndustryRolesCache.getCache().getIndustryRolesVO(rolesId);
+        IndustryRolesDto industryRolesDto = new IndustryRolesDto();
+        industryRolesDto.setId(industryRolesVO.getId());
+        industryRolesDto.setName(industryRolesVO.getName());
+        industryRolesDto.setIndustryId(industryRolesVO.getId());
+        industryRolesDtoList.add(industryRolesDto);
+      }
+      industryDto.setIndustryRolesDtoList(industryRolesDtoList);
+    }
+
+
+
+    // max salary and min salary, max exp and min exp
+    MinBuilder minFrom = AggregationBuilders.min("from_aggs").field("from");
+    MaxBuilder maxTo = AggregationBuilders.max("to_aggs").field("to");
+
+    MinBuilder salaryMin = AggregationBuilders.min("salary_from").field("salaryFrom");
+    MaxBuilder salaryMax = AggregationBuilders.max("salary_to").field("salaryTo");
+
+    SearchResponse searchResponse = ESCacheManager.getInstance().getClient().prepareSearch("job")
+        .setQuery(QueryBuilders.matchAllQuery()).addAggregation(minFrom).addAggregation(maxTo)
+        .addAggregation(salaryMin).addAggregation(salaryMax).execute().actionGet();
+
+    jobFilterDto.setCityList(cityDtoList);
+    jobFilterDto.setIndList(industryDtoList);
+    jobFilterDto.setRoDtoList(industryRolesDtoList);
+
+    if (searchResponse.status().getStatus() == HttpStatus.OK.value()) {
+      Min minExp = searchResponse.getAggregations().get("from_aggs");
+      Max maxExp = searchResponse.getAggregations().get("to_aggs");
+      Min minSal = searchResponse.getAggregations().get("salary_from");
+      Max maxSal = searchResponse.getAggregations().get("salary_to");
+
+      SalaryRangeDto salaryRangeDto = new SalaryRangeDto(DtoJsonConstants.SALARY);
+      salaryRangeDto.setMin(minSal.getValue());
+      salaryRangeDto.setMax(maxSal.getValue());
+
+
+      ExperienceRangeDto experienceRangeDto = new ExperienceRangeDto(DtoJsonConstants.EXPERIENCE);
+      experienceRangeDto.setMin(new Double(minExp.getValue()).intValue());
+      experienceRangeDto.setMax(new Double(maxExp.getValue()).intValue());
+
+      Map<String, BaseRangeDto> rangeDtoMap = new HashMap<String, BaseRangeDto>();
+      rangeDtoMap.put(salaryRangeDto.getName(), salaryRangeDto);
+      rangeDtoMap.put(experienceRangeDto.getName(), experienceRangeDto);
+
+      jobFilterDto.setRangeDtoMap(rangeDtoMap);
+    }
+
+    return jobFilterDto;
   }
 
   private GenericPostReactionResponse generatePostReactionResponse(PostVO postVO, PostReactionVO postReactionVO) {

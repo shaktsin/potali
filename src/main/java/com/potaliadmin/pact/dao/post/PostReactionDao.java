@@ -8,5 +8,7 @@ import com.potaliadmin.pact.framework.BaseDao;
  */
 public interface PostReactionDao extends BaseDao {
 
-  public PostReactions createPostReaction(Long reactionId,Long postId,Long userId);
+  public PostReactions createPostReaction(Long reactionId, Long postId, Long userId);
+
+  public PostReactions getPostReactionByReactionAndPostId(Long reactionId, Long postId, Long userId);
 }

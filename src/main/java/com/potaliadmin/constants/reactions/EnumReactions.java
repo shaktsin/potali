@@ -17,7 +17,9 @@ public enum  EnumReactions {
   SHARE_VIA_PHONE(7L, "Share Via Phone", 2),
   SHARE_VIA_EMAIL(8L, "Share Via Email", 2),
   SHARE_VIA_WATSAPP(9L, "Share Via WatsApp", 2),
-  COMMENT(10L, "Mark As Important", 5);
+  COMMENT(10L, "Mark As Important", 5),
+  MARK_AS_UN_IMPORTANT(11L, "Mark As UnImportant", -1),
+  MARK_AS_UNHIDE(12L, "Mark As UnHide", 1),;
 
   private Long id;
   private String name;

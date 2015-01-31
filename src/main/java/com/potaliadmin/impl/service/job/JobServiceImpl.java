@@ -2,6 +2,7 @@ package com.potaliadmin.impl.service.job;
 
 import com.potaliadmin.constants.DefaultConstants;
 import com.potaliadmin.constants.image.EnumBucket;
+import com.potaliadmin.constants.json.DtoJsonConstants;
 import com.potaliadmin.constants.post.EnumPostType;
 import com.potaliadmin.constants.query.EnumSearchOperation;
 import com.potaliadmin.constants.reactions.EnumReactions;
@@ -9,12 +10,10 @@ import com.potaliadmin.domain.industry.Industry;
 import com.potaliadmin.domain.job.Job;
 import com.potaliadmin.domain.post.PostBlob;
 import com.potaliadmin.dto.internal.cache.address.CityVO;
-import com.potaliadmin.dto.internal.cache.es.job.CityDto;
-import com.potaliadmin.dto.internal.cache.es.job.FullJobVO;
-import com.potaliadmin.dto.internal.cache.es.job.IndustryDto;
-import com.potaliadmin.dto.internal.cache.es.job.IndustryRolesDto;
+import com.potaliadmin.dto.internal.cache.es.job.*;
 import com.potaliadmin.dto.internal.cache.job.IndustryRolesVO;
 import com.potaliadmin.dto.internal.cache.job.IndustryVO;
+import com.potaliadmin.dto.internal.filter.JobFilterDto;
 import com.potaliadmin.dto.internal.image.CreateImageResponseDto;
 import com.potaliadmin.dto.web.request.jobs.JobCreateRequest;
 import com.potaliadmin.dto.web.response.circle.CircleDto;
@@ -59,16 +58,21 @@ import org.elasticsearch.index.query.*;
 import org.elasticsearch.rest.RestStatus;
 import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.SearchHits;
+import org.elasticsearch.search.aggregations.Aggregation;
+import org.elasticsearch.search.aggregations.AggregationBuilders;
+import org.elasticsearch.search.aggregations.metrics.max.Max;
+import org.elasticsearch.search.aggregations.metrics.max.MaxBuilder;
+import org.elasticsearch.search.aggregations.metrics.min.Min;
+import org.elasticsearch.search.aggregations.metrics.min.MinAggregator;
+import org.elasticsearch.search.aggregations.metrics.min.MinBuilder;
 import org.elasticsearch.search.sort.SortOrder;
 import org.glassfish.jersey.media.multipart.FormDataBodyPart;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 
 /**
  * Created by Shakti Singh on 12/20/14.
@@ -483,6 +487,111 @@ public class JobServiceImpl implements JobService {
 
 
     return jobSearchResponse;
+  }
+
+  @Override
+  public JobFilterDto getJobFilters(UserResponse userResponse) {
+    JobFilterDto jobFilterDto = new JobFilterDto(DtoJsonConstants.JOBS);
+
+    List<CityDto> cityDtoList = new ArrayList<CityDto>();
+    List<CityVO> cityVOList = CityCache.getCache().getCityVO();
+    for (CityVO cityVO : cityVOList) {
+      CityDto cityDto = new CityDto();
+      cityDto.setId(cityVO.getId());
+      cityDto.setName(cityVO.getName());
+      cityDtoList.add(cityDto);
+    }
+
+    //List<IndustryRolesVO> industryRolesVOList = IndustryRolesCache.getCache().getAllIndustryRolesVO();
+
+    /*for (IndustryRolesVO industryRolesVO : industryRolesVOList) {
+      IndustryRolesDto industryRolesDto = new IndustryRolesDto();
+      industryRolesDto.setId(industryRolesVO.getId());
+      industryRolesDto.setName(industryRolesVO.getName());
+      industryRolesDto.setIndustryId(industryRolesVO.getId());
+      industryRolesDtoList.add(industryRolesDto);
+    }*/
+
+    List<IndustryDto> industryDtoList = new ArrayList<IndustryDto>();
+    List<IndustryVO> industryVOList = IndustryCache.getCache().getAllIndustryVO();
+    List<IndustryRolesDto> industryRolesDtoList = new ArrayList<IndustryRolesDto>();
+    for (IndustryVO industryVO : industryVOList) {
+      IndustryDto industryDto = new IndustryDto();
+      industryDto.setId(industryVO.getId());
+      industryDto.setName(industryVO.getName());
+      industryDtoList.add(industryDto);
+
+      // get all roles
+      List<Long> rolesList = IndustryCache.getCache().getIndustryRolesListFromIndustryId(industryVO.getId());
+
+      for (Long rolesId : rolesList) {
+        IndustryRolesVO industryRolesVO = IndustryRolesCache.getCache().getIndustryRolesVO(rolesId);
+        IndustryRolesDto industryRolesDto = new IndustryRolesDto();
+        industryRolesDto.setId(industryRolesVO.getId());
+        industryRolesDto.setName(industryRolesVO.getName());
+        industryRolesDto.setIndustryId(industryRolesVO.getId());
+        industryRolesDtoList.add(industryRolesDto);
+      }
+      industryDto.setIndustryRolesDtoList(industryRolesDtoList);
+    }
+
+
+    UserVO userVO = (UserVO) getBaseESService().get(userResponse.getId(), null, UserVO.class);
+    if (userVO == null) {
+      return jobFilterDto;
+    }
+
+    List<Long> circleList = userVO.getCircleList();
+    List<CircleDto> circleDtoList = new ArrayList<CircleDto>();
+    for (Long circle : circleList) {
+      CircleVO circleVO = (CircleVO) getBaseESService().get(circle, null, CircleVO.class);
+      if (circleVO != null) {
+        CircleDto circleDto = new CircleDto();
+        circleDto.setId(circleVO.getId());
+        circleDto.setName(circleVO.getName());
+        circleDto.setSelected(false);
+        circleDtoList.add(circleDto);
+      }
+    }
+
+    // max salary and min salary, max exp and min exp
+    MinBuilder minFrom = AggregationBuilders.min("from_aggs").field("from");
+    MaxBuilder maxTo = AggregationBuilders.max("to_aggs").field("to");
+
+    MinBuilder salaryMin = AggregationBuilders.min("salary_from").field("salaryFrom");
+    MaxBuilder salaryMax = AggregationBuilders.max("salary_to").field("salaryTo");
+
+    SearchResponse searchResponse = ESCacheManager.getInstance().getClient().prepareSearch("job")
+        .setQuery(QueryBuilders.matchAllQuery()).addAggregation(minFrom).addAggregation(maxTo)
+        .addAggregation(salaryMin).addAggregation(salaryMax).execute().actionGet();
+
+    jobFilterDto.setCityList(cityDtoList);
+    jobFilterDto.setIndList(industryDtoList);
+    jobFilterDto.setRoDtoList(industryRolesDtoList);
+
+    if (searchResponse.status().getStatus() == HttpStatus.OK.value()) {
+      Min minExp = searchResponse.getAggregations().get("from_aggs");
+      Max maxExp = searchResponse.getAggregations().get("to_aggs");
+      Min minSal = searchResponse.getAggregations().get("salary_from");
+      Max maxSal = searchResponse.getAggregations().get("salary_to");
+
+      SalaryRangeDto salaryRangeDto = new SalaryRangeDto(DtoJsonConstants.SALARY);
+      salaryRangeDto.setMin(minSal.getValue());
+      salaryRangeDto.setMax(maxSal.getValue());
+
+
+      ExperienceRangeDto experienceRangeDto = new ExperienceRangeDto(DtoJsonConstants.EXPERIENCE);
+      experienceRangeDto.setMin(new Double(minExp.getValue()).intValue());
+      experienceRangeDto.setMax(new Double(maxExp.getValue()).intValue());
+
+      Map<String, BaseRangeDto> rangeDtoMap = new HashMap<String, BaseRangeDto>();
+      rangeDtoMap.put(salaryRangeDto.getName(), salaryRangeDto);
+      rangeDtoMap.put(experienceRangeDto.getName(), experienceRangeDto);
+
+      jobFilterDto.setRangeDtoMap(rangeDtoMap);
+    }
+
+    return jobFilterDto;
   }
 
   //TODO: Depricate it
