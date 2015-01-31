@@ -2,6 +2,7 @@ package com.potaliadmin.impl.service.circle;
 
 import com.potaliadmin.constants.circle.CircleType;
 import com.potaliadmin.domain.circle.Circle;
+import com.potaliadmin.domain.user.UserCircleMapping;
 import com.potaliadmin.dto.web.request.circle.CircleCreateRequest;
 import com.potaliadmin.dto.web.request.circle.CircleJoinRequest;
 import com.potaliadmin.dto.web.response.base.GenericSuccessResponse;
@@ -87,6 +88,7 @@ public class CircleServiceImpl implements CircleService {
   }
 
   @Override
+  @Transactional
   public GenericSuccessResponse joinCircle(CircleJoinRequest circleJoinRequest) {
     GenericSuccessResponse genericSuccessResponse = new GenericSuccessResponse();
     if (!circleJoinRequest.validate()) {
@@ -101,6 +103,13 @@ public class CircleServiceImpl implements CircleService {
 
     if (circleVO == null) {
       throw new PotaliRuntimeException("No Circle found with Id "+circleJoinRequest.getCircleId());
+    }
+
+    UserCircleMapping userCircleMapping =
+        getCircleDao().joinCircle(userResponse, circleJoinRequest.getCircleId(), false);
+
+    if (userCircleMapping == null) {
+      throw new PotaliRuntimeException("Couldn't create circle, Please Try Again!");
     }
 
     UserVO userVO = (UserVO) getBaseESService().get(userResponse.getId(), null , UserVO.class);
