@@ -423,7 +423,8 @@ public class PostServiceImpl implements PostService {
 
     List<CreateImageResponseDto> createImageResponseDtoList = new ArrayList<CreateImageResponseDto>();
     for (ImageDto imageDto : imageDtoList) {
-      String path = postId + File.separator + imageDto.getFileName();
+      String path = imageDto.getRelativePath() + File.separator + imageDto.getFileName();
+
       Attachment attachment = getAttachmentDao()
           .createAttachment(EnumAttachmentType.IMAGE, path, EnumImageSize.getImageSizeById(imageDto.getSize()), postId);
 

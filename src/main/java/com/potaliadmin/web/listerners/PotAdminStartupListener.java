@@ -39,7 +39,7 @@ public class PotAdminStartupListener implements ServletContextListener {
     ESCacheManager esCacheManager = ESCacheManager.getInstance();
     esCacheManager.startNode();
 
-    getAppCacheService().reloadUser();
+    //getAppCacheService().reloadUser();
 
   }
 
