@@ -54,6 +54,8 @@ public class ImageNameBuilder {
       imageDto.setType(bucket.getId());
       imageDto.setFileName(fileName);
       imageDto.setCanonicalName(tempFileName);
+      imageDto.setAbsolutePath(tempFileName);
+      imageDto.setRelativePath(uploadFolderName);
       return imageDto;
     }
     return null;
