@@ -78,10 +78,10 @@ public class GenericPostResponse extends GenericBaseResponse {
       replyDto.setReplyEmail(EnumReactions.REPLY_VIA_EMAIL.getId());
     }
     if (StringUtils.isNotBlank(postVO.getReplyPhone())) {
-      replyDto.setReplyEmail(EnumReactions.REPLY_VIA_PHONE.getId());
+      replyDto.setReplyPhone(EnumReactions.REPLY_VIA_PHONE.getId());
     }
     if (StringUtils.isNotBlank(postVO.getReplyWatsApp())) {
-      replyDto.setReplyEmail(EnumReactions.REPLY_VIA_WATSAPP.getId());
+      replyDto.setReplyWatsApp(EnumReactions.REPLY_VIA_WATSAPP.getId());
     }
     this.setReplyDto(replyDto);
 
