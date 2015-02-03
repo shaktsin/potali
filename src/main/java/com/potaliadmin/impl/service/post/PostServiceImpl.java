@@ -595,7 +595,7 @@ public class PostServiceImpl implements PostService {
     MinBuilder salaryMin = AggregationBuilders.min("salary_from").field("salaryFrom");
     MaxBuilder salaryMax = AggregationBuilders.max("salary_to").field("salaryTo");
 
-    SearchResponse searchResponse = ESCacheManager.getInstance().getClient().prepareSearch("job")
+    SearchResponse searchResponse = ESCacheManager.getInstance().getClient().prepareSearch("ofc").setTypes("job")
         .setQuery(QueryBuilders.matchAllQuery()).addAggregation(minFrom).addAggregation(maxTo)
         .addAggregation(salaryMin).addAggregation(salaryMax).execute().actionGet();
 
