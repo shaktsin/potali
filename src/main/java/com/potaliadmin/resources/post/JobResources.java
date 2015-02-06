@@ -124,6 +124,7 @@ public class JobResources {
     String[] rolesFilterList=null;
     String[] salaryFilterList=null;
     String[] experienceFilterList=null;
+    String[] circleFilterList = null;
     try {
       if (StringUtils.isNotBlank(jobSearchRequest.getLocationFilter())) {
         locationFilterList = jobSearchRequest.getLocationFilter().split(DefaultConstants.REQUEST_SEPARATOR);
@@ -138,7 +139,10 @@ public class JobResources {
         experienceFilterList = jobSearchRequest.getExperienceFilter().split(DefaultConstants.REQUEST_SEPARATOR);
       }
       if (StringUtils.isNotBlank(jobSearchRequest.getIndustryFilter())) {
-        industryFiltersList = jobSearchRequest.getExperienceFilter().split(DefaultConstants.REQUEST_SEPARATOR);
+        industryFiltersList = jobSearchRequest.getIndustryFilter().split(DefaultConstants.REQUEST_SEPARATOR);
+      }
+      if (StringUtils.isNotBlank(jobSearchRequest.getCircleFilter())) {
+        circleFilterList = jobSearchRequest.getCircleFilter().split(DefaultConstants.REQUEST_SEPARATOR);
       }
 
       EnumSearchOperation enumSearchOperation = EnumSearchOperation.getById(jobSearchRequest.getOperation());
@@ -148,7 +152,7 @@ public class JobResources {
         postId = jobSearchRequest.getPostId();
       }
 
-      return getJobService().searchJob(BaseUtil.convertToLong(locationFilterList),BaseUtil.convertToLong(rolesFilterList),
+      return getJobService().searchJob(BaseUtil.convertToLong(circleFilterList),BaseUtil.convertToLong(locationFilterList),BaseUtil.convertToLong(rolesFilterList),
                                         BaseUtil.convertToLong(industryFiltersList),BaseUtil.convertToDouble(salaryFilterList),
                                         BaseUtil.convertToInteger(experienceFilterList),enumSearchOperation, postId,jobSearchRequest.getPerPage(),jobSearchRequest.getPageNo());
 

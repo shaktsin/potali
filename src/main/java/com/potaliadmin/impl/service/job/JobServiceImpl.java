@@ -104,7 +104,7 @@ public class JobServiceImpl implements JobService {
   UploadService uploadService;
 
   private static final String INDEX = "ofc";
-  private static final String TYPE = "job";
+  private static final String JOB = "job";
   private static final String POST_REACTIONS = "post_reactions";
   private static final Long[] REMOVE_LIST = {EnumReactions.HIDE_THIS_POST.getId(), EnumReactions.MARK_AS_SPAM.getId()};
 
@@ -324,7 +324,7 @@ public class JobServiceImpl implements JobService {
   }
 
 
-  public JobSearchResponse searchJob(Long[] locationList, Long[] rolesList,Long[] industryList,
+  public JobSearchResponse searchJob(Long[] circleList,Long[] locationList, Long[] rolesList,Long[] industryList,
                                      Double[] salaryRange,Integer[] experienceRange, EnumSearchOperation searchOperation,
                                      Long postId,int perPage, int pageNo) {
 
@@ -365,20 +365,34 @@ public class JobServiceImpl implements JobService {
 
 
     if (locationList != null && locationList.length > 0) {
-      andFilterBuilder.add(FilterBuilders.inFilter("locationList.id", locationList));
-      Arrays.asList(locationList);
+      TermsFilterBuilder locationFilter = FilterBuilders.inFilter("locationList.id", locationList);
+      HasChildFilterBuilder hasLocationChild = FilterBuilders.hasChildFilter(JOB, locationFilter);
+      andFilterBuilder.add(hasLocationChild);
+      //Arrays.asList(locationList);
     }
     if (rolesList != null && rolesList.length > 0) {
-      andFilterBuilder.add(FilterBuilders.inFilter("industryRolesList.id", rolesList));
+      TermsFilterBuilder rolesFilter = FilterBuilders.inFilter("industryRolesList.id", rolesList);
+      HasChildFilterBuilder hasRolesChild = FilterBuilders.hasChildFilter(JOB, rolesFilter);
+      andFilterBuilder.add(hasRolesChild);
+      //andFilterBuilder.add(FilterBuilders.inFilter("industryRolesList.id", rolesList));
     }
     if (industryList != null && industryList.length > 0) {
-      andFilterBuilder.add(FilterBuilders.inFilter("industryRolesList.industryId", industryList));
+      TermsFilterBuilder industryFilter = FilterBuilders.inFilter("industryRolesList.id", rolesList);
+      HasChildFilterBuilder hasIndustryChild = FilterBuilders.hasChildFilter(JOB, industryFilter);
+      andFilterBuilder.add(hasIndustryChild);
+      //andFilterBuilder.add(FilterBuilders.inFilter("industryRolesList.industryId", industryList));
     }
 
-    if (userResponse.getCircleList() != null && userResponse.getCircleList().size() > 0) {
-      //Long[] circleArrayList = (Long[])userResponse.getCircleList().toArray();
-      andFilterBuilder.add(FilterBuilders.inFilter("circleList.id", userResponse.getCircleList().toArray()));
+    if (circleList != null && circleList.length > 0) {
+      andFilterBuilder.add(FilterBuilders.inFilter("circleList.id", circleList));
+    } else {
+      if (userResponse.getCircleList() != null && userResponse.getCircleList().size() > 0) {
+        //Long[] circleArrayList = (Long[])userResponse.getCircleList().toArray();
+        //if (circleList != null && circleList.)
+        andFilterBuilder.add(FilterBuilders.inFilter("circleList.id", userResponse.getCircleList().toArray()));
+      }
     }
+
 
     if (salaryRange != null && salaryRange.length > 0) {
       double minSalary =salaryRange[0]!= null ? salaryRange[0] : DefaultConstants.MIN_SALARY;

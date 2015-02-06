@@ -23,7 +23,7 @@ public interface JobService {
 
   public JobResponse getJob(Long postId);
 
-  public JobSearchResponse searchJob(Long[] locationList, Long[] rolesList, Long[] industryList,
+  public JobSearchResponse searchJob(Long[] circleList,Long[] locationList, Long[] rolesList, Long[] industryList,
                                      Double[] salaryRange, Integer[] experienceRage, EnumSearchOperation searchOperation,
                                      Long postId, int perPage, int pageNo);
 
