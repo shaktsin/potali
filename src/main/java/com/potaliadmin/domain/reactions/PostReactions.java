@@ -10,7 +10,7 @@ import java.util.Date;
 @Entity
 @Table(name = "post_reaction")
 @NamedQueries(
-    @NamedQuery(name = "findByPostReactionAndUserAndPost",query = "from PostReactions pr where pr.postId = :postId and pr.userId = :userId and pr.reactionId = :reationId")
+    @NamedQuery(name = "findByPostReactionAndUserAndPost",query = "from PostReactions pr where pr.postId = :postId and pr.userId = :userId and pr.reactionId = :reactionId")
 )
 public class PostReactions implements Serializable {
 
