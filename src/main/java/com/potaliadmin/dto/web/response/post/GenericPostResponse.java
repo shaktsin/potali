@@ -98,7 +98,10 @@ public class GenericPostResponse extends GenericBaseResponse {
     userDto.setImage(postUser.getImage());
     this.setUserDto(userDto);
 
-    this.images = postVO.getImageList();
+    if (postVO.getImageList() != null && !postVO.getImageList().isEmpty()) {
+      this.images = postVO.getImageList();
+    }
+
 
     List<CircleDto> circleDtos = new ArrayList<CircleDto>();
     for (CircleVO circleVO : postVO.getCircleList()) {
