@@ -36,11 +36,11 @@ public class ImageProcessUtil {
     String reSizedFileName = null;
     try {
       BufferedImage originalImage = ImageIO.read(new File(fullFileName));
-      int type = originalImage.getType() == 0? BufferedImage.TYPE_INT_ARGB : originalImage.getType();
 
       //BufferedImage resizeImageJpg = resizeImageWithHint(originalImage, type, enumImageSize);
-      BufferedImage resizeImageJpg = Scalr.resize(originalImage, Scalr.Method.SPEED, Scalr.Mode.FIT_TO_WIDTH,
-          150, 100, Scalr.OP_ANTIALIAS);
+      BufferedImage resizeImageJpg = Scalr.resize(originalImage,
+          Scalr.Method.ULTRA_QUALITY, Scalr.Mode.AUTOMATIC,
+          enumImageSize.getWidth(), enumImageSize.getHeight(), Scalr.OP_ANTIALIAS);
 
 
           //getScaledInstance(originalImage, enumImageSize.getWidth(),
@@ -55,8 +55,8 @@ public class ImageProcessUtil {
 
       String reSizedCanonicalName  = filePath + File.separator + reSizedFileName;
 
-      //ImageIO.write(resizeImageJpg, enumImageSize.getFormat(), new File(reSizedCanonicalName));
-      writeJPG(resizeImageJpg, new FileOutputStream(reSizedCanonicalName), 0.85f, enumImageSize.getFormat());
+      ImageIO.write(resizeImageJpg, enumImageSize.getFormat(), new File(reSizedCanonicalName));
+      //writeJPG(resizeImageJpg, new FileOutputStream(reSizedCanonicalName), 0.85f, enumImageSize.getFormat());
 
 
     } catch (Exception e) {
