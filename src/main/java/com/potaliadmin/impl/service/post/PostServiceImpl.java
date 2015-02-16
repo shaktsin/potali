@@ -2,6 +2,7 @@ package com.potaliadmin.impl.service.post;
 
 import com.potaliadmin.constants.DefaultConstants;
 import com.potaliadmin.constants.attachment.EnumAttachmentType;
+import com.potaliadmin.constants.attachment.EnumImageFormat;
 import com.potaliadmin.constants.cache.ESIndexKeys;
 import com.potaliadmin.constants.image.EnumBucket;
 import com.potaliadmin.constants.image.EnumImageSize;
@@ -414,15 +415,35 @@ public class PostServiceImpl implements PostService {
       count++;
     }
 
+    List<Attachment> attachmentList = new ArrayList<Attachment>();
+    for (ImageDto imageDto : imageDtoList) {
+      String path = imageDto.getRelativePath() + File.separator + imageDto.getFileName();
 
-    boolean uploadedToAWS = getUploadService().uploadPostImages(postId, imageDtoList);
+      Attachment attachment = getAttachmentDao()
+          .createAttachment(EnumAttachmentType.IMAGE, path, EnumImageSize.getImageSizeById(imageDto.getSize()), postId);
+
+      imageDto.setAttachmentId(attachment.getId());
+
+      Map<String,Object> map = getUploadService().uploadImageToCloud(postId, imageDto);
+      attachment.setWidth(((Long)map.get("width")).intValue());
+      attachment.setHeight(((Long) map.get("height")).intValue());
+      attachment.setVersion((Long) map.get("version"));
+      attachment.setPublicId((String) map.get("public_id"));
+      attachment.setFormat(EnumImageFormat.getImageFormatByString((String) map.get("format")));
+      getAttachmentDao().save(attachment);
+
+      attachmentList.add(attachment);
+    }
+
+
+    /*boolean uploadedToAWS = getUploadService().uploadPostImages(postId, imageDtoList);
     if (!uploadedToAWS) {
       logger.error("Image could not be uploaded to aws from server "+postId);
       throw new PotaliRuntimeException("Some internal exception occurred in posting");
-    }
+    }*/
 
     List<CreateImageResponseDto> createImageResponseDtoList = new ArrayList<CreateImageResponseDto>();
-    for (ImageDto imageDto : imageDtoList) {
+    /*for (ImageDto imageDto : imageDtoList) {
       String path = imageDto.getRelativePath() + File.separator + imageDto.getFileName();
 
       Attachment attachment = getAttachmentDao()
@@ -433,6 +454,22 @@ public class PostServiceImpl implements PostService {
         createImageResponseDto.setPath(attachment.getPath());
         createImageResponseDto.setEnumImageSize(EnumImageSize.getImageSizeById(attachment.getSize()));
         createImageResponseDto.setId(attachment.getId());
+        createImageResponseDto.setFormat(EnumImageFormat.getImageFormatById(am));
+        createImageResponseDtoList.add(createImageResponseDto);
+      }
+
+    }*/
+
+    for (Attachment attachment : attachmentList) {
+
+      if (attachment != null) {
+        CreateImageResponseDto createImageResponseDto = new CreateImageResponseDto();
+        createImageResponseDto.setPath(attachment.getPath());
+        createImageResponseDto.setEnumImageSize(EnumImageSize.getImageSizeById(attachment.getSize()));
+        createImageResponseDto.setId(attachment.getId());
+        createImageResponseDto.setFormat(EnumImageFormat.getImageFormatById(attachment.getFormat()));
+        createImageResponseDto.setPublicId(attachment.getPublicId());
+        createImageResponseDto.setVersion(attachment.getVersion());
         createImageResponseDtoList.add(createImageResponseDto);
       }
 

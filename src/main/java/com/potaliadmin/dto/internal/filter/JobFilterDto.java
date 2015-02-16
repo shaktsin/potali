@@ -4,6 +4,7 @@ import com.potaliadmin.dto.internal.cache.es.job.BaseRangeDto;
 import com.potaliadmin.dto.internal.cache.es.job.CityDto;
 import com.potaliadmin.dto.internal.cache.es.job.IndustryDto;
 import com.potaliadmin.dto.internal.cache.es.job.IndustryRolesDto;
+import com.potaliadmin.dto.web.response.circle.CircleDto;
 
 import java.util.List;
 import java.util.Map;
@@ -16,6 +17,7 @@ public class JobFilterDto extends BaseFilterDto {
   List<IndustryDto> indList;
   List<IndustryRolesDto> roDtoList;
   List<CityDto> cityList;
+  List<CircleDto> circleDtoList;
 
   Map<String, BaseRangeDto> rangeDtoMap;
 
@@ -54,5 +56,13 @@ public class JobFilterDto extends BaseFilterDto {
 
   public void setRangeDtoMap(Map<String, BaseRangeDto> rangeDtoMap) {
     this.rangeDtoMap = rangeDtoMap;
+  }
+
+  public List<CircleDto> getCircleDtoList() {
+    return circleDtoList;
+  }
+
+  public void setCircleDtoList(List<CircleDto> circleDtoList) {
+    this.circleDtoList = circleDtoList;
   }
 }

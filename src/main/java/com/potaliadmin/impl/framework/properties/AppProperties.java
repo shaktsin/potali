@@ -31,6 +31,17 @@ public class AppProperties {
   @Value("${S3_SECRET_KEY}")
   private String s3SecretKey;
 
+  @Value("${CLOUD_NAME}")
+  private String cloudName;
+
+  @Value("${CLOUD_API_KEY}")
+  private String cloudApiKey;
+
+  @Value("${CLOUD_SEC_KEY}")
+  private String cloudSecKey;
+
+
+
   public boolean isDev() {
     return DEV.equalsIgnoreCase(env);
   }
@@ -57,5 +68,29 @@ public class AppProperties {
 
   public String getS3SecretKey() {
     return s3SecretKey;
+  }
+
+  public String getCloudName() {
+    return cloudName;
+  }
+
+  public void setCloudName(String cloudName) {
+    this.cloudName = cloudName;
+  }
+
+  public String getCloudApiKey() {
+    return cloudApiKey;
+  }
+
+  public void setCloudApiKey(String cloudApiKey) {
+    this.cloudApiKey = cloudApiKey;
+  }
+
+  public String getCloudSecKey() {
+    return cloudSecKey;
+  }
+
+  public void setCloudSecKey(String cloudSecKey) {
+    this.cloudSecKey = cloudSecKey;
   }
 }

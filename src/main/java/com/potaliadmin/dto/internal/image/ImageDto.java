@@ -13,6 +13,7 @@ public class ImageDto {
   private int size;
   private String absolutePath;
   private String relativePath;
+  private Long attachmentId;
 
   public String getFileName() {
     return fileName;
@@ -60,5 +61,13 @@ public class ImageDto {
 
   public void setRelativePath(String relativePath) {
     this.relativePath = relativePath;
+  }
+
+  public Long getAttachmentId() {
+    return attachmentId;
+  }
+
+  public void setAttachmentId(Long attachmentId) {
+    this.attachmentId = attachmentId;
   }
 }

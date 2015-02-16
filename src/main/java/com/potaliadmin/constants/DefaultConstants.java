@@ -36,6 +36,7 @@ public class DefaultConstants
   public static final long MAX_IMAGE_UPLOAD_SIZE = 500;//in kb
   public static final String NAME_SEPARATOR = "_";
   public static final String PATH_SEPARATOR = "/";
+  public static final String FILE_EXT_SEPARATOR = ".";
 
   public static final List<String> ALLOWED_IMAGE_CONTENT_TYPE = Arrays.asList("image/png", "image/jpg", "image/jpeg");
   public static final String PROFILE = "profile";

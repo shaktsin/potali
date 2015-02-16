@@ -25,6 +25,22 @@ public class Attachment implements Serializable {
   @Column(name = "size", nullable = false)
   private Integer size;
 
+  @Column(name = "public_id", nullable = false, length = 100)
+  private String publicId;
+
+  @Column(name = "height", nullable = true)
+  private Integer height;
+
+  @Column(name = "width", nullable = true)
+  private Integer width;
+
+  @Column(name = "version", nullable = true)
+  private Long version;
+
+  @Column(name = "format", nullable = true)
+  private Integer format;
+
+
   @Temporal(TemporalType.TIMESTAMP)
   @Column(name = "created_date",nullable = false)
   private Date createdDate = new Date();
@@ -90,5 +106,45 @@ public class Attachment implements Serializable {
 
   public void setPostId(Long postId) {
     this.postId = postId;
+  }
+
+  public String getPublicId() {
+    return publicId;
+  }
+
+  public void setPublicId(String publicId) {
+    this.publicId = publicId;
+  }
+
+  public Integer getHeight() {
+    return height;
+  }
+
+  public void setHeight(Integer height) {
+    this.height = height;
+  }
+
+  public Integer getWidth() {
+    return width;
+  }
+
+  public void setWidth(Integer width) {
+    this.width = width;
+  }
+
+  public Long getVersion() {
+    return version;
+  }
+
+  public void setVersion(Long version) {
+    this.version = version;
+  }
+
+  public Integer getFormat() {
+    return format;
+  }
+
+  public void setFormat(Integer format) {
+    this.format = format;
   }
 }

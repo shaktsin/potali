@@ -230,8 +230,9 @@ public class JobServiceImpl implements JobService {
     if (imageResponseDtoList != null) {
       List<String> imageLinks = new ArrayList<String>();
       for (CreateImageResponseDto createImageResponseDto : imageResponseDtoList) {
-        String imageLink = getUploadService().getCanonicalPathOfResource(EnumBucket.POST_BUCKET.getName(),
-            createImageResponseDto.getPath());
+        String imageLink = getUploadService()
+            .getCanonicalPathOfCloudResource(createImageResponseDto.getPublicId(), createImageResponseDto.getVersion()
+                , createImageResponseDto.getFormat());
         imageLinks.add(imageLink);
       }
       postVO.setImageList(imageLinks);
@@ -281,7 +282,8 @@ public class JobServiceImpl implements JobService {
     PostVO postVO = (PostVO)getBaseESService().get(postId, null,PostVO.class);
     JobVO jobVO = (JobVO)getBaseESService().get(postId, postId,JobVO.class);
     if (postVO != null && jobVO != null) {
-      JobResponse jobResponse = createJobResponse(postVO, jobVO, userResponse);
+      UserResponse postUser = getUserService().findById(postVO.getUserId());
+      JobResponse jobResponse = createJobResponse(postVO, jobVO, postUser);
 
       boolean hasComments = getPostService().postHasComments(postId);
       if (hasComments) {
@@ -377,7 +379,7 @@ public class JobServiceImpl implements JobService {
       //andFilterBuilder.add(FilterBuilders.inFilter("industryRolesList.id", rolesList));
     }
     if (industryList != null && industryList.length > 0) {
-      TermsFilterBuilder industryFilter = FilterBuilders.inFilter("industryRolesList.id", rolesList);
+      TermsFilterBuilder industryFilter = FilterBuilders.inFilter("industryRolesList.industryId", industryList);
       HasChildFilterBuilder hasIndustryChild = FilterBuilders.hasChildFilter(JOB, industryFilter);
       andFilterBuilder.add(hasIndustryChild);
       //andFilterBuilder.add(FilterBuilders.inFilter("industryRolesList.industryId", industryList));
@@ -582,6 +584,7 @@ public class JobServiceImpl implements JobService {
     jobFilterDto.setCityList(cityDtoList);
     jobFilterDto.setIndList(industryDtoList);
     jobFilterDto.setRoDtoList(industryRolesDtoList);
+    jobFilterDto.setCircleDtoList(circleDtoList);
 
     if (searchResponse.status().getStatus() == HttpStatus.OK.value()) {
       Min minExp = searchResponse.getAggregations().get("from_aggs");
