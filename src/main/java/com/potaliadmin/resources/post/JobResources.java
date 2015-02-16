@@ -130,7 +130,7 @@ public class JobResources {
         locationFilterList = jobSearchRequest.getLocationFilter().split(DefaultConstants.REQUEST_SEPARATOR);
       }
       if (StringUtils.isNotBlank(jobSearchRequest.getRolesFilter())) {
-        rolesFilterList = jobSearchRequest.getLocationFilter().split(DefaultConstants.REQUEST_SEPARATOR);
+        rolesFilterList = jobSearchRequest.getRolesFilter().split(DefaultConstants.REQUEST_SEPARATOR);
       }
       if (StringUtils.isNotBlank(jobSearchRequest.getSalaryFilter())) {
         salaryFilterList = jobSearchRequest.getSalaryFilter().split(DefaultConstants.REQUEST_SEPARATOR);
