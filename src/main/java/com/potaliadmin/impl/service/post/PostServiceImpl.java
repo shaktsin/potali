@@ -125,7 +125,20 @@ public class PostServiceImpl implements PostService {
     }
 
     // first put in db and then in ES
-    PostReactions postReactions = getPostReactionDao().createPostReaction(postReactionRequest.getActionId(),
+    // first reverse it in DB and then In ES
+    PostReactions postReactions = null;
+    if (postReactionRequest.getActionId().equals(EnumReactions.MARK_AS_IMPORTANT.getId())
+        || postReactionRequest.getActionId().equals(EnumReactions.HIDE_THIS_POST.getId())) {
+
+      postReactions = getPostReactionDao().getPostReactionByReactionAndPostId(postReactionRequest.getActionId(),
+          postReactionRequest.getPostId(), userResponse.getId());
+
+      if (postReactions != null) {
+        throw new PotaliRuntimeException("Already Marked  hidden or important");
+      }
+    }
+
+    postReactions = getPostReactionDao().createPostReaction(postReactionRequest.getActionId(),
         postReactionRequest.getPostId(), userResponse.getId());
 
 
