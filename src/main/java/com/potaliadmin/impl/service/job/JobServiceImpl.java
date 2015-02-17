@@ -350,7 +350,7 @@ public class JobServiceImpl implements JobService {
       }
     }
 
-    // hide all mark as hidden and spam posts from list
+    /*// hide all mark as hidden and spam posts from list
     OrFilterBuilder orFilterBuilder = new OrFilterBuilder();
     //NotFilterBuilder notFilterBuilder = new NotFilterBuilder()
     MatchAllFilterBuilder matchAllFilterBuilder = new MatchAllFilterBuilder();
@@ -363,7 +363,7 @@ public class JobServiceImpl implements JobService {
     boolFilterBuilder.mustNot(FilterBuilders.inFilter("reactionId", REMOVE_LIST));
     boolFilterBuilder.must(FilterBuilders.termFilter("userId", userResponse.getId()));
     orFilterBuilder.add(FilterBuilders.hasChildFilter(POST_REACTIONS, boolFilterBuilder));
-    andFilterBuilder.add(orFilterBuilder);
+    andFilterBuilder.add(orFilterBuilder);*/
 
 
     if (locationList != null && locationList.length > 0) {
@@ -443,6 +443,12 @@ public class JobServiceImpl implements JobService {
     List<GenericPostResponse> genericPostResponseList = new ArrayList<GenericPostResponse>();
     for (BaseElasticVO baseElasticVO : postVOList) {
       PostVO postVO = (PostVO) baseElasticVO;
+
+      boolean isHiddenOrSpammed = getPostService().isPostMarkHiddenOrSpammed(postVO.getPostId(), userResponse.getId());
+      if (isHiddenOrSpammed) {
+        continue;
+      }
+
       UserResponse postUser = getUserService().findById(postVO.getUserId());
       GenericPostResponse genericPostResponse = new GenericPostResponse(postVO, postUser);
       boolean isImp = getPostService().isPostImportantForUser(postVO.getPostId(), userResponse.getId());

@@ -30,6 +30,8 @@ public interface PostService {
 
   boolean isPostImportantForUser(Long postId, Long userId);
 
+  boolean isPostMarkHiddenOrSpammed(Long postId, Long userId);
+
   boolean postHasComments(Long postId);
 
   List<CreateImageResponseDto> postImages(List<FormDataBodyPart> imageList, Long postId);

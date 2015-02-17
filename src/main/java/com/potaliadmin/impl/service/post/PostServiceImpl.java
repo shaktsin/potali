@@ -371,6 +371,26 @@ public class PostServiceImpl implements PostService {
   }
 
   @Override
+  public boolean isPostMarkHiddenOrSpammed(Long postId, Long userId) {
+    if (userId == null) {
+      throw new InValidInputException("USER_ID_CANNOT_BE_NULL");
+    }
+    if (postId == null) {
+      throw new InValidInputException("POST_ID_CANNOT_BE_NULL");
+    }
+
+    Long[] REMOVE_LIST = {EnumReactions.HIDE_THIS_POST.getId(), EnumReactions.MARK_AS_SPAM.getId()};
+    AndFilterBuilder andFilterBuilder = FilterBuilders.andFilter(FilterBuilders.termFilter("userId", userId),
+        FilterBuilders.termFilter("postId", postId), FilterBuilders.inFilter("reactionId", REMOVE_LIST));
+
+    ESSearchFilter esSearchFilter =
+        new ESSearchFilter().setFilterBuilder(andFilterBuilder);
+
+    ESSearchResponse esSearchResponse = getBaseESService().search(esSearchFilter, PostReactionVO.class);
+    return esSearchResponse.getTotalResults() > 0;
+  }
+
+  @Override
   public boolean postHasComments(Long postId) {
     if (postId == null) {
       throw new InValidInputException("POST_ID_CANNOT_BE_NULL");
