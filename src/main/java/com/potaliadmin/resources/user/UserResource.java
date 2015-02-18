@@ -4,8 +4,11 @@ import com.potaliadmin.constants.DefaultConstants;
 import com.potaliadmin.constants.image.EnumBucket;
 import com.potaliadmin.constants.image.EnumImageSize;
 import com.potaliadmin.dto.internal.image.ImageDto;
+import com.potaliadmin.dto.web.request.jobs.JobCreateRequest;
 import com.potaliadmin.dto.web.request.user.UserProfileUpdateRequest;
 import com.potaliadmin.dto.web.request.user.UserSignUpRequest;
+import com.potaliadmin.dto.web.request.user.UserVerificationRequest;
+import com.potaliadmin.dto.web.response.base.GenericSuccessResponse;
 import com.potaliadmin.dto.web.response.user.UserProfileUpdateResponse;
 import com.potaliadmin.dto.web.response.user.UserProfileUploadResponse;
 import com.potaliadmin.dto.web.response.user.UserResourceResponse;
@@ -17,8 +20,10 @@ import com.potaliadmin.pact.service.users.UserService;
 import com.potaliadmin.security.SecurityToken;
 import com.potaliadmin.util.image.ImageNameBuilder;
 import com.potaliadmin.util.image.ImageProcessUtil;
+import com.potaliadmin.util.rest.InputParserUtil;
 import org.apache.commons.lang.StringUtils;
 import org.apache.shiro.authz.annotation.RequiresAuthentication;
+import org.glassfish.jersey.media.multipart.FormDataBodyPart;
 import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
 import org.glassfish.jersey.media.multipart.FormDataParam;
 import org.slf4j.Logger;
@@ -32,6 +37,7 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import java.io.*;
 import java.text.ParseException;
+import java.util.List;
 
 /**
  * Created by Shakti Singh on 12/20/14.
@@ -157,12 +163,48 @@ public class UserResource {
   }
 
   @POST
+  @Path("/verify")
+  @Produces("application/json")
+  @RequiresAuthentication
+  public GenericSuccessResponse verifyUser(UserVerificationRequest userVerificationRequest) {
+    try {
+      return getUserService().verifyUser(userVerificationRequest);
+    } catch (Exception e) {
+      GenericSuccessResponse genericSuccessResponse = new GenericSuccessResponse();
+      genericSuccessResponse.setException(true);
+      genericSuccessResponse.addMessage(e.getMessage());
+      return genericSuccessResponse;
+    }
+  }
+
+
+  @POST
+  @Path("/generate/token")
+  @Produces("application/json")
+  @RequiresAuthentication
+  public GenericSuccessResponse reGenerateToken() {
+    try {
+      return getUserService().reGenerateToken();
+    } catch (Exception e) {
+      GenericSuccessResponse genericSuccessResponse = new GenericSuccessResponse();
+      genericSuccessResponse.setException(true);
+      genericSuccessResponse.addMessage(e.getMessage());
+      return genericSuccessResponse;
+    }
+  }
+
+  @POST
   @Path("/update")
   @Produces("application/json")
   @RequiresAuthentication
-  public UserProfileUpdateResponse updateProfile(UserProfileUpdateRequest userProfileUpdateRequest) {
+  public UserProfileUpdateResponse updateProfile(@FormDataParam("jobs") FormDataBodyPart jobs,
+                                                 @FormDataParam("iFile") FormDataBodyPart imgFiles) {
+
     try {
-      return getUserService().updateProfile(userProfileUpdateRequest);
+      UserProfileUpdateRequest userProfileUpdateRequest=(UserProfileUpdateRequest)
+          InputParserUtil.parseMultiPartObject(jobs.getValue(), UserProfileUpdateRequest.class);
+
+      return getUserService().updateProfile(userProfileUpdateRequest, imgFiles);
     } catch (Exception e) {
       UserProfileUpdateResponse userProfileUpdateResponse = new UserProfileUpdateResponse();
       userProfileUpdateResponse.setException(Boolean.TRUE);

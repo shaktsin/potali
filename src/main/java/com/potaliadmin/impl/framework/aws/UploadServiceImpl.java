@@ -160,6 +160,29 @@ public class UploadServiceImpl implements UploadService {
   }
 
   @Override
+  @SuppressWarnings("unchecked")
+  public Map<String, Object> uploadProfImageToCloud(Long userId, File file) {
+    try {
+      Cloudinary cloudinary = new Cloudinary(Cloudinary.asMap(
+          "cloud_name", getAppProperties().getCloudName(),
+          "api_key", getAppProperties().getCloudApiKey(),
+          "api_secret", getAppProperties().getCloudSecKey()));
+
+      Map params = Cloudinary.asMap("public_id","prof");
+      params.put("use_filename",true);
+      String folder = DefaultConstants.PROFILE + File.separator + userId;
+      params.put("folder", folder);
+
+      return cloudinary.uploader().upload(file, params);
+
+    } catch (Throwable e) {
+      logger.error("Error occurred while uploading image is cloud",e);
+      throw new PotaliRuntimeException("Error occurred while uploading image is cloud");
+    }
+
+  }
+
+  @Override
   public boolean deleteImage(String publicId) {
     boolean deleted = false;
     try {

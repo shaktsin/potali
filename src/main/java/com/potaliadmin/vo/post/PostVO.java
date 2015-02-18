@@ -38,8 +38,8 @@ public class PostVO extends BaseElasticVO {
   private Date updatedDate;
   private List<String> imageList;
   private List<CircleVO> circleList;
-  //private List<AttachmentDto> attachmentDtoList;
-  Map<Long, String> imageMap;
+  private List<AttachmentDto> attachmentDtoList;
+  //Map<Long, String> imageMap;
 
   public PostVO() {}
 
@@ -180,11 +180,11 @@ public class PostVO extends BaseElasticVO {
     this.circleList = circleList;
   }
 
-  public Map<Long, String> getImageMap() {
-    return imageMap;
+  public List<AttachmentDto> getAttachmentDtoList() {
+    return attachmentDtoList;
   }
 
-  public void setImageMap(Map<Long, String> imageMap) {
-    this.imageMap = imageMap;
+  public void setAttachmentDtoList(List<AttachmentDto> attachmentDtoList) {
+    this.attachmentDtoList = attachmentDtoList;
   }
 }

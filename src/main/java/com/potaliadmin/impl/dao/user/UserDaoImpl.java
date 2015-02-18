@@ -6,6 +6,7 @@ import com.potaliadmin.exceptions.InValidInputException;
 import com.potaliadmin.exceptions.PotaliRuntimeException;
 import com.potaliadmin.impl.framework.BaseDaoImpl;
 import com.potaliadmin.pact.dao.user.UserDao;
+import com.potaliadmin.util.BaseUtil;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -40,7 +41,8 @@ public class UserDaoImpl extends BaseDaoImpl implements UserDao {
     user.setAccountName(userSignUpQueryRequest.getAccountName());
     user.setEmail(userSignUpQueryRequest.getEmail());
     user.setGender(userSignUpQueryRequest.getGender());
-    user.setVerified(userSignUpQueryRequest.getVerified());
+    user.setVerified(false);
+    user.setVerificationToken(BaseUtil.generateVerificationToken());
     user.setPasswordChecksum(userSignUpQueryRequest.getHash());
     user.setInstituteId(userSignUpQueryRequest.getInstituteId());
     save(user);

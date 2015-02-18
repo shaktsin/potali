@@ -240,22 +240,22 @@ public class JobServiceImpl implements JobService {
     // set images link
     if (imageResponseDtoList != null) {
       //List<String> imageLinks = new ArrayList<String>();
-      //List<AttachmentDto> attachmentDtoList = new ArrayList<AttachmentDto>();
-      Map<Long, String> imageMap = new HashMap<Long, String>();
+      List<AttachmentDto> attachmentDtoList = new ArrayList<AttachmentDto>();
+      //Map<Long, String> imageMap = new HashMap<Long, String>();
       for (CreateImageResponseDto createImageResponseDto : imageResponseDtoList) {
         String imageLink = getUploadService()
             .getCanonicalPathOfCloudResource(createImageResponseDto.getPublicId(), createImageResponseDto.getVersion()
                 , createImageResponseDto.getFormat());
         //mageLinks.add(imageLink);
-        //AttachmentDto attachmentDto = new AttachmentDto();
-        //attachmentDto.setId(createImageResponseDto.getId());
-        //attachmentDto.setUrl(imageLink);
-        //attachmentDtoList.add(attachmentDto);
-        imageMap.put(createImageResponseDto.getId(), imageLink);
+        AttachmentDto attachmentDto = new AttachmentDto();
+        attachmentDto.setId(createImageResponseDto.getId());
+        attachmentDto.setUrl(imageLink);
+        attachmentDtoList.add(attachmentDto);
+        //imageMap.put(createImageResponseDto.getId(), imageLink);
       }
       //postVO.setImageList(imageLinks);
-      //postVO.setAttachmentDtoList(attachmentDtoList);
-      postVO.setImageMap(imageMap);
+      postVO.setAttachmentDtoList(attachmentDtoList);
+      //postVO.setImageMap(imageMap);
     }
 
     // set circle
@@ -639,7 +639,7 @@ public class JobServiceImpl implements JobService {
 
   @Override
   @Transactional
-  public JobResponse editJob(JobEditRequest jobEditRequest) {
+  public JobResponse editJob(JobEditRequest jobEditRequest,List<FormDataBodyPart> imgFiles,FormDataBodyPart jFile) {
     if (!jobEditRequest.validate()) {
       throw new InValidInputException("Please input valid request");
     }
@@ -679,19 +679,37 @@ public class JobServiceImpl implements JobService {
       }
     }
 
+    // now upload images, trim images and upload them to amazon
+    List<CreateImageResponseDto> imageResponseDtoList = null;
+    if (imgFiles != null && !imgFiles.isEmpty()) {
+      imageResponseDtoList = getPostService().postImages(imgFiles, job.getId());
+      if (imageResponseDtoList == null || imageResponseDtoList.isEmpty()) {
+        JobResponse jobResponse = new JobResponse();
+        jobResponse.setException(Boolean.TRUE);
+        jobResponse.addMessage("Some Internal Exception Occurred!");
+        return jobResponse;
+      }
+    }
+
     PostVO postVO = new PostVO(job, postBlob);
     postVO.setPostType(EnumPostType.JOBS.getId());
 
     List<Attachment> attachmentList = getAttachmentDao().findByPostId(job.getId());
     if (attachmentList != null) {
-      Map<Long, String> imageMap = new HashMap<Long, String>();
+      //Map<Long, String> imageMap = new HashMap<Long, String>();
+      List<AttachmentDto> attachmentDtoList = new ArrayList<AttachmentDto>();
       for (Attachment attachment : attachmentList) {
         String imageLink = getUploadService()
             .getCanonicalPathOfCloudResource(attachment.getPublicId(), attachment.getVersion()
                 , EnumImageFormat.getImageFormatById(attachment.getFormat()));
-        imageMap.put(attachment.getId(), imageLink);
+        //imageMap.put(attachment.getId(), imageLink);
+        AttachmentDto attachmentDto = new AttachmentDto();
+        attachmentDto.setId(attachment.getId());
+        attachmentDto.setUrl(imageLink);
+        attachmentDtoList.add(attachmentDto);
       }
-      postVO.setImageMap(imageMap);
+      //postVO.setImageMap(imageMap);
+      postVO.setAttachmentDtoList(attachmentDtoList);
     }
 
     List<CircleVO> circleVOList = new ArrayList<CircleVO>();
@@ -796,8 +814,8 @@ public class JobServiceImpl implements JobService {
     jobResponse.setUserDto(userDto);
 
     jobResponse.setImages(postVO.getImageList());
-    //jobResponse.setAttachmentDtoList(postVO.getAttachmentDtoList());
-    jobResponse.setImageMap(postVO.getImageMap());
+    jobResponse.setAttachmentDtoList(postVO.getAttachmentDtoList());
+    //jobResponse.setImageMap(postVO.getImageMap());
 
     List<CircleVO> circleVOs = postVO.getCircleList();
 

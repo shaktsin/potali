@@ -30,5 +30,5 @@ public interface JobService {
 
   public JobFilterDto getJobFilters(UserResponse userResponse);
 
-  JobResponse editJob(JobEditRequest jobEditRequest);
+  JobResponse editJob(JobEditRequest jobEditRequest,List<FormDataBodyPart> imgFiles,FormDataBodyPart jFile);
 }

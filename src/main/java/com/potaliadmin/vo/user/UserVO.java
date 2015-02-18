@@ -21,6 +21,7 @@ public class UserVO extends BaseElasticVO {
   private Long institutionId;
   private String image;
   private List<Long> circleList;
+  private boolean verified;
 
   public UserVO() {
   }
@@ -36,6 +37,7 @@ public class UserVO extends BaseElasticVO {
     email = user.getEmail();
     checksum = user.getPasswordChecksum();
     image = user.getPasswordChecksum();
+    verified = user.getVerified();
 
     circleList = Arrays.asList(-1L);
   }
@@ -96,5 +98,13 @@ public class UserVO extends BaseElasticVO {
 
   public void setCircleList(List<Long> circleList) {
     this.circleList = circleList;
+  }
+
+  public boolean isVerified() {
+    return verified;
+  }
+
+  public void setVerified(boolean verified) {
+    this.verified = verified;
   }
 }

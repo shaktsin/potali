@@ -46,6 +46,9 @@ public class User implements Serializable {
   @Column(name = "year_of_graduation", nullable = false)
   private int yearOfGraduation;
 
+  @Column(name = "ver_token", nullable = false)
+  private int verificationToken;
+
   @Column(name = "profile_image", nullable = false)
   private String profileImage;
 
@@ -160,5 +163,13 @@ public class User implements Serializable {
 
   public void setProfileImage(String profileImage) {
     this.profileImage = profileImage;
+  }
+
+  public int getVerificationToken() {
+    return verificationToken;
+  }
+
+  public void setVerificationToken(int verificationToken) {
+    this.verificationToken = verificationToken;
   }
 }

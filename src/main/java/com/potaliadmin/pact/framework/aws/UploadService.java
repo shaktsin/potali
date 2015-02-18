@@ -22,5 +22,7 @@ public interface UploadService {
 
   Map<String, Object> uploadImageToCloud(Long postId, ImageDto imageDtoList);
 
+  Map<String, Object> uploadProfImageToCloud(Long userId, File file);
+
   boolean deleteImage(String publicId);
 }

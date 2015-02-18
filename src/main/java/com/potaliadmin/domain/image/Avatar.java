@@ -19,11 +19,20 @@ public class Avatar implements Serializable {
   @Column(name = "type",nullable = false)
   private int type;
 
+  @Column(name = "public_id", nullable = false, length = 100)
+  private String publicId;
+
   @Column(name = "height",nullable = false)
   private int height;
 
   @Column(name = "width",nullable = false)
   private int width;
+
+  @Column(name = "version", nullable = true)
+  private Long version;
+
+  @Column(name = "format", nullable = true)
+  private Integer format;
 
   @Column(name = "url",nullable = false, length = 100)
   private String url;
@@ -112,5 +121,29 @@ public class Avatar implements Serializable {
 
   public void setUserInstituteId(Long userInstituteId) {
     this.userInstituteId = userInstituteId;
+  }
+
+  public String getPublicId() {
+    return publicId;
+  }
+
+  public void setPublicId(String publicId) {
+    this.publicId = publicId;
+  }
+
+  public Long getVersion() {
+    return version;
+  }
+
+  public void setVersion(Long version) {
+    this.version = version;
+  }
+
+  public Integer getFormat() {
+    return format;
+  }
+
+  public void setFormat(Integer format) {
+    this.format = format;
   }
 }

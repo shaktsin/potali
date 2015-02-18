@@ -96,4 +96,8 @@ public class BaseUtil {
       return content+".";
     }
   }
+
+  public static int generateVerificationToken() {
+    return (int)(Math.random()*9000)+1000;
+  }
 }

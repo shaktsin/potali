@@ -14,7 +14,7 @@ public class UserProfileUpdateRequest extends GenericRequest {
   private String lastName;
   private String accountName;
   private Integer yearOfGrad;
-  private List<ImageDto> imageDtoList;
+  //private List<ImageDto> imageDtoList;
 
   public UserProfileUpdateRequest() {
   }
@@ -60,11 +60,4 @@ public class UserProfileUpdateRequest extends GenericRequest {
     this.yearOfGrad = yearOfGrad;
   }
 
-  public List<ImageDto> getImageDtoList() {
-    return imageDtoList;
-  }
-
-  public void setImageDtoList(List<ImageDto> imageDtoList) {
-    this.imageDtoList = imageDtoList;
-  }
 }

@@ -38,12 +38,12 @@ public class UserSignUpRequest {
     if (isValid && (getPassword().equalsIgnoreCase(getRePassword()))) {
       isValid = Boolean.FALSE;
     }
-    if (isValid && (null == instituteId)) {
+    /*if (isValid && (null == instituteId)) {
       isValid = Boolean.FALSE;
     }
     if (isValid && !(EnumInstitute.contains(instituteId))) {
       isValid = Boolean.FALSE;
-    }
+    }*/
 
     return isValid;
   }

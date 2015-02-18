@@ -436,15 +436,19 @@ public class PostServiceImpl implements PostService {
       String absolutePath = getFileUploadService().getAbsolutePath(postId);
       String uploadRootPath = getFileUploadService().getUploadPath();
       String relativePath = getFileUploadService().getRelativePath(postId);
-      String reSizedFileName = ImageProcessUtil.reSize(absolutePath, image.getContentDisposition().getFileName(),
-          EnumImageSize.FIT, count.toString());
-      if (reSizedFileName != null) {
-        ImageDto imageDto = new ImageNameBuilder().addBucket(EnumBucket.POST_BUCKET)
-            .addRootFolder(uploadRootPath).addUploadFolderName(relativePath).addFileName(reSizedFileName)
-            .addSize(EnumImageSize.FIT).build();
+      //String reSizedFileName = ImageProcessUtil.reSize(absolutePath, image.getContentDisposition().getFileName(),
+      //    EnumImageSize.FIT, count.toString());
+      /*if (reSizedFileName != null) {
 
-        imageDtoList.add(imageDto);
-      }
+      }*/
+
+      ImageDto imageDto = new ImageNameBuilder().addBucket(EnumBucket.POST_BUCKET)
+          .addRootFolder(uploadRootPath).addUploadFolderName(relativePath)
+          .addFileName(image.getContentDisposition().getFileName())
+          .addSize(EnumImageSize.FIT).build();
+
+
+      imageDtoList.add(imageDto);
       count++;
     }
 

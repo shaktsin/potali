@@ -35,8 +35,8 @@ public class GenericPostResponse extends GenericBaseResponse {
   private List<String> images;
   private List<CircleDto> circleDtoList;
   private CommentListResponse commentListResponse;
-  //private List<AttachmentDto> attachmentDtoList;
-  private Map<Long, String> imageMap;
+  private List<AttachmentDto> attachmentDtoList;
+  //private Map<Long, String> imageMap;
 
 
   public GenericPostResponse() {
@@ -218,11 +218,11 @@ public class GenericPostResponse extends GenericBaseResponse {
     this.commentListResponse = commentListResponse;
   }
 
-  public Map<Long, String> getImageMap() {
-    return imageMap;
+  public List<AttachmentDto> getAttachmentDtoList() {
+    return attachmentDtoList;
   }
 
-  public void setImageMap(Map<Long, String> imageMap) {
-    this.imageMap = imageMap;
+  public void setAttachmentDtoList(List<AttachmentDto> attachmentDtoList) {
+    this.attachmentDtoList = attachmentDtoList;
   }
 }
