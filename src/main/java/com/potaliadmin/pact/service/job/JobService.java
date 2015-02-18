@@ -3,6 +3,7 @@ package com.potaliadmin.pact.service.job;
 import com.potaliadmin.constants.query.EnumSearchOperation;
 import com.potaliadmin.dto.internal.filter.JobFilterDto;
 import com.potaliadmin.dto.web.request.jobs.JobCreateRequest;
+import com.potaliadmin.dto.web.request.jobs.JobEditRequest;
 import com.potaliadmin.dto.web.response.job.JobResponse;
 import com.potaliadmin.dto.web.response.job.JobSearchResponse;
 import com.potaliadmin.dto.web.response.job.PrepareJobCreateResponse;
@@ -28,4 +29,6 @@ public interface JobService {
                                      Long postId, int perPage, int pageNo);
 
   public JobFilterDto getJobFilters(UserResponse userResponse);
+
+  JobResponse editJob(JobEditRequest jobEditRequest);
 }

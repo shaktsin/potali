@@ -9,6 +9,9 @@ import java.util.Date;
  */
 @Entity
 @Table(name = "attachment")
+@NamedQueries(
+    @NamedQuery(name = "findByPostId",query = "from Attachment a where a.postId = :postId")
+)
 public class Attachment implements Serializable {
 
   @Id

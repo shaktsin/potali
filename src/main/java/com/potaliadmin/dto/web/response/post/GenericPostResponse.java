@@ -2,6 +2,7 @@ package com.potaliadmin.dto.web.response.post;
 
 import com.potaliadmin.constants.reactions.EnumReactions;
 import com.potaliadmin.dto.internal.cache.es.framework.GenericPostVO;
+import com.potaliadmin.dto.web.response.attachment.AttachmentDto;
 import com.potaliadmin.dto.web.response.base.GenericBaseResponse;
 import com.potaliadmin.dto.web.response.circle.CircleDto;
 import com.potaliadmin.dto.web.response.user.UserDto;
@@ -15,6 +16,7 @@ import org.apache.commons.lang.StringUtils;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Created by Shakti Singh on 12/20/14.
@@ -33,6 +35,8 @@ public class GenericPostResponse extends GenericBaseResponse {
   private List<String> images;
   private List<CircleDto> circleDtoList;
   private CommentListResponse commentListResponse;
+  //private List<AttachmentDto> attachmentDtoList;
+  private Map<Long, String> imageMap;
 
 
   public GenericPostResponse() {
@@ -212,5 +216,13 @@ public class GenericPostResponse extends GenericBaseResponse {
 
   public void setCommentListResponse(CommentListResponse commentListResponse) {
     this.commentListResponse = commentListResponse;
+  }
+
+  public Map<Long, String> getImageMap() {
+    return imageMap;
+  }
+
+  public void setImageMap(Map<Long, String> imageMap) {
+    this.imageMap = imageMap;
   }
 }

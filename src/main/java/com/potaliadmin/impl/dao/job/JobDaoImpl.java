@@ -4,14 +4,19 @@ import com.potaliadmin.constants.reactions.EnumReactions;
 import com.potaliadmin.domain.address.City;
 import com.potaliadmin.domain.industry.IndustryRoles;
 import com.potaliadmin.domain.job.Job;
+import com.potaliadmin.domain.post.PostBlob;
 import com.potaliadmin.dto.internal.hibernate.post.CreatePostBlobRequest;
 import com.potaliadmin.dto.web.request.jobs.JobCreateRequest;
+import com.potaliadmin.dto.web.request.jobs.JobEditRequest;
+import com.potaliadmin.dto.web.response.user.UserResponse;
 import com.potaliadmin.exceptions.InValidInputException;
+import com.potaliadmin.exceptions.PotaliRuntimeException;
 import com.potaliadmin.impl.framework.BaseDaoImpl;
 import com.potaliadmin.pact.dao.city.CityDao;
 import com.potaliadmin.pact.dao.industry.IndustryRolesDao;
 import com.potaliadmin.pact.dao.job.JobDao;
 import com.potaliadmin.pact.dao.post.PostBlobDao;
+import com.potaliadmin.pact.service.users.UserService;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
@@ -35,6 +40,9 @@ public class JobDaoImpl extends BaseDaoImpl implements JobDao {
 
   @Autowired
   PostBlobDao postBlobDao;
+
+  @Autowired
+  UserService userService;
 
   @Override
   @Transactional
@@ -84,6 +92,45 @@ public class JobDaoImpl extends BaseDaoImpl implements JobDao {
     return job;
   }
 
+  @Override
+  @Transactional
+  public Job editJob(JobEditRequest jobEditRequest) {
+    Job job = get(Job.class, jobEditRequest.getPostId());
+    if (job == null) {
+      throw new InValidInputException("Attachment with no post associated");
+    }
+
+    UserResponse postUser = getUserService().findById(job.getUserId());
+    if (postUser == null) {
+      throw new RuntimeException("Something unexpected occurred, please try again");
+    }
+
+
+    job.setSubject(jobEditRequest.getSubject());
+    job.setContent(StringUtils.substring(jobEditRequest.getContent(), 0, CONTENT_SIZE));
+    job.setReplyEmail(jobEditRequest.getReplyEmail());
+    job.setReplyPhone(jobEditRequest.getReplyPhone());
+    job.setReplyWatsApp(jobEditRequest.getReplyWatsApp());
+    job.setTo(jobEditRequest.getTo());
+    job.setFrom(jobEditRequest.getFrom());
+    job.setSalaryTo(jobEditRequest.getSalaryTo());
+    job.setSalaryFrom(jobEditRequest.getSalaryFrom());
+    job.setShareEmail(EnumReactions.isValidShareReaction(jobEditRequest.getShareDto().getShareEmail()));
+    job.setSharePhone(EnumReactions.isValidShareReaction(jobEditRequest.getShareDto().getSharePhone()));
+    job.setShareWatsApp(EnumReactions.isValidShareReaction(jobEditRequest.getShareDto().getShareWatsApp()));
+
+
+    PostBlob postBlob = getPostBlobDao().findByPostId(job.getId());
+    if (postBlob == null) {
+      throw new PotaliRuntimeException("Some exception occurred, please try again");
+    }
+    postBlob.setContent(jobEditRequest.getContent());
+    getPostBlobDao().save(postBlob);
+
+
+    return (Job)save(job);
+  }
+
   public CityDao getCityDao() {
     return cityDao;
   }
@@ -98,5 +145,9 @@ public class JobDaoImpl extends BaseDaoImpl implements JobDao {
 
   public PostBlobDao getPostBlobDao() {
     return postBlobDao;
+  }
+
+  public UserService getUserService() {
+    return userService;
   }
 }

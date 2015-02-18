@@ -2,6 +2,7 @@ package com.potaliadmin.pact.dao.job;
 
 import com.potaliadmin.domain.job.Job;
 import com.potaliadmin.dto.web.request.jobs.JobCreateRequest;
+import com.potaliadmin.dto.web.request.jobs.JobEditRequest;
 import com.potaliadmin.pact.framework.BaseDao;
 
 /**
@@ -10,4 +11,6 @@ import com.potaliadmin.pact.framework.BaseDao;
 public interface JobDao extends BaseDao {
 
   Job createJob(JobCreateRequest jobCreateRequest);
+
+  Job editJob(JobEditRequest jobEditRequest);
 }

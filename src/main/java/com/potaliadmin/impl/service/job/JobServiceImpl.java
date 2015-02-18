@@ -1,13 +1,16 @@
 package com.potaliadmin.impl.service.job;
 
 import com.potaliadmin.constants.DefaultConstants;
+import com.potaliadmin.constants.attachment.EnumImageFormat;
 import com.potaliadmin.constants.image.EnumBucket;
 import com.potaliadmin.constants.json.DtoJsonConstants;
 import com.potaliadmin.constants.post.EnumPostType;
 import com.potaliadmin.constants.query.EnumSearchOperation;
 import com.potaliadmin.constants.reactions.EnumReactions;
+import com.potaliadmin.domain.attachment.Attachment;
 import com.potaliadmin.domain.industry.Industry;
 import com.potaliadmin.domain.job.Job;
+import com.potaliadmin.domain.post.Post;
 import com.potaliadmin.domain.post.PostBlob;
 import com.potaliadmin.dto.internal.cache.address.CityVO;
 import com.potaliadmin.dto.internal.cache.es.job.*;
@@ -16,6 +19,8 @@ import com.potaliadmin.dto.internal.cache.job.IndustryVO;
 import com.potaliadmin.dto.internal.filter.JobFilterDto;
 import com.potaliadmin.dto.internal.image.CreateImageResponseDto;
 import com.potaliadmin.dto.web.request.jobs.JobCreateRequest;
+import com.potaliadmin.dto.web.request.jobs.JobEditRequest;
+import com.potaliadmin.dto.web.response.attachment.AttachmentDto;
 import com.potaliadmin.dto.web.response.circle.CircleDto;
 import com.potaliadmin.dto.web.response.job.JobResponse;
 import com.potaliadmin.dto.web.response.job.JobSearchResponse;
@@ -27,6 +32,8 @@ import com.potaliadmin.dto.web.response.post.ReplyDto;
 import com.potaliadmin.dto.web.response.user.UserDto;
 import com.potaliadmin.dto.web.response.user.UserResponse;
 import com.potaliadmin.exceptions.InValidInputException;
+import com.potaliadmin.exceptions.PotaliRuntimeException;
+import com.potaliadmin.exceptions.UnAuthorizedAccessException;
 import com.potaliadmin.framework.cache.ESCacheManager;
 import com.potaliadmin.framework.cache.address.CityCache;
 import com.potaliadmin.framework.cache.industry.IndustryCache;
@@ -34,6 +41,7 @@ import com.potaliadmin.framework.cache.industry.IndustryRolesCache;
 import com.potaliadmin.framework.elasticsearch.BaseESService;
 import com.potaliadmin.framework.elasticsearch.ESSearchFilter;
 import com.potaliadmin.framework.elasticsearch.response.ESSearchResponse;
+import com.potaliadmin.pact.dao.attachment.AttachmentDao;
 import com.potaliadmin.pact.dao.job.JobDao;
 import com.potaliadmin.pact.dao.post.PostBlobDao;
 import com.potaliadmin.pact.dao.post.PostCommentDao;
@@ -72,6 +80,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
+import javax.xml.bind.ValidationException;
 import java.util.*;
 
 /**
@@ -102,6 +111,8 @@ public class JobServiceImpl implements JobService {
   PostCommentDao postCommentDao;
   @Autowired
   UploadService uploadService;
+  @Autowired
+  AttachmentDao attachmentDao;
 
   private static final String INDEX = "ofc";
   private static final String JOB = "job";
@@ -228,14 +239,23 @@ public class JobServiceImpl implements JobService {
 
     // set images link
     if (imageResponseDtoList != null) {
-      List<String> imageLinks = new ArrayList<String>();
+      //List<String> imageLinks = new ArrayList<String>();
+      //List<AttachmentDto> attachmentDtoList = new ArrayList<AttachmentDto>();
+      Map<Long, String> imageMap = new HashMap<Long, String>();
       for (CreateImageResponseDto createImageResponseDto : imageResponseDtoList) {
         String imageLink = getUploadService()
             .getCanonicalPathOfCloudResource(createImageResponseDto.getPublicId(), createImageResponseDto.getVersion()
                 , createImageResponseDto.getFormat());
-        imageLinks.add(imageLink);
+        //mageLinks.add(imageLink);
+        //AttachmentDto attachmentDto = new AttachmentDto();
+        //attachmentDto.setId(createImageResponseDto.getId());
+        //attachmentDto.setUrl(imageLink);
+        //attachmentDtoList.add(attachmentDto);
+        imageMap.put(createImageResponseDto.getId(), imageLink);
       }
-      postVO.setImageList(imageLinks);
+      //postVO.setImageList(imageLinks);
+      //postVO.setAttachmentDtoList(attachmentDtoList);
+      postVO.setImageMap(imageMap);
     }
 
     // set circle
@@ -617,6 +637,90 @@ public class JobServiceImpl implements JobService {
     return jobFilterDto;
   }
 
+  @Override
+  @Transactional
+  public JobResponse editJob(JobEditRequest jobEditRequest) {
+    if (!jobEditRequest.validate()) {
+      throw new InValidInputException("Please input valid request");
+    }
+
+    UserResponse userResponse = getUserService().getLoggedInUser();
+    if (userResponse == null) {
+      throw new UnAuthorizedAccessException("UnAuthorized Access");
+    }
+
+    jobEditRequest.setUserId(userResponse.getId());
+    jobEditRequest.setUserInstituteId(userResponse.getInstituteId());
+
+    Job job = getJobDao().editJob(jobEditRequest);
+
+    // set blob
+    PostBlob postBlob = getPostBlobDao().findByPostId(job.getId());
+    if (postBlob == null) {
+      JobResponse jobResponse = new JobResponse();
+      jobResponse.setException(Boolean.TRUE);
+      jobResponse.addMessage("Some Internal Exception Occurred!");
+      return jobResponse;
+    }
+
+
+    if (jobEditRequest.getDeletedAttachment() != null) {
+      for (Long id : jobEditRequest.getDeletedAttachment()) {
+        Attachment attachment = getAttachmentDao().get(Attachment.class, id);
+        if (attachment == null) {
+          throw new InValidInputException("No attachment found");
+        }
+        getAttachmentDao().delete(attachment);
+
+        boolean isDeleted = getUploadService().deleteImage(attachment.getPublicId());
+        if (!isDeleted) {
+          throw new PotaliRuntimeException("Could not delete attachment from cloud");
+        }
+      }
+    }
+
+    PostVO postVO = new PostVO(job, postBlob);
+    postVO.setPostType(EnumPostType.JOBS.getId());
+
+    List<Attachment> attachmentList = getAttachmentDao().findByPostId(job.getId());
+    if (attachmentList != null) {
+      Map<Long, String> imageMap = new HashMap<Long, String>();
+      for (Attachment attachment : attachmentList) {
+        String imageLink = getUploadService()
+            .getCanonicalPathOfCloudResource(attachment.getPublicId(), attachment.getVersion()
+                , EnumImageFormat.getImageFormatById(attachment.getFormat()));
+        imageMap.put(attachment.getId(), imageLink);
+      }
+      postVO.setImageMap(imageMap);
+    }
+
+    List<CircleVO> circleVOList = new ArrayList<CircleVO>();
+    for (Long circleId : jobEditRequest.getCircleList()) {
+      CircleVO circleVO = (CircleVO) getBaseESService().get(circleId, null , CircleVO.class);
+      circleVOList.add(circleVO);
+    }
+    postVO.setCircleList(circleVOList);
+
+    boolean published = getBaseESService().put(postVO);
+    if (published) {
+      JobVO jobVO = new JobVO(job);
+      boolean isJobPublished = getBaseESService().put(jobVO);
+      if (!isJobPublished) {
+        getBaseESService().delete(postVO.getId(), PostVO.class);
+        JobResponse jobResponse = new JobResponse();
+        jobResponse.setException(true);
+        jobResponse.addMessage("Something unexpected occurred ! Try Again");
+        return jobResponse;
+      }
+      return createJobResponse(postVO, jobVO, userResponse);
+    } else {
+      JobResponse jobResponse = new JobResponse();
+      jobResponse.setException(true);
+      jobResponse.addMessage("Something unexpected occurred ! Try Again");
+      return jobResponse;
+    }
+  }
+
   //TODO: Depricate it
   private JobResponse createJobResponse(FullJobVO fullJobVO, UserResponse userResponse) {
     JobResponse jobResponse = new JobResponse();
@@ -692,6 +796,9 @@ public class JobServiceImpl implements JobService {
     jobResponse.setUserDto(userDto);
 
     jobResponse.setImages(postVO.getImageList());
+    //jobResponse.setAttachmentDtoList(postVO.getAttachmentDtoList());
+    jobResponse.setImageMap(postVO.getImageMap());
+
     List<CircleVO> circleVOs = postVO.getCircleList();
 
     List<CircleDto> circleDtoList = new ArrayList<CircleDto>();
@@ -741,5 +848,9 @@ public class JobServiceImpl implements JobService {
 
   public UploadService getUploadService() {
     return uploadService;
+  }
+
+  public AttachmentDao getAttachmentDao() {
+    return attachmentDao;
   }
 }

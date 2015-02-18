@@ -159,6 +159,24 @@ public class UploadServiceImpl implements UploadService {
 
   }
 
+  @Override
+  public boolean deleteImage(String publicId) {
+    boolean deleted = false;
+    try {
+      Cloudinary cloudinary = new Cloudinary(Cloudinary.asMap(
+          "cloud_name", getAppProperties().getCloudName(),
+          "api_key", getAppProperties().getCloudApiKey(),
+          "api_secret", getAppProperties().getCloudSecKey()));
+
+      cloudinary.uploader().destroy(publicId, Cloudinary.asMap("invalidate", true));
+      deleted = true;
+    } catch (Throwable e) {
+      logger.error("Error occurred while uploading image is cloud",e);
+      throw new PotaliRuntimeException("Error occurred while uploading image is cloud");
+    }
+    return deleted;
+  }
+
   public AppProperties getAppProperties() {
     return appProperties;
   }

@@ -21,4 +21,6 @@ public interface UploadService {
   boolean uploadPostImages(Long postId, List<ImageDto> imageDtoList);
 
   Map<String, Object> uploadImageToCloud(Long postId, ImageDto imageDtoList);
+
+  boolean deleteImage(String publicId);
 }

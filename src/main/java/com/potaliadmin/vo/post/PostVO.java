@@ -5,6 +5,7 @@ import com.potaliadmin.constants.DefaultConstants;
 import com.potaliadmin.constants.cache.ESIndexKeys;
 import com.potaliadmin.domain.post.Post;
 import com.potaliadmin.domain.post.PostBlob;
+import com.potaliadmin.dto.web.response.attachment.AttachmentDto;
 import com.potaliadmin.dto.web.response.post.ShareDto;
 import com.potaliadmin.framework.elasticsearch.annotation.ElasticEntity;
 import com.potaliadmin.vo.BaseElasticVO;
@@ -13,6 +14,7 @@ import com.potaliadmin.vo.circle.CircleVO;
 import java.io.Serializable;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Created by Shakti Singh on 1/16/15.
@@ -36,6 +38,8 @@ public class PostVO extends BaseElasticVO {
   private Date updatedDate;
   private List<String> imageList;
   private List<CircleVO> circleList;
+  //private List<AttachmentDto> attachmentDtoList;
+  Map<Long, String> imageMap;
 
   public PostVO() {}
 
@@ -174,5 +178,13 @@ public class PostVO extends BaseElasticVO {
 
   public void setCircleList(List<CircleVO> circleList) {
     this.circleList = circleList;
+  }
+
+  public Map<Long, String> getImageMap() {
+    return imageMap;
+  }
+
+  public void setImageMap(Map<Long, String> imageMap) {
+    this.imageMap = imageMap;
   }
 }

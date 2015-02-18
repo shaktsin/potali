@@ -5,6 +5,7 @@ import com.potaliadmin.constants.DefaultConstants;
 import com.potaliadmin.constants.query.EnumSearchOperation;
 import com.potaliadmin.constants.request.RequestConstants;
 import com.potaliadmin.dto.web.request.jobs.JobCreateRequest;
+import com.potaliadmin.dto.web.request.jobs.JobEditRequest;
 import com.potaliadmin.dto.web.request.jobs.JobSearchRequest;
 import com.potaliadmin.dto.web.response.job.JobResponse;
 import com.potaliadmin.dto.web.response.job.JobSearchResponse;
@@ -177,6 +178,20 @@ public class JobResources {
 
   }*/
 
+  @GET
+  @Path("/edit")
+  @Produces("application/json")
+  @RequiresAuthentication
+  JobResponse editJob(JobEditRequest jobEditRequest) {
+    try {
+      return getJobService().editJob(jobEditRequest);
+    } catch (Exception e) {
+      JobResponse jobResponse = new JobResponse();
+      jobResponse.setException(Boolean.TRUE);
+      jobResponse.addMessage(e.getMessage());
+      return jobResponse;
+    }
+  }
 
 
 
