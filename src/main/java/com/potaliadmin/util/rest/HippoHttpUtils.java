@@ -37,7 +37,7 @@ public class HippoHttpUtils {
     form.param("from","shakti@ofcampus.com");
     form.param("to",email);
     form.param("subject","Welcome to ofcampus");
-    String text = "Congratulations "+firstName+ "you have just joined with Ofcampus!" + " Your verification token is "+token;
+    String text = "Congratulations "+firstName+ "! you have just joined Ofcampus!" + " Your verification token is "+token;
     form.param("text",text);
 
 
