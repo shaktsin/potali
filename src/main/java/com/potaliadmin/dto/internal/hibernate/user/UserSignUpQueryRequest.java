@@ -34,9 +34,9 @@ public class UserSignUpQueryRequest extends AbstractUserRequest {
     if ((null==firstName || StringUtils.isEmpty(firstName))){
       isVerified = Boolean.FALSE;
     }
-    if (isVerified && (null == gender || !EnumGender.contains(gender))) {
+    /*if (isVerified && (null == gender || !EnumGender.contains(gender))) {
       isVerified = Boolean.FALSE;
-    }
+    }*/
     if (isVerified && (null == email)) {
       isVerified = Boolean.FALSE;
     }
