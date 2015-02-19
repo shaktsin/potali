@@ -78,6 +78,7 @@ public class UserResource {
         UserResourceResponse userResourceResponse = new UserResourceResponse();
         userResourceResponse.setName(userResponse.getName());
         userResourceResponse.setEmail(userResponse.getEmail());
+        userResourceResponse.setVerified(userResponse.isVerified());
         userResourceResponse.setAuthToken(SecurityToken.getSecurityToken(userResponse.getEmail(), userSignUpRequest.getPassword(), userSignUpRequest.getInstituteId()));
 
         /*String[] locationFilterList=null;
@@ -145,6 +146,7 @@ public class UserResource {
         userResourceResponse.setName(userResponse.getName());
         userResourceResponse.setEmail(userResponse.getEmail());
         userResourceResponse.setAuthToken(SecurityToken.getSecurityToken(email, password, userResponse.getInstituteId()));
+        userResourceResponse.setVerified(userResponse.isVerified());
         return userResourceResponse;
       } else {
         UserResourceResponse userResourceResponse = new UserResourceResponse();

@@ -12,6 +12,7 @@ public class UserResourceResponse extends GenericBaseResponse {
   private String email;
   private String authToken;
   private String image;
+  private boolean verified;
   //private JobSearchResponse jobSearchResponse;
 
 
@@ -45,5 +46,13 @@ public class UserResourceResponse extends GenericBaseResponse {
 
   public void setImage(String image) {
     this.image = image;
+  }
+
+  public boolean isVerified() {
+    return verified;
+  }
+
+  public void setVerified(boolean verified) {
+    this.verified = verified;
   }
 }
