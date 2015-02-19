@@ -225,6 +225,7 @@ public class UserServiceImpl implements UserService {
     userResponse.setName(user.getAccountName());
     userResponse.setInstituteId(user.getInstituteId());
     userResponse.setImage(user.getProfileImage());
+    userResponse.setVerified(false);
 
     // put in mem cache
     //getMemCacheService().put(MemCacheNS.USER_BY_ID, user.getId().toString(), userResponse);
