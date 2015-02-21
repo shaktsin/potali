@@ -36,7 +36,7 @@ public class UserVO extends BaseElasticVO {
     accountName = user.getAccountName();
     email = user.getEmail();
     checksum = user.getPasswordChecksum();
-    image = user.getPasswordChecksum();
+    image = user.getProfileImage();
     verified = user.getVerified();
 
     circleList = Arrays.asList(-1L);

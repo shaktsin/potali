@@ -5,7 +5,7 @@ package com.potaliadmin.constants.circle;
  */
 public enum CircleType {
 
-  ALL(0,"EveryOne"),
+  ALL(0,"Everyone"),
   YEAR(1, "Year"),
   CHAPTER(2, "Chapter"),
   CLUB(3, "Clubs"),

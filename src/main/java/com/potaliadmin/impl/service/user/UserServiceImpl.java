@@ -3,17 +3,23 @@ package com.potaliadmin.impl.service.user;
 import com.potaliadmin.constants.DefaultConstants;
 import com.potaliadmin.constants.attachment.EnumImageFormat;
 import com.potaliadmin.constants.cache.MemCacheNS;
+import com.potaliadmin.constants.circle.CircleType;
 import com.potaliadmin.constants.image.EnumBucket;
 import com.potaliadmin.constants.image.EnumImageSize;
+import com.potaliadmin.constants.plateform.EnumPlateForm;
 import com.potaliadmin.domain.image.Avatar;
 import com.potaliadmin.domain.user.User;
+import com.potaliadmin.dto.internal.cache.es.post.PostReactionVO;
 import com.potaliadmin.dto.internal.cache.institute.InstituteVO;
 import com.potaliadmin.dto.internal.hibernate.user.UserSignUpQueryRequest;
 import com.potaliadmin.dto.internal.image.ImageDto;
+import com.potaliadmin.dto.web.request.circle.CircleCreateRequest;
+import com.potaliadmin.dto.web.request.circle.CircleJoinRequest;
 import com.potaliadmin.dto.web.request.user.UserProfileUpdateRequest;
 import com.potaliadmin.dto.web.request.user.UserSignUpRequest;
 import com.potaliadmin.dto.web.request.user.UserVerificationRequest;
 import com.potaliadmin.dto.web.response.base.GenericSuccessResponse;
+import com.potaliadmin.dto.web.response.circle.CreateCircleResponse;
 import com.potaliadmin.dto.web.response.user.UserProfileUpdateResponse;
 import com.potaliadmin.dto.web.response.user.UserResponse;
 import com.potaliadmin.exceptions.InValidInputException;
@@ -28,16 +34,20 @@ import com.potaliadmin.pact.dao.image.AvatarDao;
 import com.potaliadmin.pact.dao.user.UserDao;
 import com.potaliadmin.pact.framework.aws.UploadService;
 import com.potaliadmin.pact.service.cache.MemCacheService;
+import com.potaliadmin.pact.service.circle.CircleService;
 import com.potaliadmin.pact.service.institute.InstituteReadService;
 import com.potaliadmin.pact.service.users.LoginService;
 import com.potaliadmin.pact.service.users.UserService;
 import com.potaliadmin.security.Principal;
 import com.potaliadmin.util.BaseUtil;
 import com.potaliadmin.util.rest.HippoHttpUtils;
+import com.potaliadmin.vo.BaseElasticVO;
+import com.potaliadmin.vo.circle.CircleVO;
 import com.potaliadmin.vo.comment.CommentVO;
 import com.potaliadmin.vo.user.UserVO;
 import org.apache.commons.lang.StringUtils;
 import org.apache.shiro.SecurityUtils;
+import org.elasticsearch.index.query.AndFilterBuilder;
 import org.elasticsearch.index.query.FilterBuilders;
 import org.elasticsearch.index.query.TermFilterBuilder;
 import org.elasticsearch.search.sort.SortOrder;
@@ -82,6 +92,8 @@ public class UserServiceImpl implements UserService {
   InstituteReadService instituteReadService;
   @Autowired
   AppProperties appProperties;
+  @Autowired
+  CircleService circleService;
 
   @Override
   public UserResponse findById(Long id) {
@@ -238,6 +250,29 @@ public class UserServiceImpl implements UserService {
       throw new PotaliRuntimeException("Some Exception occurred in sign up! Please Try Again");
     }
 
+    // get circle every one
+    TermFilterBuilder termFilterBuilder = FilterBuilders.termFilter("type", CircleType.ALL.getId());
+    ESSearchFilter esSearchFilter =
+        new ESSearchFilter().setFilterBuilder(termFilterBuilder);
+
+    ESSearchResponse esSearchResponse = getBaseESService().search(esSearchFilter, CircleVO.class);
+    List<BaseElasticVO> postReactionVOs = esSearchResponse.getBaseElasticVOs();
+    if (postReactionVOs != null && !postReactionVOs.isEmpty()) {
+      CircleVO circleVO = (CircleVO) postReactionVOs.get(0);
+      CircleJoinRequest circleJoinRequest = new CircleJoinRequest();
+      circleJoinRequest.setCircleId(circleVO.getId());
+      circleJoinRequest.setAppName(DefaultConstants.APP_NAME);
+      circleJoinRequest.setPlateFormId(EnumPlateForm.AND_APP.getId());
+      GenericSuccessResponse genericSuccessResponse = getCircleService().joinCircle(circleJoinRequest);
+
+      if (!genericSuccessResponse.isSuccess()) {
+        logger.error("Could not join all circle");
+        throw new PotaliRuntimeException("Some Exception occurred in sign up! Please Try Again");
+      }
+    } else {
+      throw new PotaliRuntimeException("Some Exception occurred in sign up! Please Try Again");
+    }
+
     HippoHttpUtils.sendVerificationToken(user.getVerificationToken(), user.getFirstName(), user.getEmail());
 
 
@@ -274,6 +309,7 @@ public class UserServiceImpl implements UserService {
     }
     if (userProfileUpdateRequest.getYearOfGrad() != null) {
       user.setYearOfGraduation(userProfileUpdateRequest.getYearOfGrad());
+
     }
 
 
@@ -331,6 +367,49 @@ public class UserServiceImpl implements UserService {
     if (!published) {
       throw new PotaliRuntimeException("Some Exception occurred in sign up! Please Try Again");
     }
+
+    // join year club
+    if (userProfileUpdateRequest.getYearOfGrad() != null) {
+
+      AndFilterBuilder andFilterBuilder =
+          FilterBuilders.andFilter(FilterBuilders.termFilter("name", userProfileUpdateRequest.getYearOfGrad()),
+          FilterBuilders.termFilter("type", CircleType.YEAR.getId()));
+
+      ESSearchFilter esSearchFilter =
+          new ESSearchFilter().setFilterBuilder(andFilterBuilder);
+
+      ESSearchResponse esSearchResponse = getBaseESService().search(esSearchFilter, CircleVO.class);
+
+      List<BaseElasticVO> baseElasticVOs = esSearchResponse.getBaseElasticVOs();
+      if (baseElasticVOs != null && !baseElasticVOs.isEmpty()) {
+        CircleVO circleVO = (CircleVO) baseElasticVOs.get(0);
+        CircleJoinRequest circleJoinRequest = new CircleJoinRequest();
+        circleJoinRequest.setCircleId(circleVO.getId());
+        circleJoinRequest.setAppName(DefaultConstants.APP_NAME);
+        circleJoinRequest.setPlateFormId(EnumPlateForm.AND_APP.getId());
+        GenericSuccessResponse genericSuccessResponse = getCircleService().joinCircle(circleJoinRequest);
+
+        if (!genericSuccessResponse.isSuccess()) {
+          logger.error("Could not join year circle");
+          throw new PotaliRuntimeException("Some Exception occurred in sign up! Please Try Again");
+        }
+      } else {
+        CircleCreateRequest circleCreateRequest = new CircleCreateRequest();
+        circleCreateRequest.setCircleId(CircleType.YEAR.getId());
+        circleCreateRequest.setModerate(false);
+        circleCreateRequest.setName(userProfileUpdateRequest.getYearOfGrad().toString());
+        circleCreateRequest.setAppName(DefaultConstants.APP_NAME);
+        circleCreateRequest.setPlateFormId(EnumPlateForm.AND_APP.getId());
+
+        CreateCircleResponse createCircleResponse = getCircleService().createCircle(circleCreateRequest);
+        if (createCircleResponse.isException()) {
+          logger.error("Could not join year circle");
+          throw new PotaliRuntimeException("Some Exception occurred in sign up! Please Try Again"); 
+        }
+      }
+
+    }
+
 
 
     UserProfileUpdateResponse userProfileUpdateResponse = new UserProfileUpdateResponse();
@@ -486,5 +565,13 @@ public class UserServiceImpl implements UserService {
 
   public AppProperties getAppProperties() {
     return appProperties;
+  }
+
+  public CircleService getCircleService() {
+    return circleService;
+  }
+
+  public void setCircleService(CircleService circleService) {
+    this.circleService = circleService;
   }
 }
