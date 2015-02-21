@@ -28,6 +28,8 @@ public class JobEditRequest extends GenericRequest {
   private Long userInstituteId;
   private ShareDto shareDto;
   private List<Long> deletedAttachment;
+  private boolean timeSpecified;
+  private boolean salarySpecified;
 
 
   @Override
@@ -174,5 +176,21 @@ public class JobEditRequest extends GenericRequest {
 
   public void setDeletedAttachment(List<Long> deletedAttachment) {
     this.deletedAttachment = deletedAttachment;
+  }
+
+  public boolean isTimeSpecified() {
+    return timeSpecified;
+  }
+
+  public void setTimeSpecified(boolean timeSpecified) {
+    this.timeSpecified = timeSpecified;
+  }
+
+  public boolean isSalarySpecified() {
+    return salarySpecified;
+  }
+
+  public void setSalarySpecified(boolean salarySpecified) {
+    this.salarySpecified = salarySpecified;
   }
 }

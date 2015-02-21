@@ -183,12 +183,13 @@ public class JobResources {
   @Consumes(MediaType.MULTIPART_FORM_DATA)
   @Produces("application/json")
   @RequiresAuthentication
-  JobResponse editJob(@FormDataParam("jobs") FormDataBodyPart jobs,
+  public JobResponse editJob(@FormDataParam("jobs") FormDataBodyPart jobs,
                       @FormDataParam("iFile") List<FormDataBodyPart> imgFiles,
                       @FormDataParam("jFile") FormDataBodyPart jFile
       ) {
     try {
-      JobEditRequest jobEditRequest = (JobEditRequest)  InputParserUtil.parseMultiPartObject(jobs.getValue(), JobEditRequest.class);
+      JobEditRequest jobEditRequest = (JobEditRequest)
+          InputParserUtil.parseMultiPartObject(jobs.getValue(), JobEditRequest.class);
       return getJobService().editJob(jobEditRequest, imgFiles, jFile);
     } catch (Exception e) {
       JobResponse jobResponse = new JobResponse();
