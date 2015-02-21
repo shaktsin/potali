@@ -178,8 +178,9 @@ public class JobResources {
 
   }*/
 
-  @GET
+  @POST
   @Path("/edit")
+  @Consumes(MediaType.MULTIPART_FORM_DATA)
   @Produces("application/json")
   @RequiresAuthentication
   JobResponse editJob(@FormDataParam("jobs") FormDataBodyPart jobs,
