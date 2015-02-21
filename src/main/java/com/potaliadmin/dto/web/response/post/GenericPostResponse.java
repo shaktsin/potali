@@ -93,6 +93,7 @@ public class GenericPostResponse extends GenericBaseResponse {
 
     this.setPostedOn(DateUtils.getPostedOnDate(postVO.getCreatedDate()));
     this.setContent(BaseUtil.trimContent(postVO.getContent()));
+    this.setAttachmentDtoList(postVO.getAttachmentDtoList());
 
     // set User
     //UserResponse postUser = getUserService().findById(fullJobVO.getUserId());
