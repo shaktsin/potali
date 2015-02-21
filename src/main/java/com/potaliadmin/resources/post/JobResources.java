@@ -188,7 +188,7 @@ public class JobResources {
                       @FormDataParam("jFile") FormDataBodyPart jFile
       ) {
     try {
-      JobEditRequest jobEditRequest = (JobEditRequest)  InputParserUtil.parseMultiPartObject(jobs.getValue(), JobCreateRequest.class);
+      JobEditRequest jobEditRequest = (JobEditRequest)  InputParserUtil.parseMultiPartObject(jobs.getValue(), JobEditRequest.class);
       return getJobService().editJob(jobEditRequest, imgFiles, jFile);
     } catch (Exception e) {
       JobResponse jobResponse = new JobResponse();
