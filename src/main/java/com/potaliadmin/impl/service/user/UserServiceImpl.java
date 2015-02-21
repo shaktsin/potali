@@ -29,10 +29,12 @@ import com.potaliadmin.framework.cache.institute.InstituteCache;
 import com.potaliadmin.framework.elasticsearch.BaseESService;
 import com.potaliadmin.framework.elasticsearch.ESSearchFilter;
 import com.potaliadmin.framework.elasticsearch.response.ESSearchResponse;
+import com.potaliadmin.impl.framework.ServiceLocatorFactory;
 import com.potaliadmin.impl.framework.properties.AppProperties;
 import com.potaliadmin.pact.dao.image.AvatarDao;
 import com.potaliadmin.pact.dao.user.UserDao;
 import com.potaliadmin.pact.framework.aws.UploadService;
+import com.potaliadmin.pact.service.cache.AppCacheService;
 import com.potaliadmin.pact.service.cache.MemCacheService;
 import com.potaliadmin.pact.service.circle.CircleService;
 import com.potaliadmin.pact.service.institute.InstituteReadService;
@@ -92,7 +94,7 @@ public class UserServiceImpl implements UserService {
   InstituteReadService instituteReadService;
   @Autowired
   AppProperties appProperties;
-  @Autowired
+
   CircleService circleService;
 
   @Override
@@ -404,7 +406,7 @@ public class UserServiceImpl implements UserService {
         CreateCircleResponse createCircleResponse = getCircleService().createCircle(circleCreateRequest);
         if (createCircleResponse.isException()) {
           logger.error("Could not join year circle");
-          throw new PotaliRuntimeException("Some Exception occurred in sign up! Please Try Again"); 
+          throw new PotaliRuntimeException("Some Exception occurred in sign up! Please Try Again");
         }
       }
 
@@ -568,10 +570,11 @@ public class UserServiceImpl implements UserService {
   }
 
   public CircleService getCircleService() {
+    if (circleService == null) {
+      circleService = ServiceLocatorFactory.getBean(CircleService.class);
+    }
     return circleService;
   }
 
-  public void setCircleService(CircleService circleService) {
-    this.circleService = circleService;
-  }
+
 }
