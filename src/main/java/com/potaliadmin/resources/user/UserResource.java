@@ -79,6 +79,9 @@ public class UserResource {
         userResourceResponse.setName(userResponse.getName());
         userResourceResponse.setEmail(userResponse.getEmail());
         userResourceResponse.setVerified(userResponse.isVerified());
+        userResourceResponse.setFirstName(userResponse.getFirstName());
+        userResourceResponse.setLastName(userResponse.getLastName());
+        userResourceResponse.setYearOfGrad(userResponse.getYearOfGrad());
         userResourceResponse.setAuthToken(SecurityToken.getSecurityToken(userResponse.getEmail(), userSignUpRequest.getPassword(), userSignUpRequest.getInstituteId()));
 
         /*String[] locationFilterList=null;
@@ -147,6 +150,9 @@ public class UserResource {
         userResourceResponse.setEmail(userResponse.getEmail());
         userResourceResponse.setAuthToken(SecurityToken.getSecurityToken(email, password, userResponse.getInstituteId()));
         userResourceResponse.setVerified(userResponse.isVerified());
+        userResourceResponse.setFirstName(userResponse.getFirstName());
+        userResourceResponse.setLastName(userResponse.getLastName());
+        userResourceResponse.setYearOfGrad(userResponse.getYearOfGrad());
         return userResourceResponse;
       } else {
         UserResourceResponse userResourceResponse = new UserResourceResponse();
@@ -197,14 +203,15 @@ public class UserResource {
 
   @POST
   @Path("/update")
+  @Consumes(MediaType.MULTIPART_FORM_DATA)
   @Produces("application/json")
   @RequiresAuthentication
-  public UserProfileUpdateResponse updateProfile(@FormDataParam("jobs") FormDataBodyPart jobs,
+  public UserProfileUpdateResponse updateProfile(@FormDataParam("prof") FormDataBodyPart profs,
                                                  @FormDataParam("iFile") FormDataBodyPart imgFiles) {
 
     try {
       UserProfileUpdateRequest userProfileUpdateRequest=(UserProfileUpdateRequest)
-          InputParserUtil.parseMultiPartObject(jobs.getValue(), UserProfileUpdateRequest.class);
+          InputParserUtil.parseMultiPartObject(profs.getValue(), UserProfileUpdateRequest.class);
 
       return getUserService().updateProfile(userProfileUpdateRequest, imgFiles);
     } catch (Exception e) {

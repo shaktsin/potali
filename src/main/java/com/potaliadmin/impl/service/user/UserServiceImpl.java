@@ -157,6 +157,9 @@ public class UserServiceImpl implements UserService {
       userResponse.setPasswordChecksum(user.getPasswordChecksum());
       userResponse.setInstituteId(user.getInstituteId());
       userResponse.setImage(user.getProfileImage());
+      userResponse.setFirstName(user.getFirstName());
+      userResponse.setLastName(user.getLastName());
+      userResponse.setYearOfGrad(user.getYearOfGraduation());
 
       // put in es
       //getMemCacheService().put(MemCacheNS.USER_BY_ID, user.getId().toString(), userResponse);

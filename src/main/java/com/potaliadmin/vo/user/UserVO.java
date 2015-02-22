@@ -22,6 +22,9 @@ public class UserVO extends BaseElasticVO {
   private String image;
   private List<Long> circleList;
   private boolean verified;
+  private String firstName;
+  private String lastName;
+  private int yearOfGrad;
 
   public UserVO() {
   }
@@ -38,6 +41,9 @@ public class UserVO extends BaseElasticVO {
     checksum = user.getPasswordChecksum();
     image = user.getProfileImage();
     verified = user.getVerified();
+    firstName = user.getFirstName();
+    lastName = user.getLastName();
+    yearOfGrad = user.getYearOfGraduation();
 
     circleList = Arrays.asList(-1L);
   }
@@ -106,5 +112,29 @@ public class UserVO extends BaseElasticVO {
 
   public void setVerified(boolean verified) {
     this.verified = verified;
+  }
+
+  public String getFirstName() {
+    return firstName;
+  }
+
+  public void setFirstName(String firstName) {
+    this.firstName = firstName;
+  }
+
+  public String getLastName() {
+    return lastName;
+  }
+
+  public void setLastName(String lastName) {
+    this.lastName = lastName;
+  }
+
+  public int getYearOfGrad() {
+    return yearOfGrad;
+  }
+
+  public void setYearOfGrad(int yearOfGrad) {
+    this.yearOfGrad = yearOfGrad;
   }
 }

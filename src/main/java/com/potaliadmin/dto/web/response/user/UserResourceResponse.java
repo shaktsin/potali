@@ -13,6 +13,9 @@ public class UserResourceResponse extends GenericBaseResponse {
   private String authToken;
   private String image;
   private boolean verified;
+  private String firstName;
+  private String lastName;
+  private int yearOfGrad;
   //private JobSearchResponse jobSearchResponse;
 
 
@@ -54,5 +57,29 @@ public class UserResourceResponse extends GenericBaseResponse {
 
   public void setVerified(boolean verified) {
     this.verified = verified;
+  }
+
+  public String getFirstName() {
+    return firstName;
+  }
+
+  public void setFirstName(String firstName) {
+    this.firstName = firstName;
+  }
+
+  public String getLastName() {
+    return lastName;
+  }
+
+  public void setLastName(String lastName) {
+    this.lastName = lastName;
+  }
+
+  public int getYearOfGrad() {
+    return yearOfGrad;
+  }
+
+  public void setYearOfGrad(int yearOfGrad) {
+    this.yearOfGrad = yearOfGrad;
   }
 }

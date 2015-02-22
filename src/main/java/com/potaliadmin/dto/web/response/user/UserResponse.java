@@ -19,6 +19,9 @@ public class UserResponse extends GenericBaseResponse {
   private String image;
   private List<Long> circleList;
   public boolean verified;
+  private String firstName;
+  private String lastName;
+  private int yearOfGrad;
 
   public UserResponse() {}
 
@@ -31,6 +34,7 @@ public class UserResponse extends GenericBaseResponse {
     image = userVO.getImage();
     circleList = userVO.getCircleList();
     verified = userVO.isVerified();
+
   }
 
   public Long getId() {
@@ -95,6 +99,30 @@ public class UserResponse extends GenericBaseResponse {
 
   public void setVerified(boolean verified) {
     this.verified = verified;
+  }
+
+  public String getFirstName() {
+    return firstName;
+  }
+
+  public void setFirstName(String firstName) {
+    this.firstName = firstName;
+  }
+
+  public String getLastName() {
+    return lastName;
+  }
+
+  public void setLastName(String lastName) {
+    this.lastName = lastName;
+  }
+
+  public int getYearOfGrad() {
+    return yearOfGrad;
+  }
+
+  public void setYearOfGrad(int yearOfGrad) {
+    this.yearOfGrad = yearOfGrad;
   }
 
   /*@Override
