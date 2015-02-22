@@ -423,6 +423,9 @@ public class UserServiceImpl implements UserService {
     userProfileUpdateResponse.setAccountName(user.getAccountName());
     userProfileUpdateResponse.setGradYear(user.getYearOfGraduation());
     userProfileUpdateResponse.setProfileImageLink(user.getProfileImage());
+    userProfileUpdateResponse.setFirstName(user.getFirstName());
+    userProfileUpdateResponse.setLastName(user.getLastName());
+    userProfileUpdateResponse.setEmail(user.getEmail());
 
     /*if (shouldUpdateImage) {
       if (isImageUpdateSuccessful) {

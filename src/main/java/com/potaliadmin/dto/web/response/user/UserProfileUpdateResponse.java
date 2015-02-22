@@ -10,6 +10,10 @@ public class UserProfileUpdateResponse extends GenericBaseResponse {
   private String accountName;
   private int gradYear;
   private String profileImageLink;
+  private String firstName;
+  private String lastName;
+  private int yearOfGrad;
+  private String email;
 
 
   public String getAccountName() {
@@ -34,5 +38,37 @@ public class UserProfileUpdateResponse extends GenericBaseResponse {
 
   public void setProfileImageLink(String profileImageLink) {
     this.profileImageLink = profileImageLink;
+  }
+
+  public String getFirstName() {
+    return firstName;
+  }
+
+  public void setFirstName(String firstName) {
+    this.firstName = firstName;
+  }
+
+  public String getLastName() {
+    return lastName;
+  }
+
+  public void setLastName(String lastName) {
+    this.lastName = lastName;
+  }
+
+  public int getYearOfGrad() {
+    return yearOfGrad;
+  }
+
+  public void setYearOfGrad(int yearOfGrad) {
+    this.yearOfGrad = yearOfGrad;
+  }
+
+  public String getEmail() {
+    return email;
+  }
+
+  public void setEmail(String email) {
+    this.email = email;
   }
 }
