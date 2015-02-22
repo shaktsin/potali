@@ -256,7 +256,7 @@ public class UserServiceImpl implements UserService {
     }
 
     // get circle every one
-    TermFilterBuilder termFilterBuilder = FilterBuilders.termFilter("type", CircleType.ALL.getId());
+    /*TermFilterBuilder termFilterBuilder = FilterBuilders.termFilter("type", CircleType.ALL.getId());
     ESSearchFilter esSearchFilter =
         new ESSearchFilter().setFilterBuilder(termFilterBuilder);
 
@@ -276,7 +276,7 @@ public class UserServiceImpl implements UserService {
       }
     } else {
       throw new PotaliRuntimeException("Some Exception occurred in sign up! Please Try Again");
-    }
+    }*/
 
     HippoHttpUtils.sendVerificationToken(user.getVerificationToken(), user.getFirstName(), user.getEmail());
 
@@ -378,7 +378,7 @@ public class UserServiceImpl implements UserService {
     // join year club
     if (userProfileUpdateRequest.getYearOfGrad() != null) {
 
-      AndFilterBuilder andFilterBuilder =
+      /*AndFilterBuilder andFilterBuilder =
           FilterBuilders.andFilter(FilterBuilders.termFilter("name", userProfileUpdateRequest.getYearOfGrad()),
           FilterBuilders.termFilter("type", CircleType.YEAR.getId()));
 
@@ -413,7 +413,7 @@ public class UserServiceImpl implements UserService {
           logger.error("Could not join year circle");
           throw new PotaliRuntimeException("Some Exception occurred in sign up! Please Try Again");
         }
-      }
+      }*/
 
     }
 
