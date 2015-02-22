@@ -343,6 +343,8 @@ public class UserServiceImpl implements UserService {
       avatar.setFormat(EnumImageFormat.getImageFormatByString(format));
       String imageLink = getUploadService().getCanonicalPathOfCloudResource(pubId, version, format);
       avatar.setUrl(imageLink);
+      avatar.setUserId(user.getId());
+      avatar.setUserInstituteId(user.getInstituteId());
 
       getAvatarDao().save(avatar);
 
