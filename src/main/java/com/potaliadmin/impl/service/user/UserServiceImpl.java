@@ -271,7 +271,8 @@ public class UserServiceImpl implements UserService {
       try {
         circleList.add(circleVO.getId());
       } catch (Exception e) {
-        e.printStackTrace();
+        //e.printStackTrace();
+        logger.error("Error ",e);
       }
 
       userVO.setCircleList(circleList);
