@@ -33,7 +33,7 @@ public class UserVO extends BaseElasticVO {
     this.id = id;
   }
 
-  public UserVO(User user) {
+  public UserVO(User user, List<Long> circleList) {
     id = user.getId();
     institutionId = user.getInstituteId();
     accountName = user.getAccountName();
@@ -45,7 +45,11 @@ public class UserVO extends BaseElasticVO {
     lastName = user.getLastName();
     yearOfGrad = user.getYearOfGraduation();
 
-    circleList = Arrays.asList(-1L);
+    if (circleList == null || circleList.isEmpty()) {
+      this.circleList = Arrays.asList(-1L);
+    } else {
+      this.circleList = circleList;
+    }
   }
 
   @Override

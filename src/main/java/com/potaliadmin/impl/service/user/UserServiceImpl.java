@@ -2,24 +2,17 @@ package com.potaliadmin.impl.service.user;
 
 import com.potaliadmin.constants.DefaultConstants;
 import com.potaliadmin.constants.attachment.EnumImageFormat;
-import com.potaliadmin.constants.cache.MemCacheNS;
 import com.potaliadmin.constants.circle.CircleType;
-import com.potaliadmin.constants.image.EnumBucket;
-import com.potaliadmin.constants.image.EnumImageSize;
-import com.potaliadmin.constants.plateform.EnumPlateForm;
+import com.potaliadmin.domain.circle.Circle;
 import com.potaliadmin.domain.image.Avatar;
 import com.potaliadmin.domain.user.User;
-import com.potaliadmin.dto.internal.cache.es.post.PostReactionVO;
+import com.potaliadmin.domain.user.UserCircleMapping;
 import com.potaliadmin.dto.internal.cache.institute.InstituteVO;
 import com.potaliadmin.dto.internal.hibernate.user.UserSignUpQueryRequest;
-import com.potaliadmin.dto.internal.image.ImageDto;
-import com.potaliadmin.dto.web.request.circle.CircleCreateRequest;
-import com.potaliadmin.dto.web.request.circle.CircleJoinRequest;
 import com.potaliadmin.dto.web.request.user.UserProfileUpdateRequest;
 import com.potaliadmin.dto.web.request.user.UserSignUpRequest;
 import com.potaliadmin.dto.web.request.user.UserVerificationRequest;
 import com.potaliadmin.dto.web.response.base.GenericSuccessResponse;
-import com.potaliadmin.dto.web.response.circle.CreateCircleResponse;
 import com.potaliadmin.dto.web.response.user.UserProfileUpdateResponse;
 import com.potaliadmin.dto.web.response.user.UserResponse;
 import com.potaliadmin.exceptions.InValidInputException;
@@ -31,28 +24,25 @@ import com.potaliadmin.framework.elasticsearch.ESSearchFilter;
 import com.potaliadmin.framework.elasticsearch.response.ESSearchResponse;
 import com.potaliadmin.impl.framework.ServiceLocatorFactory;
 import com.potaliadmin.impl.framework.properties.AppProperties;
+import com.potaliadmin.pact.dao.circle.CircleDao;
 import com.potaliadmin.pact.dao.image.AvatarDao;
 import com.potaliadmin.pact.dao.user.UserDao;
 import com.potaliadmin.pact.framework.aws.UploadService;
-import com.potaliadmin.pact.service.cache.AppCacheService;
 import com.potaliadmin.pact.service.cache.MemCacheService;
 import com.potaliadmin.pact.service.circle.CircleService;
 import com.potaliadmin.pact.service.institute.InstituteReadService;
-import com.potaliadmin.pact.service.users.LoginService;
 import com.potaliadmin.pact.service.users.UserService;
 import com.potaliadmin.security.Principal;
 import com.potaliadmin.util.BaseUtil;
 import com.potaliadmin.util.rest.HippoHttpUtils;
 import com.potaliadmin.vo.BaseElasticVO;
 import com.potaliadmin.vo.circle.CircleVO;
-import com.potaliadmin.vo.comment.CommentVO;
 import com.potaliadmin.vo.user.UserVO;
 import org.apache.commons.lang.StringUtils;
 import org.apache.shiro.SecurityUtils;
 import org.elasticsearch.index.query.AndFilterBuilder;
 import org.elasticsearch.index.query.FilterBuilders;
 import org.elasticsearch.index.query.TermFilterBuilder;
-import org.elasticsearch.search.sort.SortOrder;
 import org.glassfish.jersey.media.multipart.FormDataBodyPart;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -64,6 +54,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -94,8 +85,10 @@ public class UserServiceImpl implements UserService {
   InstituteReadService instituteReadService;
   @Autowired
   AppProperties appProperties;
+  @Autowired
+  CircleDao circleDao;
 
-  CircleService circleService;
+  //CircleService circleService;
 
   @Override
   public UserResponse findById(Long id) {
@@ -123,7 +116,12 @@ public class UserServiceImpl implements UserService {
 
       // put in es
       //getMemCacheService().put(MemCacheNS.USER_BY_ID, user.getId().toString(), userResponse);
-      userVO = new UserVO(user);
+      List<Circle> circleList = getCircleDao().getUserCircle(user.getId());
+      List<Long> circleIdList = new ArrayList<Long>();
+      for (Circle circle : circleList) {
+        circleIdList.add(circle.getId());
+      }
+      userVO = new UserVO(user, circleIdList);
       getBaseESService().put(userVO);
     }
     return userResponse;
@@ -163,7 +161,12 @@ public class UserServiceImpl implements UserService {
 
       // put in es
       //getMemCacheService().put(MemCacheNS.USER_BY_ID, user.getId().toString(), userResponse);
-      UserVO userVO = new UserVO(user);
+      List<Circle> circleList = getCircleDao().getUserCircle(user.getId());
+      List<Long> circleIdList = new ArrayList<Long>();
+      for (Circle circle : circleList) {
+        circleIdList.add(circle.getId());
+      }
+      UserVO userVO = new UserVO(user, circleIdList);
       getBaseESService().put(userVO);
     }
     return userResponse;
@@ -248,35 +251,35 @@ public class UserServiceImpl implements UserService {
     //getMemCacheService().put(MemCacheNS.USER_BY_ID, user.getId().toString(), userResponse);
     //getMemCacheService().put(MemCacheNS.USER_BY_EMAIL, user.getEmail(), userResponse);
 
-    // put in elastic search
-    UserVO userVO = new UserVO(user);
-    boolean published = getBaseESService().put(userVO);
-    if (!published) {
-      throw new PotaliRuntimeException("Some Exception occurred in sign up! Please Try Again");
-    }
-
-    // get circle every one
-    /*TermFilterBuilder termFilterBuilder = FilterBuilders.termFilter("type", CircleType.ALL.getId());
+    TermFilterBuilder termFilterBuilder = FilterBuilders.termFilter("type", CircleType.ALL.getId());
     ESSearchFilter esSearchFilter =
         new ESSearchFilter().setFilterBuilder(termFilterBuilder);
-
     ESSearchResponse esSearchResponse = getBaseESService().search(esSearchFilter, CircleVO.class);
     List<BaseElasticVO> postReactionVOs = esSearchResponse.getBaseElasticVOs();
     if (postReactionVOs != null && !postReactionVOs.isEmpty()) {
       CircleVO circleVO = (CircleVO) postReactionVOs.get(0);
-      CircleJoinRequest circleJoinRequest = new CircleJoinRequest();
-      circleJoinRequest.setCircleId(circleVO.getId());
-      circleJoinRequest.setAppName(DefaultConstants.APP_NAME);
-      circleJoinRequest.setPlateFormId(EnumPlateForm.AND_APP.getId());
-      GenericSuccessResponse genericSuccessResponse = getCircleService().joinCircle(circleJoinRequest);
 
-      if (!genericSuccessResponse.isSuccess()) {
-        logger.error("Could not join all circle");
+
+      // join circle first in DB
+      UserCircleMapping userCircleMapping = getCircleDao().joinCircle(userResponse, circleVO.getId(), false);
+      if (userCircleMapping == null) {
         throw new PotaliRuntimeException("Some Exception occurred in sign up! Please Try Again");
       }
+
+      UserVO userVO = new UserVO(user, null);
+      List<Long> circleList = userVO.getCircleList();
+      circleList.add(circleVO.getId());
+      userVO.setCircleList(circleList);
+
+      boolean published = getBaseESService().put(userVO);
+      if (!published) {
+        throw new PotaliRuntimeException("Some Exception occurred in sign up! Please Try Again");
+      }
+
     } else {
       throw new PotaliRuntimeException("Some Exception occurred in sign up! Please Try Again");
-    }*/
+    }
+
 
     HippoHttpUtils.sendVerificationToken(user.getVerificationToken(), user.getFirstName(), user.getEmail());
 
@@ -317,68 +320,52 @@ public class UserServiceImpl implements UserService {
 
     }
 
-
-    String serverFileName = userResponse.getId() +DefaultConstants.NAME_SEPARATOR +img.getContentDisposition().getFileName();
-    String rootPath = getAppProperties().getUploadPicPath() + File.separator + DefaultConstants.PROFILE;
-    String fullFileName = rootPath + File.separator + serverFileName;
-
     if (img.getContentDisposition().getFileName() != null) {
       try {
+        String serverFileName = userResponse.getId() +DefaultConstants.NAME_SEPARATOR +img.getContentDisposition().getFileName();
+        String rootPath = getAppProperties().getUploadPicPath() + File.separator + DefaultConstants.PROFILE;
+        String fullFileName = rootPath + File.separator + serverFileName;
         uploadImageToServer(fullFileName, img.getValueAs(InputStream.class));
+
+        Map<String,Object> map = getUploadService().uploadProfImageToCloud(user.getId(), new File(fullFileName));
+        Avatar avatar = new Avatar();
+        Long version = (Long) map.get("version");
+        String pubId = (String) map.get("public_id");
+        String format = (String) map.get("format");
+
+        avatar.setWidth(((Long)map.get("width")).intValue());
+        avatar.setHeight(((Long) map.get("height")).intValue());
+        avatar.setVersion(version);
+        avatar.setPublicId(pubId);
+        avatar.setFormat(EnumImageFormat.getImageFormatByString(format));
+        String imageLink = getUploadService().getCanonicalPathOfCloudResource(pubId, version, format);
+        avatar.setUrl(imageLink);
+        avatar.setUserId(user.getId());
+        avatar.setUserInstituteId(user.getInstituteId());
+
+        getAvatarDao().save(avatar);
+
+        user.setProfileImage(imageLink);
+
       } catch (Exception e) {
         logger.error("Error while uploading image",e);
         throw new PotaliRuntimeException("Something wrong occurred, please try again!");
       }
 
-      Map<String,Object> map = getUploadService().uploadProfImageToCloud(user.getId(), new File(fullFileName));
-      Avatar avatar = new Avatar();
-      Long version = (Long) map.get("version");
-      String pubId = (String) map.get("public_id");
-      String format = (String) map.get("format");
-
-      avatar.setWidth(((Long)map.get("width")).intValue());
-      avatar.setHeight(((Long) map.get("height")).intValue());
-      avatar.setVersion(version);
-      avatar.setPublicId(pubId);
-      avatar.setFormat(EnumImageFormat.getImageFormatByString(format));
-      String imageLink = getUploadService().getCanonicalPathOfCloudResource(pubId, version, format);
-      avatar.setUrl(imageLink);
-      avatar.setUserId(user.getId());
-      avatar.setUserInstituteId(user.getInstituteId());
-
-      getAvatarDao().save(avatar);
-
-      user.setProfileImage(imageLink);
     }
 
-
-
-    /*List<ImageDto> imageDtoList = userProfileUpdateRequest.getImageDtoList();
-    boolean isImageUpdateSuccessful = false;
-    boolean shouldUpdateImage  = imageDtoList != null && imageDtoList.size() > 0;
-    if (shouldUpdateImage) {
-      boolean uploaded = getUploadService().uploadProfileImageFiles(EnumBucket.PROFILE_BUCKET.getName(), imageDtoList, true);
-      if (uploaded) {
-        for (ImageDto imageDto : imageDtoList) {
-          String url = getUploadService().getCanonicalPathOfResource(EnumBucket.PROFILE_BUCKET.getName(), imageDto.getFileName());
-          getAvatarDao().createAvatar(EnumImageSize.getImageSizeById(imageDto.getSize()), userResponse, url);
-        }
-        isImageUpdateSuccessful = true;
-      }
-    }*/
-
-    user = (User)getUserDao().save(user);
-    // PUT IN ES
-    UserVO userVO = new UserVO(user);
-    boolean published = getBaseESService().put(userVO);
-    if (!published) {
-      throw new PotaliRuntimeException("Some Exception occurred in sign up! Please Try Again");
+    List<Circle> circleList = getCircleDao().getUserCircle(user.getId());
+    List<Long> circleIdList = new ArrayList<Long>();
+    for (Circle circle : circleList) {
+      circleIdList.add(circle.getId());
     }
+    UserVO userVO = new UserVO(user, circleIdList);
+    user = (User) getUserDao().save(user);
 
     // join year club
     if (userProfileUpdateRequest.getYearOfGrad() != null) {
 
-      /*AndFilterBuilder andFilterBuilder =
+      AndFilterBuilder andFilterBuilder =
           FilterBuilders.andFilter(FilterBuilders.termFilter("name", userProfileUpdateRequest.getYearOfGrad()),
           FilterBuilders.termFilter("type", CircleType.YEAR.getId()));
 
@@ -390,34 +377,24 @@ public class UserServiceImpl implements UserService {
       List<BaseElasticVO> baseElasticVOs = esSearchResponse.getBaseElasticVOs();
       if (baseElasticVOs != null && !baseElasticVOs.isEmpty()) {
         CircleVO circleVO = (CircleVO) baseElasticVOs.get(0);
-        CircleJoinRequest circleJoinRequest = new CircleJoinRequest();
-        circleJoinRequest.setCircleId(circleVO.getId());
-        circleJoinRequest.setAppName(DefaultConstants.APP_NAME);
-        circleJoinRequest.setPlateFormId(EnumPlateForm.AND_APP.getId());
-        GenericSuccessResponse genericSuccessResponse = getCircleService().joinCircle(circleJoinRequest);
 
-        if (!genericSuccessResponse.isSuccess()) {
-          logger.error("Could not join year circle");
+        // join circle first in DB
+        UserCircleMapping userCircleMapping = getCircleDao().joinCircle(userResponse, circleVO.getId(), false);
+        if (userCircleMapping == null) {
           throw new PotaliRuntimeException("Some Exception occurred in sign up! Please Try Again");
         }
-      } else {
-        CircleCreateRequest circleCreateRequest = new CircleCreateRequest();
-        circleCreateRequest.setCircleId(CircleType.YEAR.getId());
-        circleCreateRequest.setModerate(false);
-        circleCreateRequest.setName(userProfileUpdateRequest.getYearOfGrad().toString());
-        circleCreateRequest.setAppName(DefaultConstants.APP_NAME);
-        circleCreateRequest.setPlateFormId(EnumPlateForm.AND_APP.getId());
 
-        CreateCircleResponse createCircleResponse = getCircleService().createCircle(circleCreateRequest);
-        if (createCircleResponse.isException()) {
-          logger.error("Could not join year circle");
-          throw new PotaliRuntimeException("Some Exception occurred in sign up! Please Try Again");
-        }
-      }*/
+        circleIdList = userVO.getCircleList();
+        circleIdList.add(circleVO.getId());
+        userVO.setCircleList(circleIdList);
+      }
 
     }
 
-
+    boolean published = getBaseESService().put(userVO);
+    if (!published) {
+      throw new PotaliRuntimeException("Some Exception occurred in sign up! Please Try Again");
+    }
 
     UserProfileUpdateResponse userProfileUpdateResponse = new UserProfileUpdateResponse();
     userProfileUpdateResponse.setAccountName(user.getAccountName());
@@ -426,49 +403,6 @@ public class UserServiceImpl implements UserService {
     userProfileUpdateResponse.setFirstName(user.getFirstName());
     userProfileUpdateResponse.setLastName(user.getLastName());
     userProfileUpdateResponse.setEmail(user.getEmail());
-
-    /*if (shouldUpdateImage) {
-      if (isImageUpdateSuccessful) {
-        Avatar thumbNail = getAvatarDao().findAvatar(EnumImageSize.XS_SMALL, userResponse);
-        Avatar profileAvatar = getAvatarDao().findAvatar(EnumImageSize.MEDIUM, userResponse);
-        if (thumbNail != null) {
-          user.setProfileImage(thumbNail.getUrl());
-        }
-        user = (User)getUserDao().save(user);
-        userProfileUpdateResponse.setAccountName(user.getAccountName());
-        userProfileUpdateResponse.setGradYear(user.getYearOfGraduation());
-        if (profileAvatar != null) {
-          userProfileUpdateResponse.setProfileImageLink(profileAvatar.getUrl());
-        }
-      } else {
-        userProfileUpdateResponse.setException(Boolean.TRUE);
-        userProfileUpdateResponse.addMessage("Something went wrong,Please try again!");
-      }
-    } else {
-      user = (User)getUserDao().save(user);
-      Avatar avatar = getAvatarDao().findAvatar(EnumImageSize.MEDIUM, userResponse);
-      userProfileUpdateResponse.setAccountName(user.getAccountName());
-      userProfileUpdateResponse.setGradYear(user.getYearOfGraduation());
-      if (avatar != null) {
-        userProfileUpdateResponse.setProfileImageLink(avatar.getUrl());
-      }
-    }*/
-
-    // update cache too
-    // put in mem cache
-    /*getMemCacheService().remove(MemCacheNS.USER_BY_ID, userResponse.getId().toString());
-    getMemCacheService().remove(MemCacheNS.USER_BY_EMAIL, userResponse.getEmail());
-
-    userResponse.setId(user.getId());
-    userResponse.setName(user.getAccountName());
-    userResponse.setEmail(user.getEmail());
-    userResponse.setPasswordChecksum(user.getPasswordChecksum());
-    userResponse.setInstituteId(user.getInstituteId());
-    userResponse.setImage(user.getProfileImage());
-
-    getMemCacheService().put(MemCacheNS.USER_BY_ID, user.getId().toString(), userResponse);
-    getMemCacheService().put(MemCacheNS.USER_BY_EMAIL, user.getEmail(), userResponse);*/
-
 
     return userProfileUpdateResponse;
   }
@@ -488,7 +422,12 @@ public class UserServiceImpl implements UserService {
       getUserDao().save(user);
     }
 
-    UserVO userVO = new UserVO(user);
+    List<Circle> circleList = getCircleDao().getUserCircle(user.getId());
+    List<Long> circleIdList = new ArrayList<Long>();
+    for (Circle circle : circleList) {
+      circleIdList.add(circle.getId());
+    }
+    UserVO userVO = new UserVO(user, circleIdList);
     boolean published = getBaseESService().put(userVO);
     if (!published) {
       throw new PotaliRuntimeException("Some Exception occurred in sign up! Please Try Again");
@@ -577,12 +516,7 @@ public class UserServiceImpl implements UserService {
     return appProperties;
   }
 
-  public CircleService getCircleService() {
-    if (circleService == null) {
-      circleService = ServiceLocatorFactory.getBean(CircleService.class);
-    }
-    return circleService;
+  public CircleDao getCircleDao() {
+    return circleDao;
   }
-
-
 }

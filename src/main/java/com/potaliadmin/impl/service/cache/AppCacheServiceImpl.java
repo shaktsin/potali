@@ -1,6 +1,5 @@
 package com.potaliadmin.impl.service.cache;
 
-import com.potaliadmin.constants.cache.MemCacheNS;
 import com.potaliadmin.constants.cluster.EnumCluster;
 import com.potaliadmin.domain.address.City;
 import com.potaliadmin.domain.cluster.CacheCluster;
@@ -13,7 +12,6 @@ import com.potaliadmin.dto.internal.cache.cluster.ClusterVO;
 import com.potaliadmin.dto.internal.cache.institute.InstituteVO;
 import com.potaliadmin.dto.internal.cache.job.IndustryRolesVO;
 import com.potaliadmin.dto.internal.cache.job.IndustryVO;
-import com.potaliadmin.dto.web.response.user.UserResponse;
 import com.potaliadmin.framework.cache.address.CityCache;
 import com.potaliadmin.framework.cache.cluster.ClusterCache;
 import com.potaliadmin.framework.cache.industry.IndustryCache;
@@ -30,7 +28,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -164,7 +161,7 @@ public class AppCacheServiceImpl implements AppCacheService {
       //getMemCacheService().put(MemCacheNS.USER_BY_ID, user.getId().toString(), userResponse);
       //getMemCacheService().put(MemCacheNS.USER_BY_EMAIL, user.getEmail(), userResponse);
 
-      UserVO userVO = new UserVO(user);
+      UserVO userVO = new UserVO(user, null);
       getBaseESService().put(userVO);
 
 
