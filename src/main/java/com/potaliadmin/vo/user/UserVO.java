@@ -5,6 +5,7 @@ import com.potaliadmin.framework.elasticsearch.annotation.ElasticEntity;
 import com.potaliadmin.vo.BaseElasticVO;
 import com.potaliadmin.vo.circle.CircleVO;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -46,7 +47,9 @@ public class UserVO extends BaseElasticVO {
     yearOfGrad = user.getYearOfGraduation();
 
     if (circleList == null || circleList.isEmpty()) {
-      this.circleList = Arrays.asList(-1L);
+      List<Long> emptyArrayList = new ArrayList<Long>();
+      emptyArrayList.add(-1L);
+      this.circleList = emptyArrayList;
     } else {
       this.circleList = circleList;
     }
