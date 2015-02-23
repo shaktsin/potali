@@ -35,6 +35,10 @@ public class UserResponse extends GenericBaseResponse {
     circleList = userVO.getCircleList();
     verified = userVO.isVerified();
 
+    firstName = userVO.getFirstName();
+    lastName = userVO.getLastName();
+    yearOfGrad = userVO.getYearOfGrad();
+
   }
 
   public Long getId() {
