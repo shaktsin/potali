@@ -268,7 +268,12 @@ public class UserServiceImpl implements UserService {
 
       UserVO userVO = new UserVO(user, null);
       List<Long> circleList = userVO.getCircleList();
-      circleList.add(circleVO.getId());
+      try {
+        circleList.add(circleVO.getId());
+      } catch (Exception e) {
+        e.printStackTrace();
+      }
+
       userVO.setCircleList(circleList);
 
       boolean published = getBaseESService().put(userVO);
