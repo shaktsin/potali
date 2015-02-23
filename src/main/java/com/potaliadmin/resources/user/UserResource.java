@@ -82,6 +82,7 @@ public class UserResource {
         userResourceResponse.setFirstName(userResponse.getFirstName());
         userResourceResponse.setLastName(userResponse.getLastName());
         userResourceResponse.setYearOfGrad(userResponse.getYearOfGrad());
+        userResourceResponse.setImage(userResponse.getImage());
         userResourceResponse.setAuthToken(SecurityToken.getSecurityToken(userResponse.getEmail(), userSignUpRequest.getPassword(), userSignUpRequest.getInstituteId()));
 
         /*String[] locationFilterList=null;
@@ -153,6 +154,7 @@ public class UserResource {
         userResourceResponse.setFirstName(userResponse.getFirstName());
         userResourceResponse.setLastName(userResponse.getLastName());
         userResourceResponse.setYearOfGrad(userResponse.getYearOfGrad());
+        userResourceResponse.setImage(userResponse.getImage());
         return userResourceResponse;
       } else {
         UserResourceResponse userResourceResponse = new UserResourceResponse();
