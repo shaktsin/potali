@@ -56,6 +56,7 @@ public class CircleServiceImpl implements CircleService {
 
     CircleVO circleVO = new CircleVO(circle);
     circleVO.setAdmin(userResponse.getId());
+    circleVO.setInstituteId(userResponse.getInstituteId());
 
 
     boolean published = getBaseESService().put(circleVO);

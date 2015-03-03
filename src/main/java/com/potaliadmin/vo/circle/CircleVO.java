@@ -14,6 +14,7 @@ public class CircleVO extends BaseElasticVO {
   private int type;
   private boolean moderate;
   private Long admin;
+  private Long instituteId;
 
   public CircleVO() {
   }
@@ -56,5 +57,13 @@ public class CircleVO extends BaseElasticVO {
 
   public void setAdmin(Long admin) {
     this.admin = admin;
+  }
+
+  public Long getInstituteId() {
+    return instituteId;
+  }
+
+  public void setInstituteId(Long instituteId) {
+    this.instituteId = instituteId;
   }
 }
