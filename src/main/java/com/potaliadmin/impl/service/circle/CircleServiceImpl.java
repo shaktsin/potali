@@ -106,6 +106,10 @@ public class CircleServiceImpl implements CircleService {
       throw new PotaliRuntimeException("No Circle found with Id "+circleJoinRequest.getCircleId());
     }
 
+    if (!circleVO.getInstituteId().equals(userResponse.getInstituteId())) {
+      throw new PotaliRuntimeException("Circle belongs to some other institute");
+    }
+
     UserCircleMapping userCircleMapping =
         getCircleDao().joinCircle(userResponse, circleJoinRequest.getCircleId(), false);
 
