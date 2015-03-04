@@ -264,7 +264,7 @@ public class UserServiceImpl implements UserService {
 
 
       // join circle first in DB
-      UserCircleMapping userCircleMapping = getCircleDao().joinCircle(userResponse, circleVO.getId(), false);
+      UserCircleMapping userCircleMapping = getCircleDao().joinCircle(userResponse, circleVO.getId(), true,false);
       if (userCircleMapping == null) {
         throw new PotaliRuntimeException("Some Exception occurred in sign up! Please Try Again");
       }
@@ -388,7 +388,7 @@ public class UserServiceImpl implements UserService {
         CircleVO circleVO = (CircleVO) baseElasticVOs.get(0);
 
         // join circle first in DB
-        UserCircleMapping userCircleMapping = getCircleDao().joinCircle(userResponse, circleVO.getId(), false);
+        UserCircleMapping userCircleMapping = getCircleDao().joinCircle(userResponse, circleVO.getId(), true,false);
         if (userCircleMapping == null) {
           throw new PotaliRuntimeException("Some Exception occurred in sign up! Please Try Again");
         }

@@ -42,14 +42,14 @@ public class CircleDaoImpl extends BaseDaoImpl implements CircleDao {
 
     circle = (Circle) save(circle);
 
-    joinCircle(userResponse, circle.getId(), true);
+    joinCircle(userResponse, circle.getId(), true,true);
 
     return circle;
   }
 
   @Override
   @Transactional(propagation = Propagation.NESTED)
-  public UserCircleMapping joinCircle(UserResponse userResponse, Long circleId, boolean isAdmin) {
+  public UserCircleMapping joinCircle(UserResponse userResponse, Long circleId, boolean authorized,boolean isAdmin) {
     if (userResponse == null) {
       throw new InValidInputException("USER_RESPONSE_CANNOT_BE_NULL");
     }
@@ -59,7 +59,7 @@ public class CircleDaoImpl extends BaseDaoImpl implements CircleDao {
 
     UserCircleMapping userCircleMapping = new UserCircleMapping();
     userCircleMapping.setAdmin(isAdmin);
-    userCircleMapping.setAuthorised(true);
+    userCircleMapping.setAuthorised(authorized);
 
     UserCircleMappingKey userCircleMappingKey = new UserCircleMappingKey();
     userCircleMappingKey.setUserId(userResponse.getId());
@@ -92,6 +92,7 @@ public class CircleDaoImpl extends BaseDaoImpl implements CircleDao {
   }
 
   @Override
+  @SuppressWarnings("unchecked")
   public Long getAdminUser(Long circleId) {
     return (Long)findUniqueByNamedParams("findByCircleAdmin", new String[]{"circleId"}, new Object[]{circleId});
   }

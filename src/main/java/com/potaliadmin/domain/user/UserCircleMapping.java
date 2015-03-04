@@ -10,6 +10,7 @@ import java.io.Serializable;
 @Table(name = "user_has_circle")
 @NamedQueries({
     @NamedQuery(name = "findByUser",query = "from UserCircleMapping u where u.userCircleMappingKey.userId = :userId"),
+    @NamedQuery(name = "findByUserAndCircle",query = "from UserCircleMapping u where u.userCircleMappingKey.userId = :userId and u.userCircleMappingKey.circleId = :circleId"),
     @NamedQuery(name = "findByCircle",query = "from UserCircleMapping u where u.userCircleMappingKey.circleId = :circleId"),
     @NamedQuery(name = "findByCircleAdmin",query = "from UserCircleMapping u where u.userCircleMappingKey.circleId = :circleId and u.admin = true")
 })

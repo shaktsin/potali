@@ -1,6 +1,8 @@
 package com.potaliadmin.resources.circle;
 
+import com.potaliadmin.dto.web.request.circle.CircleAuthorizeRequest;
 import com.potaliadmin.dto.web.request.circle.CircleCreateRequest;
+import com.potaliadmin.dto.web.request.circle.CircleGetRequest;
 import com.potaliadmin.dto.web.request.circle.CircleJoinRequest;
 import com.potaliadmin.dto.web.response.base.GenericSuccessResponse;
 import com.potaliadmin.dto.web.response.circle.CreateCircleResponse;
@@ -45,6 +47,36 @@ public class CircleResource {
   public GenericSuccessResponse joinCircle(CircleJoinRequest circleJoinRequest) {
     try {
       return getCircleService().joinCircle(circleJoinRequest);
+    } catch (Exception e) {
+      GenericSuccessResponse genericSuccessResponse = new GenericSuccessResponse();
+      genericSuccessResponse.setException(true);
+      genericSuccessResponse.addMessage(e.getMessage());
+      return genericSuccessResponse;
+    }
+  }
+
+  @POST
+  @Path("/all")
+  @Produces("application/json")
+  @RequiresAuthentication
+  public GenericSuccessResponse getAllCircles(CircleGetRequest circleGetRequest) {
+    try {
+      return getCircleService().joinCircle(circleJoinRequest);
+    } catch (Exception e) {
+      GenericSuccessResponse genericSuccessResponse = new GenericSuccessResponse();
+      genericSuccessResponse.setException(true);
+      genericSuccessResponse.addMessage(e.getMessage());
+      return genericSuccessResponse;
+    }
+  }
+
+  @POST
+  @Path("/authorize")
+  @Produces("application/json")
+  @RequiresAuthentication
+  public GenericSuccessResponse authorizeCircle(CircleAuthorizeRequest circleAuthorizeRequest) {
+    try {
+      return getCircleService().authorizeCircle(circleAuthorizeRequest);
     } catch (Exception e) {
       GenericSuccessResponse genericSuccessResponse = new GenericSuccessResponse();
       genericSuccessResponse.setException(true);

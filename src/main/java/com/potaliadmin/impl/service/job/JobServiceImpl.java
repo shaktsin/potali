@@ -12,6 +12,7 @@ import com.potaliadmin.domain.industry.Industry;
 import com.potaliadmin.domain.job.Job;
 import com.potaliadmin.domain.post.Post;
 import com.potaliadmin.domain.post.PostBlob;
+import com.potaliadmin.domain.user.UserCircleMapping;
 import com.potaliadmin.dto.internal.cache.address.CityVO;
 import com.potaliadmin.dto.internal.cache.es.job.*;
 import com.potaliadmin.dto.internal.cache.job.IndustryRolesVO;
@@ -42,6 +43,7 @@ import com.potaliadmin.framework.elasticsearch.BaseESService;
 import com.potaliadmin.framework.elasticsearch.ESSearchFilter;
 import com.potaliadmin.framework.elasticsearch.response.ESSearchResponse;
 import com.potaliadmin.pact.dao.attachment.AttachmentDao;
+import com.potaliadmin.pact.dao.circle.CircleDao;
 import com.potaliadmin.pact.dao.job.JobDao;
 import com.potaliadmin.pact.dao.post.PostBlobDao;
 import com.potaliadmin.pact.dao.post.PostCommentDao;
@@ -113,6 +115,8 @@ public class JobServiceImpl implements JobService {
   UploadService uploadService;
   @Autowired
   AttachmentDao attachmentDao;
+  @Autowired
+  CircleDao circleDao;
 
   private static final String INDEX = "ofc";
   private static final String JOB = "job";
@@ -121,6 +125,7 @@ public class JobServiceImpl implements JobService {
 
 
   @Override
+  @SuppressWarnings("unchecked")
   public PrepareJobCreateResponse prepareJobCreateRequest() {
     UserResponse userResponse = getLoginService().getLoggedInUser();
 
@@ -174,9 +179,35 @@ public class JobServiceImpl implements JobService {
       return prepareJobCreateResponse;
     }
 
+    // get circle list from DB
+    List<UserCircleMapping> userCircleMappingList = (List<UserCircleMapping>)getCircleDao().findByNamedQueryAndNamedParam("findByUser",
+        new String[]{"userId"}, new Object[]{userResponse.getId()});
+
+    if (userCircleMappingList == null || userCircleMappingList.isEmpty()) {
+      PrepareJobCreateResponse prepareJobCreateResponse = new PrepareJobCreateResponse();
+      prepareJobCreateResponse.setException(true);
+      prepareJobCreateResponse.addMessage("Some exception occurred, please try again!");
+      return prepareJobCreateResponse;
+    }
+
+    List<Long> authCircleList = new ArrayList<Long>();
     List<Long> circleList = userVO.getCircleList();
+    if (circleList == null || circleList.isEmpty()) {
+      PrepareJobCreateResponse prepareJobCreateResponse = new PrepareJobCreateResponse();
+      prepareJobCreateResponse.setException(true);
+      prepareJobCreateResponse.addMessage("Some exception occurred, please try again!");
+      return prepareJobCreateResponse;
+    }
+
+
+    for (UserCircleMapping userCircleMapping : userCircleMappingList) {
+      if (userCircleMapping.isAuthorised() && circleList.contains(userCircleMapping.getUserCircleMappingKey().getUserId())) {
+        authCircleList.add(userCircleMapping.getUserCircleMappingKey().getCircleId());
+      }
+    }
+
     List<CircleDto> circleDtoList = new ArrayList<CircleDto>();
-    for (Long circle : circleList) {
+    for (Long circle : authCircleList) {
       CircleVO circleVO = (CircleVO) getBaseESService().get(circle, null, CircleVO.class);
       if (circleVO != null) {
         CircleDto circleDto = new CircleDto();
@@ -207,6 +238,26 @@ public class JobServiceImpl implements JobService {
     UserResponse userResponse = getLoginService().getLoggedInUser();
     jobCreateRequest.setUserId(userResponse.getId());
     jobCreateRequest.setUserInstituteId(userResponse.getInstituteId());
+
+    // check whether user is authorized to comment
+    boolean isAuthorized = false;
+    List<Long> circleVOs = jobCreateRequest.getCircleList();
+    for (Long circleId : circleVOs) {
+      if (userResponse.getCircleList() == null) {
+        break;
+      }
+      if (userResponse.getCircleList().contains(circleId)) {
+        isAuthorized = true;
+        break;
+      }
+    }
+
+    if (!isAuthorized) {
+      JobResponse jobResponse = new JobResponse();
+      jobResponse.setException(true);
+      jobResponse.addMessage("You are not the part of this club");
+      return jobResponse;
+    }
 
     // create job
     Job job = getJobDao().createJob(jobCreateRequest);
@@ -870,5 +921,9 @@ public class JobServiceImpl implements JobService {
 
   public AttachmentDao getAttachmentDao() {
     return attachmentDao;
+  }
+
+  public CircleDao getCircleDao() {
+    return circleDao;
   }
 }

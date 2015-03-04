@@ -21,10 +21,7 @@ import com.potaliadmin.dto.internal.filter.GeneralFilterDto;
 import com.potaliadmin.dto.internal.filter.JobFilterDto;
 import com.potaliadmin.dto.internal.image.CreateImageResponseDto;
 import com.potaliadmin.dto.internal.image.ImageDto;
-import com.potaliadmin.dto.web.request.posts.AllPostReactionRequest;
-import com.potaliadmin.dto.web.request.posts.BookMarkPostRequest;
-import com.potaliadmin.dto.web.request.posts.PostCommentRequest;
-import com.potaliadmin.dto.web.request.posts.PostReactionRequest;
+import com.potaliadmin.dto.web.request.posts.*;
 import com.potaliadmin.dto.web.response.circle.CircleDto;
 import com.potaliadmin.dto.web.response.post.*;
 import com.potaliadmin.dto.web.response.user.UserDto;
@@ -205,6 +202,26 @@ public class PostServiceImpl implements PostService {
       throw new PotaliRuntimeException("NO POST FOUND FOR POST ID "+postCommentRequest.getPostId());
     }
 
+    // check whether user is authorized to comment
+    boolean isAuthorized = false;
+    List<CircleVO> circleVOs = postVO.getCircleList();
+    for (CircleVO circleVO : circleVOs) {
+      if (userResponse.getCircleList() == null) {
+        break;
+      }
+      if (userResponse.getCircleList().contains(circleVO.getId())) {
+        isAuthorized = true;
+        break;
+      }
+    }
+
+    if (!isAuthorized) {
+      CommentResponse commentResponse = new CommentResponse();
+      commentResponse.setException(true);
+      commentResponse.addMessage("You are not the part of this club");
+      return commentResponse;
+    }
+
     // first put in db and then in ES
     PostReactions postReactions = getPostReactionDao().createPostReaction(EnumReactions.COMMENT.getId(),
         postCommentRequest.getPostId(), userResponse.getId());
@@ -261,6 +278,51 @@ public class PostServiceImpl implements PostService {
 
     ESSearchFilter esSearchFilter =
         new ESSearchFilter().setFilterBuilder(hasChildFilterBuilder)
+            .addSortedMap("postId", SortOrder.DESC).setPageNo(pageNo).setPerPage(perPage);
+
+    ESSearchResponse esSearchResponse = getBaseESService().search(esSearchFilter, PostVO.class);
+    List<BaseElasticVO> baseElasticVOs = esSearchResponse.getBaseElasticVOs();
+    List<GenericPostResponse> genericPostResponseList = new ArrayList<GenericPostResponse>();
+    for (BaseElasticVO baseElasticVO : baseElasticVOs) {
+      PostVO postVO = (PostVO) baseElasticVO;
+      UserResponse postUser = getUserService().findById(postVO.getUserId());
+      GenericPostResponse genericPostResponse = new GenericPostResponse(postVO, postUser);
+      genericPostResponseList.add(genericPostResponse);
+    }
+    PostResponse postResponse = new PostResponse();
+    postResponse.setPosts(genericPostResponseList);
+    postResponse.setPageNo(pageNo);
+    postResponse.setPerPage(perPage);
+    postResponse.setTotalResults(totalHits);
+    return postResponse;
+  }
+
+  @Override
+  public PostResponse fetchUsersPosts(UserProfileRequest userProfileRequest) {
+    long totalHits=0;
+    int pageNo = userProfileRequest.getPageNo();
+    int perPage = userProfileRequest.getPerPage();
+
+    UserResponse userResponse = getUserService().getLoggedInUser();
+
+    if (userResponse == null) {
+      throw new InValidInputException("USER CANNOT BE NULL");
+    }
+
+    UserResponse requestUser = getUserService().findById(userProfileRequest.getUserId());
+    if (requestUser == null) {
+      throw new PotaliRuntimeException("You cannot see posts of a ghost user");
+    }
+
+    if (!requestUser.getInstituteId().equals(userResponse.getInstituteId())) {
+      throw new PotaliRuntimeException("You cannot see post of users of other institutions");
+    }
+
+    BoolFilterBuilder boolFilterBuilder = FilterBuilders.boolFilter();
+    boolFilterBuilder.must(FilterBuilders.termFilter("userId", userResponse.getId()));
+
+    ESSearchFilter esSearchFilter =
+        new ESSearchFilter().setFilterBuilder(boolFilterBuilder)
             .addSortedMap("postId", SortOrder.DESC).setPageNo(pageNo).setPerPage(perPage);
 
     ESSearchResponse esSearchResponse = getBaseESService().search(esSearchFilter, PostVO.class);

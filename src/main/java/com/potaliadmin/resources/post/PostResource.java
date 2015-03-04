@@ -67,6 +67,21 @@ public class PostResource {
     }
   }
 
+  @POST
+  @Path("/user/posts")
+  @Produces("application/json")
+  @RequiresAuthentication
+  public PostResponse fetchPostsByReactionIds(UserProfileRequest userProfileRequest) {
+    try {
+      return getPostService().fetchUsersPosts(userProfileRequest);
+    } catch (Exception e) {
+      PostResponse postResponse = new PostResponse();
+      postResponse.setException(Boolean.TRUE);
+      postResponse.addMessage(e.getMessage());
+      return postResponse;
+    }
+  }
+
 
   @POST
   @Path("/comment")

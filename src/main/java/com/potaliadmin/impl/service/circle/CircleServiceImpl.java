@@ -2,7 +2,9 @@ package com.potaliadmin.impl.service.circle;
 
 import com.potaliadmin.constants.circle.CircleType;
 import com.potaliadmin.domain.circle.Circle;
+import com.potaliadmin.domain.user.User;
 import com.potaliadmin.domain.user.UserCircleMapping;
+import com.potaliadmin.dto.web.request.circle.CircleAuthorizeRequest;
 import com.potaliadmin.dto.web.request.circle.CircleCreateRequest;
 import com.potaliadmin.dto.web.request.circle.CircleJoinRequest;
 import com.potaliadmin.dto.web.response.base.GenericSuccessResponse;
@@ -57,6 +59,7 @@ public class CircleServiceImpl implements CircleService {
     CircleVO circleVO = new CircleVO(circle);
     circleVO.setAdmin(userResponse.getId());
     circleVO.setInstituteId(userResponse.getInstituteId());
+    circleVO.setActive(true);
 
 
     boolean published = getBaseESService().put(circleVO);
@@ -110,13 +113,86 @@ public class CircleServiceImpl implements CircleService {
       throw new PotaliRuntimeException("Circle belongs to some other institute");
     }
 
+    if (!circleVO.isActive()) {
+      throw new PotaliRuntimeException("Circle is no more active");
+    }
+
     UserCircleMapping userCircleMapping =
-        getCircleDao().joinCircle(userResponse, circleJoinRequest.getCircleId(), false);
+        getCircleDao().joinCircle(userResponse, circleJoinRequest.getCircleId(), !circleVO.isModerate(),false);
 
     if (userCircleMapping == null) {
       throw new PotaliRuntimeException("Couldn't create circle, Please Try Again!");
     }
 
+    if (!circleVO.isModerate()) {
+      UserVO userVO = (UserVO) getBaseESService().get(userResponse.getId(), null , UserVO.class);
+      if (userVO != null) {
+        List<Long> circleList = userVO.getCircleList();
+        if (circleList == null) {
+          circleList = new ArrayList<Long>();
+        }
+        circleList.add(circleVO.getId());
+        userVO.setCircleList(circleList);
+        boolean published = getBaseESService().put(userVO);
+        if (!published) {
+          throw new PotaliRuntimeException("Couldn't create circle, Please Try Again!");
+        }
+
+        genericSuccessResponse.setSuccess(true);
+      }
+    } else {
+      genericSuccessResponse.setSuccess(true);
+    }
+
+
+
+    return genericSuccessResponse;
+  }
+
+  @Override
+  @Transactional
+  public GenericSuccessResponse authorizeCircle(CircleAuthorizeRequest circleAuthorizeRequest) {
+    if (!circleAuthorizeRequest.validate()) {
+      throw new InValidInputException("Please input valid parameters");
+    }
+    UserResponse userResponse = getUserService().getLoggedInUser();
+    if (userResponse == null) {
+      throw new UnAuthorizedAccessException("UnAuthorized Access!");
+    }
+    CircleVO circleVO = (CircleVO)
+        getBaseESService().get(circleAuthorizeRequest.getCircleId(), null, CircleVO.class);
+
+    if (circleVO == null) {
+      throw new PotaliRuntimeException("No Circle found with Id "+circleAuthorizeRequest.getCircleId());
+    }
+
+    if (!circleVO.getInstituteId().equals(userResponse.getInstituteId())) {
+      throw new PotaliRuntimeException("Circle belongs to some other institute");
+    }
+
+    UserResponse requestUser = getUserService().findById(circleAuthorizeRequest.getUserId());
+    if (requestUser == null) {
+      throw new PotaliRuntimeException("A ghost cannot join circle");
+    }
+
+    if (!circleVO.getInstituteId().equals(requestUser.getInstituteId())) {
+      throw new PotaliRuntimeException("Circle belongs to some other institute");
+    }
+
+    UserCircleMapping userCircleMapping =
+        (UserCircleMapping) getCircleDao().findByNamedQueryAndNamedParam("findByUserAndCircle",
+            new String[]{"userId", "circleId"}, new Object[]{requestUser.getId(),circleVO.getId()});
+
+
+    if (userCircleMapping == null) {
+      throw new PotaliRuntimeException("User has never requested to join this circle");
+    }
+
+    userCircleMapping.setAuthorised(true);
+    getCircleDao().save(userCircleMapping);
+
+    GenericSuccessResponse genericSuccessResponse = new GenericSuccessResponse();
+    genericSuccessResponse.setSuccess(false);
     UserVO userVO = (UserVO) getBaseESService().get(userResponse.getId(), null , UserVO.class);
     if (userVO != null) {
       List<Long> circleList = userVO.getCircleList();
@@ -133,6 +209,8 @@ public class CircleServiceImpl implements CircleService {
       genericSuccessResponse.setSuccess(true);
     }
 
+
+    genericSuccessResponse.setSuccess(true);
 
     return genericSuccessResponse;
   }
