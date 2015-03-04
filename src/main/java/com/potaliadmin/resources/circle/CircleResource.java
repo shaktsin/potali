@@ -5,6 +5,7 @@ import com.potaliadmin.dto.web.request.circle.CircleCreateRequest;
 import com.potaliadmin.dto.web.request.circle.CircleGetRequest;
 import com.potaliadmin.dto.web.request.circle.CircleJoinRequest;
 import com.potaliadmin.dto.web.response.base.GenericSuccessResponse;
+import com.potaliadmin.dto.web.response.circle.CircleGetResponse;
 import com.potaliadmin.dto.web.response.circle.CreateCircleResponse;
 import com.potaliadmin.pact.service.circle.CircleService;
 import org.apache.shiro.authz.annotation.RequiresAuthentication;
@@ -59,14 +60,14 @@ public class CircleResource {
   @Path("/all")
   @Produces("application/json")
   @RequiresAuthentication
-  public GenericSuccessResponse getAllCircles(CircleGetRequest circleGetRequest) {
+  public CircleGetResponse getAllCircles(CircleGetRequest circleGetRequest) {
     try {
-      return getCircleService().joinCircle(circleJoinRequest);
+      return getCircleService().fetchAllCircle(circleGetRequest);
     } catch (Exception e) {
-      GenericSuccessResponse genericSuccessResponse = new GenericSuccessResponse();
-      genericSuccessResponse.setException(true);
-      genericSuccessResponse.addMessage(e.getMessage());
-      return genericSuccessResponse;
+      CircleGetResponse circleGetResponse = new CircleGetResponse();
+      circleGetResponse.setException(true);
+      circleGetResponse.addMessage(e.getMessage());
+      return circleGetResponse;
     }
   }
 

@@ -6,20 +6,31 @@ import com.potaliadmin.domain.user.User;
 import com.potaliadmin.domain.user.UserCircleMapping;
 import com.potaliadmin.dto.web.request.circle.CircleAuthorizeRequest;
 import com.potaliadmin.dto.web.request.circle.CircleCreateRequest;
+import com.potaliadmin.dto.web.request.circle.CircleGetRequest;
 import com.potaliadmin.dto.web.request.circle.CircleJoinRequest;
 import com.potaliadmin.dto.web.response.base.GenericSuccessResponse;
+import com.potaliadmin.dto.web.response.circle.CircleDto;
+import com.potaliadmin.dto.web.response.circle.CircleGetResponse;
 import com.potaliadmin.dto.web.response.circle.CreateCircleResponse;
 import com.potaliadmin.dto.web.response.user.UserResponse;
 import com.potaliadmin.exceptions.InValidInputException;
 import com.potaliadmin.exceptions.PotaliRuntimeException;
 import com.potaliadmin.exceptions.UnAuthorizedAccessException;
 import com.potaliadmin.framework.elasticsearch.BaseESService;
+import com.potaliadmin.framework.elasticsearch.ESSearchFilter;
+import com.potaliadmin.framework.elasticsearch.response.ESSearchResponse;
 import com.potaliadmin.pact.dao.circle.CircleDao;
 import com.potaliadmin.pact.service.circle.CircleService;
 import com.potaliadmin.pact.service.users.UserService;
 import com.potaliadmin.vo.BaseElasticVO;
 import com.potaliadmin.vo.circle.CircleVO;
+import com.potaliadmin.vo.post.PostVO;
 import com.potaliadmin.vo.user.UserVO;
+import org.elasticsearch.index.query.BoolFilterBuilder;
+import org.elasticsearch.index.query.FilterBuilders;
+import org.elasticsearch.index.query.QueryBuilder;
+import org.elasticsearch.index.query.QueryBuilders;
+import org.elasticsearch.search.sort.SortOrder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -213,6 +224,68 @@ public class CircleServiceImpl implements CircleService {
     genericSuccessResponse.setSuccess(true);
 
     return genericSuccessResponse;
+  }
+
+  @Override
+  public CircleGetResponse fetchAllCircle(CircleGetRequest circleGetRequest) {
+
+    UserResponse userResponse = getUserService().getLoggedInUser();
+    if (userResponse == null) {
+      throw new UnAuthorizedAccessException("UnAuthorized Access!");
+    }
+    BoolFilterBuilder boolFilterBuilder = FilterBuilders.boolFilter();
+    boolFilterBuilder.must(FilterBuilders.termFilter("instituteId", userResponse.getInstituteId()));
+    boolFilterBuilder.must(FilterBuilders.termFilter("type", CircleType.CLUB.getId()));
+
+    ESSearchFilter esSearchFilter =
+        new ESSearchFilter().setFilterBuilder(boolFilterBuilder)
+            .addSortedMap("id", SortOrder.DESC).setPageNo(circleGetRequest.getPageNo())
+            .setPerPage(circleGetRequest.getPerPage());
+
+
+    ESSearchResponse esSearchResponse = getBaseESService().search(esSearchFilter, CircleVO.class);
+    List<BaseElasticVO> baseElasticVOs = esSearchResponse.getBaseElasticVOs();
+    List<CircleDto> circleDtoList = new ArrayList<CircleDto>();
+    for (BaseElasticVO baseElasticVO : baseElasticVOs) {
+      CircleVO circleVO = (CircleVO) baseElasticVO;
+
+      // calculate no of members
+      QueryBuilder queryBuilder = QueryBuilders.termQuery("circleList", circleVO.getId());
+      long members = getBaseESService().count(queryBuilder, UserVO.class);
+
+      // calculate number of posts
+      queryBuilder = QueryBuilders.termQuery("circleList.id", circleVO.getId());
+      long posts = getBaseESService().count(queryBuilder, PostVO.class);
+
+      CircleDto circleDto = new CircleDto();
+      circleDto.setId(circleVO.getId());
+      circleDto.setName(circleVO.getName());
+      if (userResponse.getCircleList().contains(circleVO.getId())) {
+        circleDto.setJoined(true);
+      }
+
+      if (circleVO.getAdmin().equals(userResponse.getId())) {
+        circleDto.setAdmin(true);
+      }
+
+      circleDto.setPosts(posts);
+      circleDto.setMembers(members);
+      circleDto.setModerate(circleVO.isModerate());
+
+      circleDtoList.add(circleDto);
+    }
+    CircleGetResponse circleGetResponse = new CircleGetResponse();
+    if (!circleDtoList.isEmpty()) {
+      circleGetResponse.setCircleDtoList(circleDtoList);
+      circleGetResponse.setPageNo(circleGetRequest.getPageNo());
+      circleGetResponse.setPerPage(circleGetRequest.getPerPage());
+    } else {
+      circleGetResponse.setException(true);
+      circleGetResponse.addMessage("No circle found");
+    }
+
+    return circleGetResponse;
+
   }
 
   public UserService getUserService() {
