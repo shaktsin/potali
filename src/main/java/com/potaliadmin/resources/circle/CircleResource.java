@@ -1,11 +1,9 @@
 package com.potaliadmin.resources.circle;
 
-import com.potaliadmin.dto.web.request.circle.CircleAuthorizeRequest;
-import com.potaliadmin.dto.web.request.circle.CircleCreateRequest;
-import com.potaliadmin.dto.web.request.circle.CircleGetRequest;
-import com.potaliadmin.dto.web.request.circle.CircleJoinRequest;
+import com.potaliadmin.dto.web.request.circle.*;
 import com.potaliadmin.dto.web.response.base.GenericSuccessResponse;
 import com.potaliadmin.dto.web.response.circle.CircleGetResponse;
+import com.potaliadmin.dto.web.response.circle.CircleRequestListResponse;
 import com.potaliadmin.dto.web.response.circle.CreateCircleResponse;
 import com.potaliadmin.pact.service.circle.CircleService;
 import org.apache.shiro.authz.annotation.RequiresAuthentication;
@@ -72,10 +70,40 @@ public class CircleResource {
   }
 
   @POST
+  @Path("/requests")
+  @Produces("application/json")
+  @RequiresAuthentication
+  public CircleRequestListResponse getAllCirclesRequests(CircleJoinListRequest circleJoinRequest) {
+    try {
+      return getCircleService().fetchAllRequest(circleJoinRequest);
+    } catch (Exception e) {
+      CircleRequestListResponse circleGetResponse = new CircleRequestListResponse();
+      circleGetResponse.setException(true);
+      circleGetResponse.addMessage(e.getMessage());
+      return circleGetResponse;
+    }
+  }
+
+  @POST
   @Path("/authorize")
   @Produces("application/json")
   @RequiresAuthentication
   public GenericSuccessResponse authorizeCircle(CircleAuthorizeRequest circleAuthorizeRequest) {
+    try {
+      return getCircleService().authorizeCircle(circleAuthorizeRequest);
+    } catch (Exception e) {
+      GenericSuccessResponse genericSuccessResponse = new GenericSuccessResponse();
+      genericSuccessResponse.setException(true);
+      genericSuccessResponse.addMessage(e.getMessage());
+      return genericSuccessResponse;
+    }
+  }
+
+  @POST
+  @Path("/authorize/revoke")
+  @Produces("application/json")
+  @RequiresAuthentication
+  public GenericSuccessResponse authorizeRevokeCircle(CircleAuthorizeRequest circleAuthorizeRequest) {
     try {
       return getCircleService().authorizeCircle(circleAuthorizeRequest);
     } catch (Exception e) {

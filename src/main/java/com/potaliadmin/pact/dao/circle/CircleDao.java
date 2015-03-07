@@ -21,4 +21,6 @@ public interface CircleDao extends BaseDao {
 
   Long getAdminUser(Long circleId);
 
+  List<UserCircleMapping> getCircleMappingRequest(Long circleId, int pageNo, int perPage);
+
 }

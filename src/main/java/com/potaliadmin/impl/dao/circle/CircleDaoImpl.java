@@ -9,6 +9,8 @@ import com.potaliadmin.exceptions.InValidInputException;
 import com.potaliadmin.impl.framework.BaseDaoImpl;
 import com.potaliadmin.pact.dao.circle.CircleDao;
 import org.apache.commons.lang.StringUtils;
+import org.hibernate.criterion.DetachedCriteria;
+import org.hibernate.criterion.Restrictions;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -95,5 +97,15 @@ public class CircleDaoImpl extends BaseDaoImpl implements CircleDao {
   @SuppressWarnings("unchecked")
   public Long getAdminUser(Long circleId) {
     return (Long)findUniqueByNamedParams("findByCircleAdmin", new String[]{"circleId"}, new Object[]{circleId});
+  }
+
+  @Override
+  @SuppressWarnings("unchecked")
+  public List<UserCircleMapping> getCircleMappingRequest(Long circleId, int pageNo, int perPage) {
+    DetachedCriteria detachedCriteria = DetachedCriteria.forClass(UserCircleMapping.class);
+    detachedCriteria.add(Restrictions.eq("userCircleMappingKey.circleId", circleId));
+    detachedCriteria.add(Restrictions.eq("authorised", false));
+
+    return ( List<UserCircleMapping>) findForPageByCriteria(detachedCriteria, pageNo, perPage);
   }
 }

@@ -13,6 +13,7 @@ public class CircleDto {
   private boolean joined;
   private boolean admin;
   private boolean moderate;
+  private Integer requests;
 
   public Long getId() {
     return id;
@@ -76,5 +77,13 @@ public class CircleDto {
 
   public void setModerate(boolean moderate) {
     this.moderate = moderate;
+  }
+
+  public Integer getRequests() {
+    return requests;
+  }
+
+  public void setRequests(Integer requests) {
+    this.requests = requests;
   }
 }

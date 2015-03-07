@@ -1,11 +1,9 @@
 package com.potaliadmin.pact.service.circle;
 
-import com.potaliadmin.dto.web.request.circle.CircleAuthorizeRequest;
-import com.potaliadmin.dto.web.request.circle.CircleCreateRequest;
-import com.potaliadmin.dto.web.request.circle.CircleGetRequest;
-import com.potaliadmin.dto.web.request.circle.CircleJoinRequest;
+import com.potaliadmin.dto.web.request.circle.*;
 import com.potaliadmin.dto.web.response.base.GenericSuccessResponse;
 import com.potaliadmin.dto.web.response.circle.CircleGetResponse;
+import com.potaliadmin.dto.web.response.circle.CircleRequestListResponse;
 import com.potaliadmin.dto.web.response.circle.CreateCircleResponse;
 
 /**
@@ -19,5 +17,9 @@ public interface CircleService {
 
   GenericSuccessResponse authorizeCircle(CircleAuthorizeRequest circleAuthorizeRequest);
 
+  GenericSuccessResponse authorizeRevokeCircle(CircleAuthorizeRequest circleAuthorizeRequest);
+
   CircleGetResponse fetchAllCircle(CircleGetRequest circleGetRequest);
+
+  CircleRequestListResponse fetchAllRequest(CircleJoinListRequest circleJoinRequest);
 }

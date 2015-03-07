@@ -4,6 +4,9 @@ import com.potaliadmin.domain.circle.Circle;
 import com.potaliadmin.framework.elasticsearch.annotation.ElasticEntity;
 import com.potaliadmin.vo.BaseElasticVO;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * Created by shakti on 28/1/15.
  */
@@ -16,6 +19,7 @@ public class CircleVO extends BaseElasticVO {
   private Long admin;
   private Long instituteId;
   private boolean active;
+  private List<Long> requestList;
 
   public CircleVO() {
   }
@@ -74,5 +78,13 @@ public class CircleVO extends BaseElasticVO {
 
   public void setActive(boolean active) {
     this.active = active;
+  }
+
+  public List<Long> getRequestList() {
+    return requestList;
+  }
+
+  public void setRequestList(List<Long> requestList) {
+    this.requestList = requestList;
   }
 }

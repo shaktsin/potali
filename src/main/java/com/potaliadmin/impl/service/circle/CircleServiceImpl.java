@@ -4,14 +4,13 @@ import com.potaliadmin.constants.circle.CircleType;
 import com.potaliadmin.domain.circle.Circle;
 import com.potaliadmin.domain.user.User;
 import com.potaliadmin.domain.user.UserCircleMapping;
-import com.potaliadmin.dto.web.request.circle.CircleAuthorizeRequest;
-import com.potaliadmin.dto.web.request.circle.CircleCreateRequest;
-import com.potaliadmin.dto.web.request.circle.CircleGetRequest;
-import com.potaliadmin.dto.web.request.circle.CircleJoinRequest;
+import com.potaliadmin.dto.web.request.circle.*;
 import com.potaliadmin.dto.web.response.base.GenericSuccessResponse;
 import com.potaliadmin.dto.web.response.circle.CircleDto;
 import com.potaliadmin.dto.web.response.circle.CircleGetResponse;
+import com.potaliadmin.dto.web.response.circle.CircleRequestListResponse;
 import com.potaliadmin.dto.web.response.circle.CreateCircleResponse;
+import com.potaliadmin.dto.web.response.user.UserDto;
 import com.potaliadmin.dto.web.response.user.UserResponse;
 import com.potaliadmin.exceptions.InValidInputException;
 import com.potaliadmin.exceptions.PotaliRuntimeException;
@@ -152,6 +151,18 @@ public class CircleServiceImpl implements CircleService {
         genericSuccessResponse.setSuccess(true);
       }
     } else {
+      List<Long> requestList = circleVO.getRequestList();
+      if (requestList == null || requestList.isEmpty()) {
+        requestList = new ArrayList<Long>();
+      }
+      requestList.add(userResponse.getId());
+      circleVO.setRequestList(requestList);
+
+      boolean published = getBaseESService().put(circleVO);
+      if (!published) {
+        throw new PotaliRuntimeException("Couldn't create circle, Please Try Again!");
+      }
+
       genericSuccessResponse.setSuccess(true);
     }
 
@@ -227,6 +238,64 @@ public class CircleServiceImpl implements CircleService {
   }
 
   @Override
+  public GenericSuccessResponse authorizeRevokeCircle(CircleAuthorizeRequest circleAuthorizeRequest) {
+    GenericSuccessResponse genericSuccessResponse = new GenericSuccessResponse();
+    genericSuccessResponse.setSuccess(false);
+    if (!circleAuthorizeRequest.validate()) {
+      throw new InValidInputException("Please input valid parameters");
+    }
+    UserResponse userResponse = getUserService().getLoggedInUser();
+    if (userResponse == null) {
+      throw new UnAuthorizedAccessException("UnAuthorized Access!");
+    }
+    CircleVO circleVO = (CircleVO)
+        getBaseESService().get(circleAuthorizeRequest.getCircleId(), null, CircleVO.class);
+
+    if (circleVO == null) {
+      throw new PotaliRuntimeException("No Circle found with Id "+circleAuthorizeRequest.getCircleId());
+    }
+
+    if (!circleVO.getInstituteId().equals(userResponse.getInstituteId())) {
+      throw new PotaliRuntimeException("Circle belongs to some other institute");
+    }
+
+    UserResponse requestUser = getUserService().findById(circleAuthorizeRequest.getUserId());
+    if (requestUser == null) {
+      throw new PotaliRuntimeException("A ghost cannot join circle");
+    }
+
+    if (!circleVO.getInstituteId().equals(requestUser.getInstituteId())) {
+      throw new PotaliRuntimeException("Circle belongs to some other institute");
+    }
+
+    UserCircleMapping userCircleMapping =
+        (UserCircleMapping) getCircleDao().findByNamedQueryAndNamedParam("findByUserAndCircle",
+            new String[]{"userId", "circleId"}, new Object[]{requestUser.getId(),circleVO.getId()});
+
+
+    if (userCircleMapping == null) {
+      throw new PotaliRuntimeException("User has never requested to join this circle");
+    }
+
+    List<Long> requestList = circleVO.getRequestList();
+    if (requestList == null || requestList.isEmpty()) {
+      requestList = new ArrayList<Long>();
+    }
+    requestList.remove(userResponse.getId());
+    circleVO.setRequestList(requestList);
+
+    boolean published = getBaseESService().put(circleVO);
+    if (!published) {
+      throw new PotaliRuntimeException("Couldn't create circle, Please Try Again!");
+    }
+
+    circleDao.delete(userCircleMapping);
+    genericSuccessResponse.setSuccess(true);
+
+    return genericSuccessResponse;
+  }
+
+  @Override
   public CircleGetResponse fetchAllCircle(CircleGetRequest circleGetRequest) {
 
     UserResponse userResponse = getUserService().getLoggedInUser();
@@ -266,6 +335,7 @@ public class CircleServiceImpl implements CircleService {
 
       if (circleVO.getAdmin().equals(userResponse.getId())) {
         circleDto.setAdmin(true);
+        circleDto.setRequests(circleVO.getRequestList().size());
       }
 
       circleDto.setPosts(posts);
@@ -286,6 +356,39 @@ public class CircleServiceImpl implements CircleService {
 
     return circleGetResponse;
 
+  }
+
+  @Override
+  public CircleRequestListResponse fetchAllRequest(CircleJoinListRequest circleJoinRequest) {
+    if (!circleJoinRequest.validate()) {
+      throw new InValidInputException("Invalid Inputs");
+    }
+
+    CircleRequestListResponse circleRequestListResponse = new CircleRequestListResponse();
+
+    List<UserCircleMapping> userCircleMappingList =
+        getCircleDao().getCircleMappingRequest(circleJoinRequest.getCircleId(),
+            circleJoinRequest.getPageNo(), circleJoinRequest.getPerPage());
+
+    List<UserDto> userDtoList = new ArrayList<UserDto>();
+    if (userCircleMappingList != null && userCircleMappingList.size() > 0) {
+      for (UserCircleMapping userCircleMapping : userCircleMappingList) {
+        UserResponse userResponse = getUserService().findById(userCircleMapping.getUserCircleMappingKey().getUserId());
+        UserDto userDto = new UserDto();
+        userDto.setId(userResponse.getId());
+        userDto.setName(userResponse.getName());
+        userDto.setImage(userResponse.getImage());
+        userDtoList.add(userDto);
+      }
+      circleRequestListResponse.setUserDtoList(userDtoList);
+      circleRequestListResponse.setPageNo(circleJoinRequest.getPageNo());
+      circleRequestListResponse.setPerPage(circleJoinRequest.getPerPage());
+    } else {
+      circleRequestListResponse.setException(true);
+      circleRequestListResponse.addMessage("No more requests");
+    }
+
+    return circleRequestListResponse;
   }
 
   public UserService getUserService() {
