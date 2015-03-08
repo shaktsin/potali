@@ -27,5 +27,7 @@ public interface CircleService {
 
   GenericSuccessResponse deactivateCircle(CircleJoinRequest circleJoinRequest);
 
+  GenericSuccessResponse activateCircle(CircleJoinRequest circleJoinRequest);
+
   CircleGetResponse getUsersCircle(CircleGetRequest circleGetRequest);
 }

@@ -159,6 +159,21 @@ public class CircleResource {
     }
   }
 
+  @POST
+  @Path("/activate")
+  @Produces("application/json")
+  @RequiresAuthentication
+  public GenericSuccessResponse activate(CircleJoinRequest circleJoinRequest) {
+    try {
+      return getCircleService().activateCircle(circleJoinRequest);
+    } catch (Exception e) {
+      GenericSuccessResponse genericSuccessResponse = new GenericSuccessResponse();
+      genericSuccessResponse.setException(true);
+      genericSuccessResponse.addMessage(e.getMessage());
+      return genericSuccessResponse;
+    }
+  }
+
   public CircleService getCircleService() {
     return circleService;
   }

@@ -101,6 +101,7 @@ public class GenericPostResponse extends GenericBaseResponse {
     userDto.setName(postUser.getName());
     userDto.setId(postUser.getId());
     userDto.setImage(postUser.getImage());
+
     this.setUserDto(userDto);
 
     if (postVO.getImageList() != null && !postVO.getImageList().isEmpty()) {

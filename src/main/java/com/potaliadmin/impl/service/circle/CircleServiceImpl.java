@@ -468,7 +468,48 @@ public class CircleServiceImpl implements CircleService {
       throw new PotaliRuntimeException("Circle belongs to some other institute");
     }
 
+    if (!circleVO.getAdmin().equals(userResponse.getId())) {
+      throw new PotaliRuntimeException("UnAuthorized Access!");
+    }
+
     circleVO.setActive(false);
+
+    boolean published = getBaseESService().put(circleVO);
+    if (!published) {
+      throw new PotaliRuntimeException("Couldn't create circle, Please Try Again!");
+    }
+
+    GenericSuccessResponse genericSuccessResponse = new GenericSuccessResponse();
+    genericSuccessResponse.setSuccess(true);
+
+    return genericSuccessResponse;
+  }
+
+  @Override
+  public GenericSuccessResponse activateCircle(CircleJoinRequest circleJoinRequest) {
+    if (!circleJoinRequest.validate()) {
+      throw new InValidInputException("Invalid input");
+    }
+    UserResponse userResponse = getUserService().getLoggedInUser();
+    if (userResponse == null) {
+      throw new UnAuthorizedAccessException("UnAuthorized Access!");
+    }
+    CircleVO circleVO = (CircleVO)
+        getBaseESService().get(circleJoinRequest.getCircleId(), null, CircleVO.class);
+
+    if (circleVO == null) {
+      throw new PotaliRuntimeException("No Circle found with Id "+circleJoinRequest.getCircleId());
+    }
+
+    if (!circleVO.getInstituteId().equals(userResponse.getInstituteId())) {
+      throw new PotaliRuntimeException("Circle belongs to some other institute");
+    }
+
+    if (!circleVO.getAdmin().equals(userResponse.getId())) {
+      throw new PotaliRuntimeException("UnAuthorized Access!");
+    }
+
+    circleVO.setActive(true);
 
     boolean published = getBaseESService().put(circleVO);
     if (!published) {

@@ -13,7 +13,8 @@ public class UserDto {
   private Long id;
   private String name;
   private String image;
-  private List<CircleDto> circleDtoList;
+  private int circles;
+  private int yearOfGrad;
 
   public UserDto() {}
 
@@ -21,6 +22,8 @@ public class UserDto {
     this.id = userResponse.getId();
     this.name = userResponse.getName();
     this.image = userResponse.getImage();
+    yearOfGrad = userResponse.getYearOfGrad();
+    circles = userResponse.getCircleList().size();
   }
 
   public Long getId() {
@@ -47,11 +50,19 @@ public class UserDto {
     this.image = image;
   }
 
-  public List<CircleDto> getCircleDtoList() {
-    return circleDtoList;
+  public int getCircles() {
+    return circles;
   }
 
-  public void setCircleDtoList(List<CircleDto> circleDtoList) {
-    this.circleDtoList = circleDtoList;
+  public void setCircles(int circles) {
+    this.circles = circles;
+  }
+
+  public int getYearOfGrad() {
+    return yearOfGrad;
+  }
+
+  public void setYearOfGrad(int yearOfGrad) {
+    this.yearOfGrad = yearOfGrad;
   }
 }
