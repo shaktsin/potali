@@ -70,6 +70,21 @@ public class CircleResource {
   }
 
   @POST
+  @Path("/user/all")
+  @Produces("application/json")
+  @RequiresAuthentication
+  public CircleGetResponse getUserAllCircles(CircleGetRequest circleGetRequest) {
+    try {
+      return getCircleService().getUsersCircle(circleGetRequest);
+    } catch (Exception e) {
+      CircleGetResponse circleGetResponse = new CircleGetResponse();
+      circleGetResponse.setException(true);
+      circleGetResponse.addMessage(e.getMessage());
+      return circleGetResponse;
+    }
+  }
+
+  @POST
   @Path("/requests")
   @Produces("application/json")
   @RequiresAuthentication
@@ -105,7 +120,7 @@ public class CircleResource {
   @RequiresAuthentication
   public GenericSuccessResponse authorizeRevokeCircle(CircleAuthorizeRequest circleAuthorizeRequest) {
     try {
-      return getCircleService().authorizeCircle(circleAuthorizeRequest);
+      return getCircleService().authorizeRevokeCircle(circleAuthorizeRequest);
     } catch (Exception e) {
       GenericSuccessResponse genericSuccessResponse = new GenericSuccessResponse();
       genericSuccessResponse.setException(true);
@@ -114,6 +129,35 @@ public class CircleResource {
     }
   }
 
+  @POST
+  @Path("/unjoin")
+  @Produces("application/json")
+  @RequiresAuthentication
+  public GenericSuccessResponse unJoinCircle(CircleJoinRequest circleJoinRequest) {
+    try {
+      return getCircleService().unJoinCircle(circleJoinRequest);
+    } catch (Exception e) {
+      GenericSuccessResponse genericSuccessResponse = new GenericSuccessResponse();
+      genericSuccessResponse.setException(true);
+      genericSuccessResponse.addMessage(e.getMessage());
+      return genericSuccessResponse;
+    }
+  }
+
+  @POST
+  @Path("/deactivate")
+  @Produces("application/json")
+  @RequiresAuthentication
+  public GenericSuccessResponse deactivate(CircleJoinRequest circleJoinRequest) {
+    try {
+      return getCircleService().deactivateCircle(circleJoinRequest);
+    } catch (Exception e) {
+      GenericSuccessResponse genericSuccessResponse = new GenericSuccessResponse();
+      genericSuccessResponse.setException(true);
+      genericSuccessResponse.addMessage(e.getMessage());
+      return genericSuccessResponse;
+    }
+  }
 
   public CircleService getCircleService() {
     return circleService;

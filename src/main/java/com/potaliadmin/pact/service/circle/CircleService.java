@@ -22,4 +22,10 @@ public interface CircleService {
   CircleGetResponse fetchAllCircle(CircleGetRequest circleGetRequest);
 
   CircleRequestListResponse fetchAllRequest(CircleJoinListRequest circleJoinRequest);
+
+  GenericSuccessResponse unJoinCircle(CircleJoinRequest circleJoinRequest);
+
+  GenericSuccessResponse deactivateCircle(CircleJoinRequest circleJoinRequest);
+
+  CircleGetResponse getUsersCircle(CircleGetRequest circleGetRequest);
 }

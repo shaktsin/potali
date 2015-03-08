@@ -1,6 +1,10 @@
 package com.potaliadmin.dto.web.response.user;
 
 
+import com.potaliadmin.dto.web.response.circle.CircleDto;
+
+import java.util.List;
+
 /**
  * Created by Shakti Singh on 12/24/14.
  */
@@ -9,6 +13,7 @@ public class UserDto {
   private Long id;
   private String name;
   private String image;
+  private List<CircleDto> circleDtoList;
 
   public UserDto() {}
 
@@ -40,5 +45,13 @@ public class UserDto {
 
   public void setImage(String image) {
     this.image = image;
+  }
+
+  public List<CircleDto> getCircleDtoList() {
+    return circleDtoList;
+  }
+
+  public void setCircleDtoList(List<CircleDto> circleDtoList) {
+    this.circleDtoList = circleDtoList;
   }
 }

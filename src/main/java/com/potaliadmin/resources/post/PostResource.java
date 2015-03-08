@@ -71,9 +71,9 @@ public class PostResource {
   @Path("/user/posts")
   @Produces("application/json")
   @RequiresAuthentication
-  public PostResponse fetchPostsByReactionIds(UserProfileRequest userProfileRequest) {
+  public PostResponse fetchPostsByReactionIds(CirclePostRequest circlePostRequest) {
     try {
-      return getPostService().fetchUsersPosts(userProfileRequest);
+      return getPostService().fetchCirclePosts(circlePostRequest);
     } catch (Exception e) {
       PostResponse postResponse = new PostResponse();
       postResponse.setException(Boolean.TRUE);

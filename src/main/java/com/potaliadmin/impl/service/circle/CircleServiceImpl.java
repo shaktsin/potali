@@ -318,6 +318,10 @@ public class CircleServiceImpl implements CircleService {
     for (BaseElasticVO baseElasticVO : baseElasticVOs) {
       CircleVO circleVO = (CircleVO) baseElasticVO;
 
+      if (!circleVO.isActive()) {
+        continue;
+      }
+
       // calculate no of members
       QueryBuilder queryBuilder = QueryBuilders.termQuery("circleList", circleVO.getId());
       long members = getBaseESService().count(queryBuilder, UserVO.class);
@@ -389,6 +393,156 @@ public class CircleServiceImpl implements CircleService {
     }
 
     return circleRequestListResponse;
+  }
+
+  @Override
+  public GenericSuccessResponse unJoinCircle(CircleJoinRequest circleJoinRequest) {
+    if (!circleJoinRequest.validate()) {
+      throw new InValidInputException("Invalid input");
+    }
+    UserResponse userResponse = getUserService().getLoggedInUser();
+    if (userResponse == null) {
+      throw new UnAuthorizedAccessException("UnAuthorized Access!");
+    }
+    CircleVO circleVO = (CircleVO)
+        getBaseESService().get(circleJoinRequest.getCircleId(), null, CircleVO.class);
+
+    if (circleVO == null) {
+      throw new PotaliRuntimeException("No Circle found with Id "+circleJoinRequest.getCircleId());
+    }
+
+    if (!circleVO.getInstituteId().equals(userResponse.getInstituteId())) {
+      throw new PotaliRuntimeException("Circle belongs to some other institute");
+    }
+
+    UserCircleMapping userCircleMapping =
+        (UserCircleMapping) getCircleDao().findByNamedQueryAndNamedParam("findByUserAndCircle",
+            new String[]{"userId", "circleId"}, new Object[]{userResponse.getId(),circleVO.getId()});
+
+
+    if (userCircleMapping == null) {
+      throw new PotaliRuntimeException("User has never requested to join this circle");
+    }
+
+    UserVO userVO = (UserVO) getBaseESService().get(userResponse.getId(), null , UserVO.class);
+    if (userVO != null) {
+      List<Long> circleList = userVO.getCircleList();
+      if (circleList == null) {
+        circleList = new ArrayList<Long>();
+      }
+      circleList.remove(circleVO.getId());
+      userVO.setCircleList(circleList);
+      boolean published = getBaseESService().put(userVO);
+      if (!published) {
+        throw new PotaliRuntimeException("Couldn't create circle, Please Try Again!");
+      }
+    }
+
+    getCircleDao().delete(userCircleMapping);
+
+    GenericSuccessResponse genericSuccessResponse = new GenericSuccessResponse();
+    genericSuccessResponse.setSuccess(true);
+
+
+
+    return genericSuccessResponse;
+  }
+
+  @Override
+  public GenericSuccessResponse deactivateCircle(CircleJoinRequest circleJoinRequest) {
+    if (!circleJoinRequest.validate()) {
+      throw new InValidInputException("Invalid input");
+    }
+    UserResponse userResponse = getUserService().getLoggedInUser();
+    if (userResponse == null) {
+      throw new UnAuthorizedAccessException("UnAuthorized Access!");
+    }
+    CircleVO circleVO = (CircleVO)
+        getBaseESService().get(circleJoinRequest.getCircleId(), null, CircleVO.class);
+
+    if (circleVO == null) {
+      throw new PotaliRuntimeException("No Circle found with Id "+circleJoinRequest.getCircleId());
+    }
+
+    if (!circleVO.getInstituteId().equals(userResponse.getInstituteId())) {
+      throw new PotaliRuntimeException("Circle belongs to some other institute");
+    }
+
+    circleVO.setActive(false);
+
+    boolean published = getBaseESService().put(circleVO);
+    if (!published) {
+      throw new PotaliRuntimeException("Couldn't create circle, Please Try Again!");
+    }
+
+    GenericSuccessResponse genericSuccessResponse = new GenericSuccessResponse();
+    genericSuccessResponse.setSuccess(true);
+
+    return genericSuccessResponse;
+  }
+
+  @Override
+  public CircleGetResponse getUsersCircle(CircleGetRequest circleGetRequest) {
+    UserResponse userResponse = getUserService().getLoggedInUser();
+    if (userResponse == null) {
+      throw new UnAuthorizedAccessException("UnAuthorized Access!");
+    }
+
+    List<Long> circleList = userResponse.getCircleList();
+    int firstIndex = circleGetRequest.getPageNo() - 1;
+    int lastIndex = firstIndex + circleGetRequest.getPerPage();
+    List<Long> subList = circleList.subList(firstIndex, lastIndex);
+    List<CircleDto> circleDtoList = new ArrayList<CircleDto>();
+
+    for (long circleId : subList) {
+
+      CircleVO circleVO = (CircleVO)
+          getBaseESService().get(circleId, null, CircleVO.class);
+
+      if (!circleVO.isActive()) {
+        continue;
+      }
+
+      // calculate no of members
+      QueryBuilder queryBuilder = QueryBuilders.termQuery("circleList", circleVO.getId());
+      long members = getBaseESService().count(queryBuilder, UserVO.class);
+
+      // calculate number of posts
+      queryBuilder = QueryBuilders.termQuery("circleList.id", circleVO.getId());
+      long posts = getBaseESService().count(queryBuilder, PostVO.class);
+
+      CircleDto circleDto = new CircleDto();
+      circleDto.setId(circleVO.getId());
+      circleDto.setName(circleVO.getName());
+      if (userResponse.getCircleList().contains(circleVO.getId())) {
+        circleDto.setJoined(true);
+      }
+
+      if (circleVO.getAdmin().equals(userResponse.getId())) {
+        circleDto.setAdmin(true);
+        circleDto.setRequests(circleVO.getRequestList().size());
+      }
+
+      circleDto.setPosts(posts);
+      circleDto.setMembers(members);
+      circleDto.setModerate(circleVO.isModerate());
+      circleDtoList.add(circleDto);
+
+
+    }
+
+    CircleGetResponse circleGetResponse = new CircleGetResponse();
+    if (!circleDtoList.isEmpty()) {
+      circleGetResponse.setCircleDtoList(circleDtoList);
+      circleGetResponse.setPageNo(circleGetRequest.getPageNo());
+      circleGetResponse.setPerPage(circleGetRequest.getPerPage());
+    } else {
+      circleGetResponse.setException(true);
+      circleGetResponse.addMessage("No circle found");
+    }
+
+    return circleGetResponse;
+
   }
 
   public UserService getUserService() {

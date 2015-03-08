@@ -21,6 +21,7 @@ import com.potaliadmin.dto.internal.filter.GeneralFilterDto;
 import com.potaliadmin.dto.internal.filter.JobFilterDto;
 import com.potaliadmin.dto.internal.image.CreateImageResponseDto;
 import com.potaliadmin.dto.internal.image.ImageDto;
+import com.potaliadmin.dto.web.request.circle.CircleJoinRequest;
 import com.potaliadmin.dto.web.request.posts.*;
 import com.potaliadmin.dto.web.response.circle.CircleDto;
 import com.potaliadmin.dto.web.response.post.*;
@@ -298,7 +299,7 @@ public class PostServiceImpl implements PostService {
   }
 
   @Override
-  public PostResponse fetchUsersPosts(UserProfileRequest userProfileRequest) {
+  public UserPostResponse fetchUsersPosts(UserProfileRequest userProfileRequest) {
     long totalHits=0;
     int pageNo = userProfileRequest.getPageNo();
     int perPage = userProfileRequest.getPerPage();
@@ -334,11 +335,64 @@ public class PostServiceImpl implements PostService {
       GenericPostResponse genericPostResponse = new GenericPostResponse(postVO, postUser);
       genericPostResponseList.add(genericPostResponse);
     }
-    PostResponse postResponse = new PostResponse();
+    UserPostResponse postResponse = new UserPostResponse();
     postResponse.setPosts(genericPostResponseList);
     postResponse.setPageNo(pageNo);
     postResponse.setPerPage(perPage);
     postResponse.setTotalResults(totalHits);
+    Integer integer = userResponse.getCircleList().size();
+    postResponse.setTotalCircles(Long.parseLong(integer.toString()));
+
+
+    return postResponse;
+  }
+
+  @Override
+  public UserPostResponse fetchCirclePosts(CirclePostRequest circlePostRequest) {
+    long totalHits=0;
+    int pageNo = circlePostRequest.getPageNo();
+    int perPage = circlePostRequest.getPerPage();
+
+    UserResponse userResponse = getUserService().getLoggedInUser();
+
+    if (userResponse == null) {
+      throw new InValidInputException("USER CANNOT BE NULL");
+    }
+
+    CircleVO circleVO = (CircleVO)
+        getBaseESService().get(circlePostRequest.getCircleId(), null, CircleVO.class);
+
+    if (circleVO == null) {
+      throw new PotaliRuntimeException("You cannot see posts of a ghost circle");
+    }
+
+
+
+    if (!circleVO.getInstituteId().equals(userResponse.getInstituteId())) {
+      throw new PotaliRuntimeException("You cannot see post of users of other institutions");
+    }
+
+    TermFilterBuilder termFilterBuilder = FilterBuilders.termFilter("circleList.id", circleVO.getId());
+
+    ESSearchFilter esSearchFilter =
+        new ESSearchFilter().setFilterBuilder(termFilterBuilder)
+            .addSortedMap("postId", SortOrder.DESC).setPageNo(pageNo).setPerPage(perPage);
+
+    ESSearchResponse esSearchResponse = getBaseESService().search(esSearchFilter, PostVO.class);
+    List<BaseElasticVO> baseElasticVOs = esSearchResponse.getBaseElasticVOs();
+    List<GenericPostResponse> genericPostResponseList = new ArrayList<GenericPostResponse>();
+    for (BaseElasticVO baseElasticVO : baseElasticVOs) {
+      PostVO postVO = (PostVO) baseElasticVO;
+      UserResponse postUser = getUserService().findById(postVO.getUserId());
+      GenericPostResponse genericPostResponse = new GenericPostResponse(postVO, postUser);
+      genericPostResponseList.add(genericPostResponse);
+    }
+    UserPostResponse postResponse = new UserPostResponse();
+    postResponse.setPosts(genericPostResponseList);
+    postResponse.setPageNo(pageNo);
+    postResponse.setPerPage(perPage);
+    postResponse.setTotalResults(totalHits);
+
     return postResponse;
   }
 

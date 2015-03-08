@@ -1,6 +1,7 @@
 package com.potaliadmin.pact.service.post;
 
 import com.potaliadmin.dto.internal.image.CreateImageResponseDto;
+import com.potaliadmin.dto.web.request.circle.CircleJoinRequest;
 import com.potaliadmin.dto.web.request.posts.*;
 import com.potaliadmin.dto.web.response.post.*;
 import org.glassfish.jersey.media.multipart.FormDataBodyPart;
@@ -21,7 +22,9 @@ public interface PostService {
 
   PostResponse fetchPostsByReactionId(BookMarkPostRequest bookMarkPostRequest);
 
-  PostResponse fetchUsersPosts(UserProfileRequest userProfileRequest);
+  UserPostResponse fetchUsersPosts(UserProfileRequest userProfileRequest);
+
+  UserPostResponse fetchCirclePosts(CirclePostRequest circlePostRequest);
 
   PostResponse fetchMyPosts(BookMarkPostRequest bookMarkPostRequest);
 

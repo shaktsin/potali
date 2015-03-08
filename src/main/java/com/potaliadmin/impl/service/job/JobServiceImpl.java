@@ -210,6 +210,9 @@ public class JobServiceImpl implements JobService {
     for (Long circle : authCircleList) {
       CircleVO circleVO = (CircleVO) getBaseESService().get(circle, null, CircleVO.class);
       if (circleVO != null) {
+        if (!circleVO.isActive()) {
+          continue;
+        }
         CircleDto circleDto = new CircleDto();
         circleDto.setId(circleVO.getId());
         circleDto.setName(circleVO.getName());
