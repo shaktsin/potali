@@ -439,40 +439,38 @@ public class UserServiceImpl implements UserService {
         circleIdList = userVO.getCircleList();
         circleIdList.add(circleVO.getId());
         userVO.setCircleList(circleIdList);
+      } else {
+        Circle circle = getCircleDao().createCircle(batchName, CircleType.YEAR,
+            userResponse, false);
+
+        if (circle == null) {
+          logger.error("Error in creating all circle in database");
+          throw new PotaliRuntimeException("Some Exception occurred in sign up! Please Try Again");
+        }
+
+        CircleVO circleVO = new CircleVO(circle);
+        circleVO.setAdmin(userResponse.getId());
+        circleVO.setInstituteId(userResponse.getInstituteId());
+        circleVO.setActive(true);
+
+
+        boolean published = getBaseESService().put(circleVO);
+        if (!published) {
+          logger.error("Error in creating year circle in database");
+          throw new PotaliRuntimeException("Couldn't create circle, Please Try Again!");
+        }
+
+        //UserVO userVO = new UserVO(user, null);
+        //circleList = userVO.getCircleList();
+        try {
+          circleIdList.add(circleVO.getId());
+        } catch (Exception e) {
+          //e.printStackTrace();
+          logger.error("Error ",e);
+        }
+
+        userVO.setCircleList(circleIdList);
       }
-
-    } else {
-      String batchName = CircleType.getYearGroupName(userProfileUpdateRequest.getYearOfGrad().toString());
-      Circle circle = getCircleDao().createCircle(batchName, CircleType.YEAR,
-          userResponse, false);
-
-      if (circle == null) {
-        logger.error("Error in creating all circle in database");
-        throw new PotaliRuntimeException("Some Exception occurred in sign up! Please Try Again");
-      }
-
-      CircleVO circleVO = new CircleVO(circle);
-      circleVO.setAdmin(userResponse.getId());
-      circleVO.setInstituteId(userResponse.getInstituteId());
-      circleVO.setActive(true);
-
-
-      boolean published = getBaseESService().put(circleVO);
-      if (!published) {
-        logger.error("Error in creating year circle in database");
-        throw new PotaliRuntimeException("Couldn't create circle, Please Try Again!");
-      }
-
-      //UserVO userVO = new UserVO(user, null);
-      //circleList = userVO.getCircleList();
-      try {
-        circleIdList.add(circleVO.getId());
-      } catch (Exception e) {
-        //e.printStackTrace();
-        logger.error("Error ",e);
-      }
-
-      userVO.setCircleList(circleIdList);
 
     }
 
