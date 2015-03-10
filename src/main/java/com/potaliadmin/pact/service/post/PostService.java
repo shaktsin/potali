@@ -44,4 +44,6 @@ public interface PostService {
 
   UserProfileResponse fetchUserProfile(UserProfileRequest userProfileRequest);
 
+  CircleProfileResponse fetchCircleProfile(CirclePostRequest circlePostRequest);
+
 }

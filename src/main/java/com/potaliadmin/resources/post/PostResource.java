@@ -97,6 +97,22 @@ public class PostResource {
     }
   }
 
+
+  @POST
+  @Path("/circle/profile")
+  @Produces("application/json")
+  @RequiresAuthentication
+  public CircleProfileResponse fetchCircleProfile(CirclePostRequest circlePostRequest) {
+    try {
+      return getPostService().fetchCircleProfile(circlePostRequest);
+    } catch (Exception e) {
+      CircleProfileResponse postResponse = new CircleProfileResponse();
+      postResponse.setException(Boolean.TRUE);
+      postResponse.addMessage(e.getMessage());
+      return postResponse;
+    }
+  }
+
   @POST
   @Path("/user/posts")
   @Produces("application/json")
