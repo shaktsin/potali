@@ -3,6 +3,7 @@ package com.potaliadmin.dto.web.request.user;
 import com.potaliadmin.dto.internal.image.ImageDto;
 import com.potaliadmin.dto.web.request.framework.GenericRequest;
 
+import java.util.Calendar;
 import java.util.List;
 
 /**
@@ -25,7 +26,14 @@ public class UserProfileUpdateRequest extends GenericRequest {
 
   @Override
   public boolean validate() {
-    return super.validate();
+    boolean valid = super.validate();
+    if (valid && yearOfGrad != null) {
+      int getCurrentYear = Calendar.getInstance().get(Calendar.YEAR);
+      if (yearOfGrad < 1900 || yearOfGrad > getCurrentYear) {
+        valid = false;
+      }
+    }
+    return valid;
   }
 
   public String getFirstName() {

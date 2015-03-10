@@ -40,6 +40,10 @@ public enum CircleType {
     return null;
   }
 
+  public static String getYearGroupName(String year) {
+    return "Batch" + " " + year;
+  }
+
   public Integer getId() {
     return id;
   }
