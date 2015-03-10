@@ -339,7 +339,12 @@ public class CircleServiceImpl implements CircleService {
 
       if (circleVO.getAdmin().equals(userResponse.getId())) {
         circleDto.setAdmin(true);
-        circleDto.setRequests(circleVO.getRequestList().size());
+        if (circleVO.getRequestList() != null) {
+          circleDto.setRequests(circleVO.getRequestList().size());
+        } else {
+          circleDto.setRequests(0);
+        }
+
       }
 
       circleDto.setPosts(posts);
