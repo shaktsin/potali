@@ -45,6 +45,7 @@ import com.potaliadmin.pact.framework.utils.FileUploadService;
 import com.potaliadmin.pact.service.cache.ESCacheService;
 import com.potaliadmin.pact.service.post.PostService;
 import com.potaliadmin.pact.service.users.UserService;
+import com.potaliadmin.util.BaseUtil;
 import com.potaliadmin.util.DateUtils;
 import com.potaliadmin.util.image.ImageNameBuilder;
 import com.potaliadmin.util.image.ImageProcessUtil;
@@ -52,6 +53,7 @@ import com.potaliadmin.vo.BaseElasticVO;
 import com.potaliadmin.vo.circle.CircleVO;
 import com.potaliadmin.vo.comment.CommentVO;
 import com.potaliadmin.vo.post.PostVO;
+import com.potaliadmin.vo.user.UserVO;
 import org.elasticsearch.action.count.CountResponse;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.index.query.*;
@@ -364,6 +366,10 @@ public class PostServiceImpl implements PostService {
 
     if (circleVO == null) {
       throw new PotaliRuntimeException("You cannot see posts of a ghost circle");
+    }
+
+    if (!circleVO.isActive()) {
+      throw new PotaliRuntimeException("Circle is deactivated, you cannot see its posts");
     }
 
 
@@ -728,6 +734,94 @@ public class PostServiceImpl implements PostService {
 
 
     return genericPostReactionResponse;
+  }
+
+  @Override
+  public UserProfileResponse fetchUserProfile(UserProfileRequest userProfileRequest) {
+    long totalHits=0;
+    int pageNo = userProfileRequest.getPageNo();
+    int perPage = userProfileRequest.getPerPage();
+
+    UserResponse userResponse = getUserService().getLoggedInUser();
+
+    if (userResponse == null) {
+      throw new InValidInputException("USER CANNOT BE NULL");
+    }
+
+    UserResponse requestUser = getUserService().findById(userProfileRequest.getUserId());
+    if (requestUser == null) {
+      throw new PotaliRuntimeException("You cannot see posts of a ghost user");
+    }
+
+    if (!requestUser.getInstituteId().equals(userResponse.getInstituteId())) {
+      throw new PotaliRuntimeException("You cannot see post of users of other institutions");
+    }
+
+    BoolFilterBuilder boolFilterBuilder = FilterBuilders.boolFilter();
+    boolFilterBuilder.must(FilterBuilders.termFilter("userId", userResponse.getId()));
+
+    ESSearchFilter esSearchFilter =
+        new ESSearchFilter().setFilterBuilder(boolFilterBuilder)
+            .addSortedMap("postId", SortOrder.DESC).setPageNo(pageNo).setPerPage(perPage);
+
+    ESSearchResponse esSearchResponse = getBaseESService().search(esSearchFilter, PostVO.class);
+    List<BaseElasticVO> baseElasticVOs = esSearchResponse.getBaseElasticVOs();
+    List<GenericPostResponse> genericPostResponseList = new ArrayList<GenericPostResponse>();
+    for (BaseElasticVO baseElasticVO : baseElasticVOs) {
+      PostVO postVO = (PostVO) baseElasticVO;
+      UserResponse postUser = getUserService().findById(postVO.getUserId());
+      GenericPostResponse genericPostResponse = new GenericPostResponse(postVO, postUser);
+      genericPostResponseList.add(genericPostResponse);
+    }
+
+    List<Long> circleList = BaseUtil.getPaginatedList(requestUser.getCircleList(), pageNo, perPage);
+    List<CircleDto> circleDtoList = new ArrayList<CircleDto>();
+    if (circleList != null) {
+      for (Long circleId : circleList) {
+
+        CircleVO circleVO = (CircleVO)
+            getBaseESService().get(circleId, null, CircleVO.class);
+
+        if (circleVO == null || !circleVO.isActive()) {
+          continue;
+        }
+
+        QueryBuilder queryBuilder = QueryBuilders.termQuery("circleList", circleVO.getId());
+        long members = getBaseESService().count(queryBuilder, UserVO.class);
+
+        // calculate number of posts
+        queryBuilder = QueryBuilders.termQuery("circleList.id", circleVO.getId());
+        long posts = getBaseESService().count(queryBuilder, PostVO.class);
+
+        CircleDto circleDto = new CircleDto();
+        circleDto.setId(circleVO.getId());
+        circleDto.setName(circleVO.getName());
+        if (userResponse.getCircleList().contains(circleVO.getId())) {
+          circleDto.setJoined(true);
+        }
+
+        circleDto.setPosts(posts);
+        circleDto.setMembers(members);
+        circleDto.setModerate(circleVO.isModerate());
+        circleDtoList.add(circleDto);
+      }
+    }
+
+
+    UserProfileResponse userProfileResponse = new UserProfileResponse();
+    userProfileResponse.setPageNo(pageNo);
+    userProfileResponse.setPerPage(perPage);
+    userProfileResponse.setFirstName(requestUser.getFirstName());
+    userProfileResponse.setLastName(requestUser.getLastName());
+    userProfileResponse.setName(requestUser.getName());
+    userProfileResponse.setImage(requestUser.getImage());
+    userProfileResponse.setYearOfGrad(requestUser.getYearOfGrad());
+    userProfileResponse.setPosts(genericPostResponseList);
+    userProfileResponse.setTotalPosts(genericPostResponseList.size());
+    userProfileResponse.setCircleDtoList(circleDtoList);
+    userProfileResponse.setTotalCircle(requestUser.getCircleList().size());
+
+    return userProfileResponse;
   }
 
   //tODO: remove later

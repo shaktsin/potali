@@ -42,4 +42,6 @@ public interface PostService {
 
   GenericPostReactionResponse reverseReaction(PostReactionRequest postReactionRequest);
 
+  UserProfileResponse fetchUserProfile(UserProfileRequest userProfileRequest);
+
 }

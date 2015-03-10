@@ -68,14 +68,44 @@ public class PostResource {
   }
 
   @POST
-  @Path("/user/posts")
+  @Path("/circle/posts")
   @Produces("application/json")
   @RequiresAuthentication
-  public PostResponse fetchPostsByReactionIds(CirclePostRequest circlePostRequest) {
+  public PostResponse fetchCirclePosts(CirclePostRequest circlePostRequest) {
     try {
       return getPostService().fetchCirclePosts(circlePostRequest);
     } catch (Exception e) {
       PostResponse postResponse = new PostResponse();
+      postResponse.setException(Boolean.TRUE);
+      postResponse.addMessage(e.getMessage());
+      return postResponse;
+    }
+  }
+
+  @POST
+  @Path("/user/profile")
+  @Produces("application/json")
+  @RequiresAuthentication
+  public UserProfileResponse fetchUserProfile(UserProfileRequest userProfileRequest) {
+    try {
+      return getPostService().fetchUserProfile(userProfileRequest);
+    } catch (Exception e) {
+      UserProfileResponse postResponse = new UserProfileResponse();
+      postResponse.setException(Boolean.TRUE);
+      postResponse.addMessage(e.getMessage());
+      return postResponse;
+    }
+  }
+
+  @POST
+  @Path("/user/posts")
+  @Produces("application/json")
+  @RequiresAuthentication
+  public UserPostResponse fetchUserPosts(UserProfileRequest userProfileRequest) {
+    try {
+      return getPostService().fetchUsersPosts(userProfileRequest);
+    } catch (Exception e) {
+      UserPostResponse postResponse = new UserPostResponse();
       postResponse.setException(Boolean.TRUE);
       postResponse.addMessage(e.getMessage());
       return postResponse;

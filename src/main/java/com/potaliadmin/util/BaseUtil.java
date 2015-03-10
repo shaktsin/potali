@@ -5,6 +5,7 @@ import com.potaliadmin.exceptions.PotaliRuntimeException;
 import org.apache.commons.lang.StringUtils;
 import org.apache.shiro.crypto.hash.Md5Hash;
 
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
@@ -95,6 +96,23 @@ public class BaseUtil {
     } else {
       return content+".";
     }
+  }
+
+  public static <T> List<T> getPaginatedList(List<T> list, int pageNo, int perPage) {
+    if (list == null) {
+      throw new PotaliRuntimeException("List cannot be null");
+    }
+    int startIndex = (pageNo - 1)*perPage;
+    int lastIndex = startIndex + perPage - 1;
+    if (startIndex > list.size()) {
+      return null;
+    }
+    if (lastIndex > list.size()) {
+      return list.subList(startIndex, list.size());
+    } else {
+      return list.subList(startIndex, lastIndex);
+    }
+
   }
 
   public static int generateVerificationToken() {
