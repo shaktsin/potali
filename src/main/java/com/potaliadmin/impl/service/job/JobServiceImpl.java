@@ -201,7 +201,7 @@ public class JobServiceImpl implements JobService {
 
 
     for (UserCircleMapping userCircleMapping : userCircleMappingList) {
-      if (userCircleMapping.isAuthorised() && circleList.contains(userCircleMapping.getUserCircleMappingKey().getUserId())) {
+      if (userCircleMapping.isAuthorised() && circleList.contains(userCircleMapping.getUserCircleMappingKey().getCircleId())) {
         authCircleList.add(userCircleMapping.getUserCircleMappingKey().getCircleId());
       }
     }
