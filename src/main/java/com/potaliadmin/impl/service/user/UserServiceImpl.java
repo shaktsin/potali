@@ -253,10 +253,14 @@ public class UserServiceImpl implements UserService {
     // put in mem cache
     //getMemCacheService().put(MemCacheNS.USER_BY_ID, user.getId().toString(), userResponse);
     //getMemCacheService().put(MemCacheNS.USER_BY_EMAIL, user.getEmail(), userResponse);
-
+    AndFilterBuilder andFilterBuilder = FilterBuilders.andFilter();
     TermFilterBuilder termFilterBuilder = FilterBuilders.termFilter("type", CircleType.ALL.getId());
+    TermFilterBuilder termFilterBuilder2 = FilterBuilders.termFilter("instituteId", userResponse.getInstituteId());
+    andFilterBuilder.add(termFilterBuilder);
+    andFilterBuilder.add(termFilterBuilder2);
+
     ESSearchFilter esSearchFilter =
-        new ESSearchFilter().setFilterBuilder(termFilterBuilder);
+        new ESSearchFilter().setFilterBuilder(andFilterBuilder);
     ESSearchResponse esSearchResponse = getBaseESService().search(esSearchFilter, CircleVO.class);
     List<BaseElasticVO> postReactionVOs = esSearchResponse.getBaseElasticVOs();
     if (postReactionVOs != null && !postReactionVOs.isEmpty()) {
@@ -286,7 +290,44 @@ public class UserServiceImpl implements UserService {
       }
 
     } else {
-      throw new PotaliRuntimeException("Some Exception occurred in sign up! Please Try Again");
+      //create a circle for first user
+      //throw new PotaliRuntimeException("Some Exception occurred in sign up! Please Try Again");
+      Circle circle = getCircleDao().createCircle(CircleType.ALL.getName(), CircleType.ALL,
+          userResponse, false);
+
+      if (circle == null) {
+        logger.error("Error in creating all circle in database");
+        throw new PotaliRuntimeException("Some Exception occurred in sign up! Please Try Again");
+      }
+
+      CircleVO circleVO = new CircleVO(circle);
+      circleVO.setAdmin(userResponse.getId());
+      circleVO.setInstituteId(userResponse.getInstituteId());
+      circleVO.setActive(true);
+
+
+      boolean published = getBaseESService().put(circleVO);
+      if (!published) {
+        logger.error("Error in creating all circle in database");
+        throw new PotaliRuntimeException("Couldn't create circle, Please Try Again!");
+      }
+
+      UserVO userVO = new UserVO(user, null);
+      List<Long> circleList = userVO.getCircleList();
+      try {
+        circleList.add(circleVO.getId());
+      } catch (Exception e) {
+        //e.printStackTrace();
+        logger.error("Error ",e);
+      }
+
+      userVO.setCircleList(circleList);
+
+      published = getBaseESService().put(userVO);
+      if (!published) {
+        logger.error("Error in creating all circle in database");
+        throw new PotaliRuntimeException("Some Exception occurred in sign up! Please Try Again");
+      }
     }
 
 
