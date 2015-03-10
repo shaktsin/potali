@@ -370,7 +370,7 @@ public class UserServiceImpl implements UserService {
 
     }
 
-    if (img.getContentDisposition().getFileName() != null) {
+    if (img!=null && img.getContentDisposition().getFileName() != null) {
       try {
         String serverFileName = userResponse.getId() +DefaultConstants.NAME_SEPARATOR +img.getContentDisposition().getFileName();
         String rootPath = getAppProperties().getUploadPicPath() + File.separator + DefaultConstants.PROFILE;
