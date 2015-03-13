@@ -421,7 +421,7 @@ public class CircleServiceImpl implements CircleService {
     }
 
     UserCircleMapping userCircleMapping =
-        (UserCircleMapping) getCircleDao().findByNamedQueryAndNamedParam("findByUserAndCircle",
+        (UserCircleMapping) getCircleDao().findUniqueByNamedQueryAndNamedParam("findByUserAndCircle",
             new String[]{"userId", "circleId"}, new Object[]{userResponse.getId(),circleVO.getId()});
 
 
