@@ -81,7 +81,7 @@ public class JobResources {
   @RequiresAuthentication
   public JobResponse createJob(@FormDataParam("jobs") FormDataBodyPart jobs,
                                @FormDataParam("iFile") List<FormDataBodyPart> imgFiles,
-                               @FormDataParam("jFile") FormDataBodyPart jFile) {
+                               @FormDataParam("jFile") List<FormDataBodyPart> jFile) {
     try {
 
       JobCreateRequest createJobRequest = (JobCreateRequest)

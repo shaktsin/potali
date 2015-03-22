@@ -19,9 +19,8 @@ import com.potaliadmin.dto.internal.cache.job.IndustryVO;
 import com.potaliadmin.dto.internal.filter.BaseFilterDto;
 import com.potaliadmin.dto.internal.filter.GeneralFilterDto;
 import com.potaliadmin.dto.internal.filter.JobFilterDto;
-import com.potaliadmin.dto.internal.image.CreateImageResponseDto;
+import com.potaliadmin.dto.internal.image.CreateAttachmentResponseDto;
 import com.potaliadmin.dto.internal.image.ImageDto;
-import com.potaliadmin.dto.web.request.circle.CircleJoinRequest;
 import com.potaliadmin.dto.web.request.posts.*;
 import com.potaliadmin.dto.web.response.circle.CircleDto;
 import com.potaliadmin.dto.web.response.post.*;
@@ -48,7 +47,6 @@ import com.potaliadmin.pact.service.users.UserService;
 import com.potaliadmin.util.BaseUtil;
 import com.potaliadmin.util.DateUtils;
 import com.potaliadmin.util.image.ImageNameBuilder;
-import com.potaliadmin.util.image.ImageProcessUtil;
 import com.potaliadmin.vo.BaseElasticVO;
 import com.potaliadmin.vo.circle.CircleVO;
 import com.potaliadmin.vo.comment.CommentVO;
@@ -77,6 +75,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Callable;
+import java.util.concurrent.Future;
 
 /**
  * Created by Shakti Singh on 12/28/14.
@@ -543,97 +543,150 @@ public class PostServiceImpl implements PostService {
 
   @Override
   @Transactional(propagation = Propagation.REQUIRED)
-  public List<CreateImageResponseDto> postImages(List<FormDataBodyPart> imageList, Long postId) {
+  public List<CreateAttachmentResponseDto> postImages(List<FormDataBodyPart> imageList, final Long postId) {
     boolean isUploadSuccessful = false;
-    boolean isUploadedToDisk = getFileUploadService().uploadPostImages(imageList, postId);
-    if (!isUploadedToDisk) {
-      logger.error("Image could not be downloaded to server from client for post "+postId);
-      throw new PotaliRuntimeException("Some internal exception occurred in posting");
-    }
+    List<CreateAttachmentResponseDto> createAttachmentResponseDtoList = new ArrayList<CreateAttachmentResponseDto>();
 
-    // convert post images
-    List<ImageDto> imageDtoList = new ArrayList<ImageDto>();
-    Integer count = 0;
-    for (FormDataBodyPart image : imageList) {
-      String absolutePath = getFileUploadService().getAbsolutePath(postId);
-      String uploadRootPath = getFileUploadService().getUploadPath();
-      String relativePath = getFileUploadService().getRelativePath(postId);
-      //String reSizedFileName = ImageProcessUtil.reSize(absolutePath, image.getContentDisposition().getFileName(),
-      //    EnumImageSize.FIT, count.toString());
-      /*if (reSizedFileName != null) {
+    for (final FormDataBodyPart image : imageList) {
 
-      }*/
+      Future<CreateAttachmentResponseDto> future = FileUploadService.EXECUTOR_SERVICE.submit(new Callable<CreateAttachmentResponseDto>() {
+        @Override
+        public CreateAttachmentResponseDto call() throws Exception {
+          List<FormDataBodyPart> formDataBodyParts = new ArrayList<FormDataBodyPart>();
+          formDataBodyParts.add(image);
+          boolean isUploadedToDisk = getFileUploadService().uploadFiles(formDataBodyParts, postId, EnumAttachmentType.IMAGE);
+          if (!isUploadedToDisk) {
+            logger.error("Image could not be downloaded to server from client for post "+postId);
+            throw new PotaliRuntimeException("Some internal exception occurred in posting");
+          }
 
-      ImageDto imageDto = new ImageNameBuilder().addBucket(EnumBucket.POST_BUCKET)
-          .addRootFolder(uploadRootPath).addUploadFolderName(relativePath)
-          .addFileName(image.getContentDisposition().getFileName())
-          .addSize(EnumImageSize.FIT).build();
+          String absolutePath = getFileUploadService().getAbsolutePath(postId, EnumAttachmentType.IMAGE);
+          String uploadRootPath = getFileUploadService().getUploadPath();
+          String relativePath = getFileUploadService().getRelativePath(postId, EnumAttachmentType.IMAGE);
 
+          ImageDto imageDto = new ImageNameBuilder().addBucket(EnumBucket.POST_BUCKET)
+              .addRootFolder(uploadRootPath).addUploadFolderName(relativePath)
+              .addFileName(image.getContentDisposition().getFileName())
+              .addSize(EnumImageSize.FIT).build();
 
-      imageDtoList.add(imageDto);
-      count++;
-    }
+          String path = imageDto.getRelativePath() + File.separator + imageDto.getFileName();
 
-    List<Attachment> attachmentList = new ArrayList<Attachment>();
-    for (ImageDto imageDto : imageDtoList) {
-      String path = imageDto.getRelativePath() + File.separator + imageDto.getFileName();
+          Attachment attachment = getAttachmentDao()
+              .createAttachment(EnumAttachmentType.IMAGE, path, EnumImageSize.getImageSizeById(imageDto.getSize()), postId);
 
-      Attachment attachment = getAttachmentDao()
-          .createAttachment(EnumAttachmentType.IMAGE, path, EnumImageSize.getImageSizeById(imageDto.getSize()), postId);
+          imageDto.setAttachmentId(attachment.getId());
 
-      imageDto.setAttachmentId(attachment.getId());
+          Map<String,Object> map = getUploadService().uploadImageToCloud(postId, imageDto);
+          attachment.setWidth(((Long)map.get("width")).intValue());
+          attachment.setHeight(((Long) map.get("height")).intValue());
+          attachment.setVersion((Long) map.get("version"));
+          attachment.setPublicId((String) map.get("public_id"));
+          attachment.setFormat(EnumImageFormat.getImageFormatByString((String) map.get("format")));
+          attachment = (Attachment) getAttachmentDao().save(attachment);
 
-      Map<String,Object> map = getUploadService().uploadImageToCloud(postId, imageDto);
-      attachment.setWidth(((Long)map.get("width")).intValue());
-      attachment.setHeight(((Long) map.get("height")).intValue());
-      attachment.setVersion((Long) map.get("version"));
-      attachment.setPublicId((String) map.get("public_id"));
-      attachment.setFormat(EnumImageFormat.getImageFormatByString((String) map.get("format")));
-      getAttachmentDao().save(attachment);
+          //attachmentList.add(attachment);
 
-      attachmentList.add(attachment);
-    }
+          CreateAttachmentResponseDto createAttachmentResponseDto = null;
+          if (attachment != null) {
+            createAttachmentResponseDto = new CreateAttachmentResponseDto();
+            createAttachmentResponseDto.setPath(attachment.getPath());
+            createAttachmentResponseDto.setEnumImageSize(EnumImageSize.getImageSizeById(attachment.getSize()));
+            createAttachmentResponseDto.setId(attachment.getId());
+            createAttachmentResponseDto.setFormat(EnumImageFormat.getImageFormatById(attachment.getFormat()));
+            createAttachmentResponseDto.setPublicId(attachment.getPublicId());
+            createAttachmentResponseDto.setVersion(attachment.getVersion());
+          }
 
+          return createAttachmentResponseDto;
+        }
+      });
 
-    /*boolean uploadedToAWS = getUploadService().uploadPostImages(postId, imageDtoList);
-    if (!uploadedToAWS) {
-      logger.error("Image could not be uploaded to aws from server "+postId);
-      throw new PotaliRuntimeException("Some internal exception occurred in posting");
-    }*/
+      //TODO should we use timeout here, evaluate later
 
-    List<CreateImageResponseDto> createImageResponseDtoList = new ArrayList<CreateImageResponseDto>();
-    /*for (ImageDto imageDto : imageDtoList) {
-      String path = imageDto.getRelativePath() + File.separator + imageDto.getFileName();
-
-      Attachment attachment = getAttachmentDao()
-          .createAttachment(EnumAttachmentType.IMAGE, path, EnumImageSize.getImageSizeById(imageDto.getSize()), postId);
-
-      if (attachment != null) {
-        CreateImageResponseDto createImageResponseDto = new CreateImageResponseDto();
-        createImageResponseDto.setPath(attachment.getPath());
-        createImageResponseDto.setEnumImageSize(EnumImageSize.getImageSizeById(attachment.getSize()));
-        createImageResponseDto.setId(attachment.getId());
-        createImageResponseDto.setFormat(EnumImageFormat.getImageFormatById(am));
-        createImageResponseDtoList.add(createImageResponseDto);
-      }
-
-    }*/
-
-    for (Attachment attachment : attachmentList) {
-
-      if (attachment != null) {
-        CreateImageResponseDto createImageResponseDto = new CreateImageResponseDto();
-        createImageResponseDto.setPath(attachment.getPath());
-        createImageResponseDto.setEnumImageSize(EnumImageSize.getImageSizeById(attachment.getSize()));
-        createImageResponseDto.setId(attachment.getId());
-        createImageResponseDto.setFormat(EnumImageFormat.getImageFormatById(attachment.getFormat()));
-        createImageResponseDto.setPublicId(attachment.getPublicId());
-        createImageResponseDto.setVersion(attachment.getVersion());
-        createImageResponseDtoList.add(createImageResponseDto);
+      try {
+        CreateAttachmentResponseDto attachmentResponseDto = future.get();
+        if (attachmentResponseDto != null) {
+          logger.info("Uploaded file for post" + postId);
+          createAttachmentResponseDtoList.add(attachmentResponseDto);
+        }
+      } catch (Exception e) {
+        logger.error("Async upload for docs failed for post "+postId,e);
       }
 
     }
-    return createImageResponseDtoList;
+
+
+    return createAttachmentResponseDtoList;
+  }
+
+  @Override
+  public List<CreateAttachmentResponseDto> postRawFiles(List<FormDataBodyPart> docList, final Long postId) {
+    int numFiles = docList.size();
+    int uploadCount = 0;
+    List<CreateAttachmentResponseDto> createAttachmentResponseDtoList = new ArrayList<CreateAttachmentResponseDto>();
+
+    for (final FormDataBodyPart formDataBodyPart : docList) {
+      Future<CreateAttachmentResponseDto> future = FileUploadService.EXECUTOR_SERVICE.submit(new Callable<CreateAttachmentResponseDto>() {
+        @Override
+        public CreateAttachmentResponseDto call() throws Exception {
+          List<FormDataBodyPart> formDataBodyParts = new ArrayList<FormDataBodyPart>();
+          formDataBodyParts.add(formDataBodyPart);
+          boolean isUploadedToDisk = getFileUploadService().uploadFiles(formDataBodyParts, postId, EnumAttachmentType.DOC);
+
+          if (!isUploadedToDisk) {
+            logger.error("Image could not be downloaded to server from client for post "+postId);
+            return null;
+          }
+
+          // upload to cloud now
+          String absolutePath = getFileUploadService().getAbsolutePath(postId, EnumAttachmentType.IMAGE);
+          String relativePath = getFileUploadService().getRelativePath(postId, EnumAttachmentType.IMAGE);
+          String path = relativePath + File.separator + formDataBodyPart.getContentDisposition().getFileName();
+          String filePath = absolutePath + File.separator + formDataBodyPart.getContentDisposition().getFileName();
+
+          Attachment attachment = getAttachmentDao()
+              .createAttachment(EnumAttachmentType.DOC, path, EnumImageSize.MEDIUM, postId);
+
+          Map<String,Object> map = getUploadService().uploadRawFilesToCloud(new File(filePath),
+              EnumAttachmentType.DOC, attachment.getId(), relativePath);
+
+          attachment.setWidth(EnumImageSize.MEDIUM.getWidth());
+          attachment.setHeight(EnumImageSize.MEDIUM.getHeight());
+          attachment.setVersion((Long) map.get("version"));
+          attachment.setPublicId((String) map.get("public_id"));
+          attachment.setFormat(EnumImageFormat.getImageFormatByString((String) map.get("format")));
+          attachment = (Attachment)getAttachmentDao().save(attachment);
+
+
+          CreateAttachmentResponseDto createAttachmentResponseDto = null;
+          if (attachment != null) {
+            createAttachmentResponseDto = new CreateAttachmentResponseDto();
+            createAttachmentResponseDto.setPath(attachment.getPath());
+            createAttachmentResponseDto.setEnumImageSize(EnumImageSize.getImageSizeById(attachment.getSize()));
+            createAttachmentResponseDto.setId(attachment.getId());
+            createAttachmentResponseDto.setFormat(EnumImageFormat.getImageFormatById(attachment.getFormat()));
+            createAttachmentResponseDto.setPublicId(attachment.getPublicId());
+            createAttachmentResponseDto.setVersion(attachment.getVersion());
+          }
+
+          return createAttachmentResponseDto;
+        }
+      });
+
+      //TODO should we use timeout here, evaluate later
+
+      try {
+        CreateAttachmentResponseDto attachmentResponseDto = future.get();
+        if (attachmentResponseDto != null) {
+          uploadCount += 1;
+          createAttachmentResponseDtoList.add(attachmentResponseDto);
+        }
+      } catch (Exception e) {
+        logger.error("Async upload for docs failed for post "+postId,e);
+      }
+
+    }
+    return createAttachmentResponseDtoList;
   }
 
   @Override

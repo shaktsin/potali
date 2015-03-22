@@ -1,5 +1,6 @@
 package com.potaliadmin.pact.framework.aws;
 
+import com.potaliadmin.constants.attachment.EnumAttachmentType;
 import com.potaliadmin.dto.internal.image.ImageDto;
 
 import javax.imageio.ImageIO;
@@ -23,6 +24,8 @@ public interface UploadService {
   Map<String, Object> uploadImageToCloud(Long postId, ImageDto imageDtoList);
 
   Map<String, Object> uploadProfImageToCloud(Long userId, File file);
+
+  Map<String, Object> uploadRawFilesToCloud(File file, EnumAttachmentType enumAttachmentType, Long attachmentId, String relativePath);
 
   boolean deleteImage(String publicId);
 }

@@ -20,7 +20,7 @@ public interface JobService {
 
   public PrepareJobCreateResponse prepareJobCreateRequest();
 
-  public JobResponse createJob(JobCreateRequest jobCreateRequest,List<FormDataBodyPart> imgFiles,FormDataBodyPart jFile);
+  public JobResponse createJob(JobCreateRequest jobCreateRequest,List<FormDataBodyPart> imgFiles,List<FormDataBodyPart> jFiles);
 
   public JobResponse getJob(Long postId);
 

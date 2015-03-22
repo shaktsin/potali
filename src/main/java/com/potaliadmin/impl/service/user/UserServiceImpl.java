@@ -9,6 +9,7 @@ import com.potaliadmin.domain.user.User;
 import com.potaliadmin.domain.user.UserCircleMapping;
 import com.potaliadmin.dto.internal.cache.institute.InstituteVO;
 import com.potaliadmin.dto.internal.hibernate.user.UserSignUpQueryRequest;
+import com.potaliadmin.dto.web.request.user.UserChangePasswordRequest;
 import com.potaliadmin.dto.web.request.user.UserProfileUpdateRequest;
 import com.potaliadmin.dto.web.request.user.UserSignUpRequest;
 import com.potaliadmin.dto.web.request.user.UserVerificationRequest;
@@ -191,27 +192,16 @@ public class UserServiceImpl implements UserService {
       //throw new InValidInputException("Input Parameters are invalid!");
     }
 
-    List<InstituteVO> instituteVOs = getInstituteReadService().getAllInstitute();
-    String emailSuffix = userSignUpRequest.getEmail().split("@")[1];
-    if (emailSuffix == null) {
-      UserResponse userResponse = new UserResponse();
-      userResponse.setException(Boolean.TRUE);
-      userResponse.addMessage("Input Parameters are invalid!");
-      return userResponse;
-    }
-    for (InstituteVO instituteVO : instituteVOs) {
-      if (instituteVO.getEmSuffix().equals(emailSuffix)) {
-        userSignUpRequest.setInstituteId(instituteVO.getId());
-        break;
-      }
-    }
-
-    if (userSignUpRequest.getInstituteId() == null) {
+    Long instituteId = getInstituteIdByEmail(userSignUpRequest.getEmail());
+    if (instituteId == null) {
       UserResponse userResponse = new UserResponse();
       userResponse.setException(Boolean.TRUE);
       userResponse.addMessage("Sorry, Your college is not registered with us.We will soon reach to you");
       return userResponse;
     }
+
+    //set user instituteId
+    userSignUpRequest.setInstituteId(instituteId);
 
     UserResponse userResponse = findByEmail(userSignUpRequest.getEmail());
     if (null != userResponse) {
@@ -542,6 +532,102 @@ public class UserServiceImpl implements UserService {
     return genericSuccessResponse;
   }
 
+  @Override
+  @Transactional
+  public GenericSuccessResponse recoverPassword(String email) {
+    if (StringUtils.isBlank(email)) {
+      throw new InValidInputException("Please provide valid email");
+    }
+    if (BaseUtil.isValidEmail(email)) {
+      throw new InValidInputException("Please provide valid email");
+    }
+    UserResponse userResponse = findByEmail(email);
+    if (userResponse == null) {
+      throw new PotaliRuntimeException("Email provided is not registered with us");
+    }
+
+    Long instituteId = getInstituteIdByEmail(email);
+    if (instituteId == null) {
+      GenericSuccessResponse genericSuccessResponse = new GenericSuccessResponse();
+      genericSuccessResponse.setException(true);
+      genericSuccessResponse.addMessage("Your college is not registered with us, we have registered your request. We will reach you soon");
+      return genericSuccessResponse;
+    }
+
+    Integer genPassword = BaseUtil.generateVerificationToken();
+    String hash = BaseUtil.passwordEncrypt(genPassword.toString());
+
+    User user = getUserDao().findByEmail(email);
+    if (user == null) {
+      logger.error("User is null in db but not in cache, boom!! Fix it you faggots!" + " email =  " + email);
+      GenericSuccessResponse genericSuccessResponse = new GenericSuccessResponse();
+      genericSuccessResponse.setException(true);
+      genericSuccessResponse.addMessage("Some bad occurred, please try again");
+      return genericSuccessResponse;
+    }
+
+    user.setPasswordChecksum(hash);
+    getUserDao().save(user);
+
+    UserVO userVO = new UserVO(userResponse);
+    userVO.setChecksum(hash);
+
+    boolean published = getBaseESService().put(userVO);
+    if (!published) {
+      logger.error("Something bad occurred while publishing user in es");
+      throw new PotaliRuntimeException("Some Exception occurred in sign up! Please Try Again");
+    }
+
+    HippoHttpUtils.sendRecoverPasswordMail(genPassword.toString(), email);
+
+    GenericSuccessResponse genericSuccessResponse = new GenericSuccessResponse();
+    genericSuccessResponse.setSuccess(true);
+
+    return genericSuccessResponse;
+
+  }
+
+  @Override
+  @Transactional
+  public GenericSuccessResponse regeneratePassword(UserChangePasswordRequest userChangePasswordRequest) {
+    if (!userChangePasswordRequest.validate()) {
+      throw new InValidInputException("Either both password are not same or password is empty, please fix and try again");
+    }
+
+    UserResponse userResponse = getLoggedInUser();
+    if (userResponse == null) {
+      throw new PotaliRuntimeException("Invalid action");
+    }
+
+    String hash = BaseUtil.passwordEncrypt(userChangePasswordRequest.getPassword());
+
+    User user = getUserDao().findByEmail(userResponse.getEmail());
+    if (user == null) {
+      logger.error("User is null in db but not in cache, boom!! Fix it you faggots!" + " email =  " + userResponse.getEmail());
+      GenericSuccessResponse genericSuccessResponse = new GenericSuccessResponse();
+      genericSuccessResponse.setException(true);
+      genericSuccessResponse.addMessage("Some bad occurred, please try again");
+      return genericSuccessResponse;
+    }
+
+    user.setPasswordChecksum(hash);
+    getUserDao().save(user);
+
+    UserVO userVO = new UserVO(userResponse);
+    userVO.setChecksum(hash);
+
+    boolean published = getBaseESService().put(userVO);
+    if (!published) {
+      logger.error("Something bad occurred while publishing user in es");
+      throw new PotaliRuntimeException("Some Exception occurred in sign up! Please Try Again");
+    }
+
+    GenericSuccessResponse genericSuccessResponse = new GenericSuccessResponse();
+    genericSuccessResponse.setSuccess(true);
+
+    return genericSuccessResponse;
+  }
+
 
   private void uploadImageToServer(String fullFileName, InputStream uploadedInputStream) throws Exception {
     try {
@@ -569,6 +655,23 @@ public class UserServiceImpl implements UserService {
     } catch (Exception e) {
       logger.error("Error occurred while uploading image",e);
     }
+  }
+
+  private Long getInstituteIdByEmail(String email) {
+    Long instituteId = null;
+
+    if (StringUtils.isNotBlank(email) && !BaseUtil.isValidEmail(email)) {
+      List<InstituteVO> instituteVOs = getInstituteReadService().getAllInstitute();
+      String emailSuffix = email.split("@")[1];
+      for (InstituteVO instituteVO : instituteVOs) {
+        if (instituteVO.getEmSuffix().equals(emailSuffix)) {
+          instituteId = instituteVO.getId();
+          break;
+        }
+      }
+    }
+
+    return instituteId;
   }
 
   public UserDao getUserDao() {

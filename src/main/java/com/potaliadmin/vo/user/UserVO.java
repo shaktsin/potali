@@ -1,6 +1,7 @@
 package com.potaliadmin.vo.user;
 
 import com.potaliadmin.domain.user.User;
+import com.potaliadmin.dto.web.response.user.UserResponse;
 import com.potaliadmin.framework.elasticsearch.annotation.ElasticEntity;
 import com.potaliadmin.vo.BaseElasticVO;
 import com.potaliadmin.vo.circle.CircleVO;
@@ -53,6 +54,20 @@ public class UserVO extends BaseElasticVO {
     } else {
       this.circleList = circleList;
     }
+  }
+
+  public UserVO(UserResponse userResponse) {
+    id = userResponse.getId();
+    institutionId = userResponse.getInstituteId();
+    accountName = userResponse.getName();
+    email = userResponse.getEmail();
+    checksum = userResponse.getPasswordChecksum();
+    image = userResponse.getImage();
+    verified = userResponse.isVerified();
+    firstName = userResponse.getFirstName();
+    lastName = userResponse.getLastName();
+    yearOfGrad = userResponse.getYearOfGrad();
+    circleList = userResponse.getCircleList();
   }
 
   @Override

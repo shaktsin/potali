@@ -5,9 +5,7 @@ import com.potaliadmin.constants.image.EnumBucket;
 import com.potaliadmin.constants.image.EnumImageSize;
 import com.potaliadmin.dto.internal.image.ImageDto;
 import com.potaliadmin.dto.web.request.jobs.JobCreateRequest;
-import com.potaliadmin.dto.web.request.user.UserProfileUpdateRequest;
-import com.potaliadmin.dto.web.request.user.UserSignUpRequest;
-import com.potaliadmin.dto.web.request.user.UserVerificationRequest;
+import com.potaliadmin.dto.web.request.user.*;
 import com.potaliadmin.dto.web.response.base.GenericSuccessResponse;
 import com.potaliadmin.dto.web.response.user.UserProfileUpdateResponse;
 import com.potaliadmin.dto.web.response.user.UserProfileUploadResponse;
@@ -22,6 +20,9 @@ import com.potaliadmin.util.image.ImageNameBuilder;
 import com.potaliadmin.util.image.ImageProcessUtil;
 import com.potaliadmin.util.rest.InputParserUtil;
 import org.apache.commons.lang.StringUtils;
+import org.apache.shiro.authc.AuthenticationException;
+import org.apache.shiro.authc.IncorrectCredentialsException;
+import org.apache.shiro.authc.UnknownAccountException;
 import org.apache.shiro.authz.annotation.RequiresAuthentication;
 import org.glassfish.jersey.media.multipart.FormDataBodyPart;
 import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
@@ -30,6 +31,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+
 
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.*;
@@ -63,14 +65,7 @@ public class UserResource {
   @POST
   @Path("/signUp")
   @Produces("application/json")
-  public UserResourceResponse signUp(UserSignUpRequest userSignUpRequest/*, @QueryParam(RequestConstants.LOCATION) String locationFilter,
-                                     @QueryParam(RequestConstants.INDUSTRY) String industryFilter,
-                                     @QueryParam(RequestConstants.ROLES) String rolesFilter,
-                                     @QueryParam(RequestConstants.SALARY) String salaryFilter,
-                                     @QueryParam(RequestConstants.EXP) String experienceFilter,
-                                     @QueryParam(RequestConstants.PER_PAGE) @DefaultValue(DefaultConstants.AND_APP_PER_PAGE)int perPage,
-                                     @QueryParam(RequestConstants.PAGE_NO) @DefaultValue(DefaultConstants.AND_APP_PAGE_NO)int pageNo,
-                                     @QueryParam(RequestConstants.PLATE_FORM) @DefaultValue(DefaultConstants.PLATE_FROM) Long plateFormId*/) {
+  public UserResourceResponse signUp(UserSignUpRequest userSignUpRequest) {
 
     try {
       UserResponse userResponse = getLoginService().signUp(userSignUpRequest);
@@ -85,40 +80,6 @@ public class UserResource {
         userResourceResponse.setImage(userResponse.getImage());
         userResourceResponse.setAuthToken(SecurityToken.getSecurityToken(userResponse.getEmail(), userSignUpRequest.getPassword(), userSignUpRequest.getInstituteId()));
 
-        /*String[] locationFilterList=null;
-        String[] industryFiltersList = null;
-        String[] rolesFilterList=null;
-        String[] salaryFilterList=null;
-        String[] experienceFilterList=null;
-        try {
-          if (StringUtils.isNotBlank(locationFilter)) {
-            locationFilterList = locationFilter.split(DefaultConstants.REQUEST_SEPARATOR);
-          }
-          if (StringUtils.isNotBlank(rolesFilter)) {
-            rolesFilterList = rolesFilter.split(DefaultConstants.REQUEST_SEPARATOR);
-          }
-          if (StringUtils.isNotBlank(salaryFilter)) {
-            salaryFilterList = salaryFilter.split(DefaultConstants.REQUEST_SEPARATOR);
-          }
-          if (StringUtils.isNotBlank(experienceFilter)) {
-            experienceFilterList = experienceFilter.split(DefaultConstants.REQUEST_SEPARATOR);
-          }
-          if (StringUtils.isNotBlank(industryFilter)) {
-            industryFiltersList = industryFilter.split(DefaultConstants.REQUEST_SEPARATOR);
-          }
-          JobSearchResponse jobSearchResponse = getJobService().searchJob(BaseUtil.convertToLong(locationFilterList),BaseUtil.convertToLong(rolesFilterList),
-              BaseUtil.convertToLong(industryFiltersList),BaseUtil.convertToDouble(salaryFilterList),
-              BaseUtil.convertToInteger(experienceFilterList),perPage, pageNo);
-
-          userResourceResponse.setJobSearchResponse(jobSearchResponse);
-          return userResourceResponse;
-        } catch (Exception e) {
-          userResourceResponse = new UserResourceResponse();
-          userResourceResponse.setException(Boolean.TRUE);
-          userResourceResponse.addMessage(e.getMessage());
-          return userResourceResponse;
-        }*/
-
         return userResourceResponse;
 
       } else {
@@ -128,6 +89,23 @@ public class UserResource {
         return userResourceResponse;
 
       }
+
+    } catch (UnknownAccountException e) {
+      UserResourceResponse userResourceResponse = new UserResourceResponse();
+      userResourceResponse.setException(Boolean.TRUE);
+      userResourceResponse.addMessage("Please register with OfCampus first!");
+      return userResourceResponse;
+
+    } catch(IncorrectCredentialsException e) {
+      UserResourceResponse userResourceResponse = new UserResourceResponse();
+      userResourceResponse.setException(Boolean.TRUE);
+      userResourceResponse.addMessage("Either email or password seems incorrect, please try again!");
+      return userResourceResponse;
+    } catch(AuthenticationException e) {
+      UserResourceResponse userResourceResponse = new UserResourceResponse();
+      userResourceResponse.setException(Boolean.TRUE);
+      userResourceResponse.addMessage("Something bad occurred, please try again");
+      return userResourceResponse;
 
     } catch (Exception e) {
       UserResourceResponse userResourceResponse = new UserResourceResponse();
@@ -163,6 +141,23 @@ public class UserResource {
         return userResourceResponse;
       }
 
+    } catch (UnknownAccountException e) {
+      UserResourceResponse userResourceResponse = new UserResourceResponse();
+      userResourceResponse.setException(Boolean.TRUE);
+      userResourceResponse.addMessage("Please register with OfCampus first!");
+      return userResourceResponse;
+
+    } catch(IncorrectCredentialsException e) {
+      UserResourceResponse userResourceResponse = new UserResourceResponse();
+      userResourceResponse.setException(Boolean.TRUE);
+      userResourceResponse.addMessage("Either email or password seems incorrect, please try again!");
+      return userResourceResponse;
+    } catch(AuthenticationException e) {
+      UserResourceResponse userResourceResponse = new UserResourceResponse();
+      userResourceResponse.setException(Boolean.TRUE);
+      userResourceResponse.addMessage("Something bad occurred, please try again");
+      return userResourceResponse;
+
     } catch (Exception e) {
       UserResourceResponse userResourceResponse = new UserResourceResponse();
       userResourceResponse.setException(Boolean.TRUE);
@@ -195,6 +190,36 @@ public class UserResource {
   public GenericSuccessResponse reGenerateToken() {
     try {
       return getUserService().reGenerateToken();
+    } catch (Exception e) {
+      GenericSuccessResponse genericSuccessResponse = new GenericSuccessResponse();
+      genericSuccessResponse.setException(true);
+      genericSuccessResponse.addMessage(e.getMessage());
+      return genericSuccessResponse;
+    }
+  }
+
+
+  @POST
+  @Path("/forgot/password")
+  @Produces("application/json")
+  public GenericSuccessResponse forgotPassword(UserForgotPasswordRequest userForgotPasswordRequest) {
+    try {
+      return getUserService().recoverPassword(userForgotPasswordRequest.getEmail());
+    } catch (Exception e) {
+      GenericSuccessResponse genericSuccessResponse = new GenericSuccessResponse();
+      genericSuccessResponse.setException(true);
+      genericSuccessResponse.addMessage(e.getMessage());
+      return genericSuccessResponse;
+    }
+  }
+
+  @POST
+  @Path("/change/password")
+  @Produces("application/json")
+  @RequiresAuthentication
+  public GenericSuccessResponse changePassword(UserChangePasswordRequest userChangePasswordRequest) {
+    try {
+      return getUserService().regeneratePassword(userChangePasswordRequest);
     } catch (Exception e) {
       GenericSuccessResponse genericSuccessResponse = new GenericSuccessResponse();
       genericSuccessResponse.setException(true);

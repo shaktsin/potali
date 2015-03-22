@@ -4,17 +4,22 @@ import com.potaliadmin.constants.attachment.EnumAttachmentType;
 import org.glassfish.jersey.media.multipart.FormDataBodyPart;
 
 import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 /**
  * Created by shakti on 26/1/15.
  */
 public interface FileUploadService {
 
-  boolean uploadPostImages(List<FormDataBodyPart> formDataBodyPart,Long postId);
+  ExecutorService EXECUTOR_SERVICE = Executors.newFixedThreadPool(10);
 
-  String getAbsolutePath(Long postId);
 
-  String getRelativePath(Long postId);
+  boolean uploadFiles(List<FormDataBodyPart> formDataBodyPart, Long postId, EnumAttachmentType enumAttachmentType);
+
+  String getAbsolutePath(Long postId, EnumAttachmentType enumAttachmentType);
+
+  String getRelativePath(Long postId, EnumAttachmentType enumAttachmentType);
 
   String getUploadPath();
 }

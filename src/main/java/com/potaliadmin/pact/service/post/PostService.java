@@ -1,12 +1,10 @@
 package com.potaliadmin.pact.service.post;
 
-import com.potaliadmin.dto.internal.image.CreateImageResponseDto;
-import com.potaliadmin.dto.web.request.circle.CircleJoinRequest;
+import com.potaliadmin.dto.internal.image.CreateAttachmentResponseDto;
 import com.potaliadmin.dto.web.request.posts.*;
 import com.potaliadmin.dto.web.response.post.*;
 import org.glassfish.jersey.media.multipart.FormDataBodyPart;
 
-import java.util.Date;
 import java.util.List;
 
 /**
@@ -36,7 +34,9 @@ public interface PostService {
 
   boolean postHasComments(Long postId);
 
-  List<CreateImageResponseDto> postImages(List<FormDataBodyPart> imageList, Long postId);
+  List<CreateAttachmentResponseDto> postImages(List<FormDataBodyPart> imageList, Long postId);
+
+  List<CreateAttachmentResponseDto> postRawFiles(List<FormDataBodyPart> docList, Long postId);
 
   PostFiltersResponse getPostFilters();
 

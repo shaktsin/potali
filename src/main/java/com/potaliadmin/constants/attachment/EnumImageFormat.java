@@ -7,7 +7,12 @@ public enum  EnumImageFormat {
 
   JPG(0, "jpg"),
   JPEG(1, "jpeg"),
-  PNG(2, "png");
+  PNG(2, "png"),
+  XLS(3, "xls"),
+  PDF(4, "pdf"),
+  DOC(5, "doc"),
+  DOCX(6, "docx"),
+  ;
 
 
   Integer id;

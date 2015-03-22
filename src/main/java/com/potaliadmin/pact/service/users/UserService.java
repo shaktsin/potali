@@ -1,5 +1,6 @@
 package com.potaliadmin.pact.service.users;
 
+import com.potaliadmin.dto.web.request.user.UserChangePasswordRequest;
 import com.potaliadmin.dto.web.request.user.UserProfileUpdateRequest;
 import com.potaliadmin.dto.web.request.user.UserSignUpRequest;
 import com.potaliadmin.dto.web.request.user.UserVerificationRequest;
@@ -27,4 +28,8 @@ public interface UserService {
   GenericSuccessResponse verifyUser(UserVerificationRequest userVerificationRequest);
 
   GenericSuccessResponse reGenerateToken();
+
+  GenericSuccessResponse recoverPassword(String email);
+
+  GenericSuccessResponse regeneratePassword(UserChangePasswordRequest userChangePasswordRequest);
 }

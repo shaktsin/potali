@@ -5,7 +5,7 @@ import com.potaliadmin.constants.image.EnumImageSize;
 /**
  * Created by shakti on 28/1/15.
  */
-public class CreateImageResponseDto {
+public class CreateAttachmentResponseDto {
 
   private Long id;
   private EnumImageSize enumImageSize;

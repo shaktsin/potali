@@ -28,7 +28,7 @@ public class FileUploadServiceImpl implements FileUploadService {
   AppProperties appProperties;
 
   @Override
-  public boolean uploadPostImages(List<FormDataBodyPart> formDataBodyPartList, Long postId) {
+  public boolean uploadFiles(List<FormDataBodyPart> formDataBodyPartList, Long postId, EnumAttachmentType enumAttachmentType) {
     boolean uploadedToDisk = false;
     //Integer count = 0;
     for (FormDataBodyPart formDataBodyPart : formDataBodyPartList) {
@@ -39,7 +39,7 @@ public class FileUploadServiceImpl implements FileUploadService {
       }
 
 
-      File file = new File(getAbsolutePath(postId));
+      File file = new File(getAbsolutePath(postId, enumAttachmentType));
       if (!file.exists()) {
         if (!file.mkdirs()) {
           return uploadedToDisk;
@@ -60,14 +60,14 @@ public class FileUploadServiceImpl implements FileUploadService {
   }
 
   @Override
-  public String getAbsolutePath(Long postId) {
+  public String getAbsolutePath(Long postId, EnumAttachmentType enumAttachmentType) {
     return getAppProperties().getUploadPicPath() + File.separator + DefaultConstants.POST +
-        File.separator + getRelativePath(postId);
+        File.separator + getRelativePath(postId, enumAttachmentType);
   }
 
   @Override
-  public String getRelativePath(Long postId) {
-    return  postId + File.separator + DefaultConstants.IMAGE;
+  public String getRelativePath(Long postId, EnumAttachmentType enumAttachmentType) {
+    return  postId + File.separator + enumAttachmentType.getName();
   }
 
   @Override

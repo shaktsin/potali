@@ -5,12 +5,10 @@ import com.amazonaws.auth.BasicAWSCredentials;
 import com.amazonaws.services.s3.transfer.MultipleFileUpload;
 import com.amazonaws.services.s3.transfer.TransferManager;
 import com.cloudinary.Cloudinary;
-import com.google.inject.internal.cglib.core.$TypeUtils;
 import com.potaliadmin.constants.DefaultConstants;
-import com.potaliadmin.constants.image.EnumBucket;
+import com.potaliadmin.constants.attachment.EnumAttachmentType;
 import com.potaliadmin.dto.internal.image.ImageDto;
 import com.potaliadmin.exceptions.PotaliRuntimeException;
-import com.potaliadmin.framework.thread.ThreadManager;
 import com.potaliadmin.impl.framework.properties.AppProperties;
 import com.potaliadmin.pact.framework.aws.UploadService;
 import com.potaliadmin.util.image.ImageSecurity;
@@ -20,8 +18,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.PostConstruct;
-import javax.annotation.PreDestroy;
-import javax.ws.rs.DefaultValue;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
@@ -180,6 +176,29 @@ public class UploadServiceImpl implements UploadService {
       throw new PotaliRuntimeException("Error occurred while uploading image is cloud");
     }
 
+  }
+
+  @Override
+  @SuppressWarnings("unchecked")
+  public Map<String, Object> uploadRawFilesToCloud(File file, EnumAttachmentType enumAttachmentType, Long attachmentId, String relativePath) {
+    try {
+      Cloudinary cloudinary = new Cloudinary(Cloudinary.asMap(
+          "cloud_name", getAppProperties().getCloudName(),
+          "api_key", getAppProperties().getCloudApiKey(),
+          "api_secret", getAppProperties().getCloudSecKey()));
+
+      Map params = Cloudinary.asMap("public_id",attachmentId.toString());
+      params.put("use_filename",true);
+      String folder = enumAttachmentType.getName() + File.separator + relativePath;
+      params.put("folder", folder);
+      params.put("resource_type", "raw");
+
+      return cloudinary.uploader().upload(file, params);
+
+    } catch (Throwable e) {
+      logger.error("Error occurred while uploading image is cloud",e);
+      throw new PotaliRuntimeException("Error occurred while uploading image is cloud");
+    }
   }
 
   @Override

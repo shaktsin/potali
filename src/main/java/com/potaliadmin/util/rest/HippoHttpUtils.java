@@ -81,6 +81,36 @@ public class HippoHttpUtils {
     return isMailSent;
   }
 
+  public static boolean sendRecoverPasswordMail(String password, String email) {
+    boolean isMailSent = false;
+    HttpAuthenticationFeature feature
+        = HttpAuthenticationFeature.basicBuilder()
+        .credentials("api", "key-9b6d30bbedea07334ebb9ad972cb58f1").build();
+
+    ClientConfig config = new ClientConfig();
+    config.register(feature);
+    JerseyClient client = JerseyClientBuilder.createClient(config);
+
+    JerseyWebTarget target = client.target("https://api.mailgun.net/v2/sandbox49f46b595832462381bb61ada09f6e38.mailgun.org/messages");
+
+
+    Form form = new Form();
+    form.param("from","shakti@ofcampus.com");
+    form.param("to",email);
+    form.param("subject","Password Recovery - OfCampus");
+    String text = "Welcome Again!"+ "Your new password is "+password;
+    form.param("text",text);
+
+
+    Response response = target.request(MediaType.APPLICATION_FORM_URLENCODED).post(Entity.form(form));
+    if (response.getStatus() == HttpStatus.OK.value()) {
+      isMailSent = true;
+    } else {
+      logger.error("Couldn't send password recovery mails : status code "+response.getStatus());
+    }
+    return isMailSent;
+  }
+
   public static void main(String[] args) {
     sendVerificationToken(1,"shakti", "shakti@ofcampus.com");
   }

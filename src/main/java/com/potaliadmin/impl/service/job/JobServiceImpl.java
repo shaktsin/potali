@@ -1,16 +1,14 @@
 package com.potaliadmin.impl.service.job;
 
 import com.potaliadmin.constants.DefaultConstants;
+import com.potaliadmin.constants.attachment.EnumAttachmentType;
 import com.potaliadmin.constants.attachment.EnumImageFormat;
-import com.potaliadmin.constants.image.EnumBucket;
 import com.potaliadmin.constants.json.DtoJsonConstants;
 import com.potaliadmin.constants.post.EnumPostType;
 import com.potaliadmin.constants.query.EnumSearchOperation;
 import com.potaliadmin.constants.reactions.EnumReactions;
 import com.potaliadmin.domain.attachment.Attachment;
-import com.potaliadmin.domain.industry.Industry;
 import com.potaliadmin.domain.job.Job;
-import com.potaliadmin.domain.post.Post;
 import com.potaliadmin.domain.post.PostBlob;
 import com.potaliadmin.domain.user.UserCircleMapping;
 import com.potaliadmin.dto.internal.cache.address.CityVO;
@@ -18,7 +16,7 @@ import com.potaliadmin.dto.internal.cache.es.job.*;
 import com.potaliadmin.dto.internal.cache.job.IndustryRolesVO;
 import com.potaliadmin.dto.internal.cache.job.IndustryVO;
 import com.potaliadmin.dto.internal.filter.JobFilterDto;
-import com.potaliadmin.dto.internal.image.CreateImageResponseDto;
+import com.potaliadmin.dto.internal.image.CreateAttachmentResponseDto;
 import com.potaliadmin.dto.web.request.jobs.JobCreateRequest;
 import com.potaliadmin.dto.web.request.jobs.JobEditRequest;
 import com.potaliadmin.dto.web.response.attachment.AttachmentDto;
@@ -53,7 +51,6 @@ import com.potaliadmin.pact.service.job.JobService;
 import com.potaliadmin.pact.service.post.PostService;
 import com.potaliadmin.pact.service.users.LoginService;
 import com.potaliadmin.pact.service.users.UserService;
-import com.potaliadmin.util.BaseUtil;
 import com.potaliadmin.util.DateUtils;
 import com.potaliadmin.vo.BaseElasticVO;
 import com.potaliadmin.vo.circle.CircleVO;
@@ -62,18 +59,12 @@ import com.potaliadmin.vo.job.JobVO;
 import com.potaliadmin.vo.post.PostVO;
 import com.potaliadmin.vo.user.UserVO;
 import org.apache.commons.lang.StringUtils;
-import org.elasticsearch.action.get.GetResponse;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.index.query.*;
-import org.elasticsearch.rest.RestStatus;
-import org.elasticsearch.search.SearchHit;
-import org.elasticsearch.search.SearchHits;
-import org.elasticsearch.search.aggregations.Aggregation;
 import org.elasticsearch.search.aggregations.AggregationBuilders;
 import org.elasticsearch.search.aggregations.metrics.max.Max;
 import org.elasticsearch.search.aggregations.metrics.max.MaxBuilder;
 import org.elasticsearch.search.aggregations.metrics.min.Min;
-import org.elasticsearch.search.aggregations.metrics.min.MinAggregator;
 import org.elasticsearch.search.aggregations.metrics.min.MinBuilder;
 import org.elasticsearch.search.sort.SortOrder;
 import org.glassfish.jersey.media.multipart.FormDataBodyPart;
@@ -82,7 +73,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
-import javax.xml.bind.ValidationException;
 import java.util.*;
 
 /**
@@ -233,7 +223,7 @@ public class JobServiceImpl implements JobService {
   }
 
   @Transactional
-  public JobResponse createJob(JobCreateRequest jobCreateRequest,List<FormDataBodyPart> imgFiles,FormDataBodyPart jFile) {
+  public JobResponse createJob(JobCreateRequest jobCreateRequest,List<FormDataBodyPart> imgFiles,List<FormDataBodyPart> jFiles) {
     if (!jobCreateRequest.validate()) {
       throw new InValidInputException("Please input valid parameters");
     }
@@ -275,8 +265,12 @@ public class JobServiceImpl implements JobService {
       return jobResponse;
     }
 
+    PostVO postVO = new PostVO(job, postBlob);
+    postVO.setPostType(EnumPostType.JOBS.getId());
+
+
     // now upload images, trim images and upload them to amazon
-    List<CreateImageResponseDto> imageResponseDtoList = null;
+    List<CreateAttachmentResponseDto> imageResponseDtoList = null;
     if (imgFiles != null && !imgFiles.isEmpty()) {
       imageResponseDtoList = getPostService().postImages(imgFiles, job.getId());
       if (imageResponseDtoList == null || imageResponseDtoList.isEmpty()) {
@@ -288,21 +282,19 @@ public class JobServiceImpl implements JobService {
     }
 
 
-    PostVO postVO = new PostVO(job, postBlob);
-    postVO.setPostType(EnumPostType.JOBS.getId());
 
     // set images link
     if (imageResponseDtoList != null) {
       //List<String> imageLinks = new ArrayList<String>();
       List<AttachmentDto> attachmentDtoList = new ArrayList<AttachmentDto>();
       //Map<Long, String> imageMap = new HashMap<Long, String>();
-      for (CreateImageResponseDto createImageResponseDto : imageResponseDtoList) {
+      for (CreateAttachmentResponseDto createAttachmentResponseDto : imageResponseDtoList) {
         String imageLink = getUploadService()
-            .getCanonicalPathOfCloudResource(createImageResponseDto.getPublicId(), createImageResponseDto.getVersion()
-                , createImageResponseDto.getFormat());
+            .getCanonicalPathOfCloudResource(createAttachmentResponseDto.getPublicId(), createAttachmentResponseDto.getVersion()
+                , createAttachmentResponseDto.getFormat());
         //mageLinks.add(imageLink);
         AttachmentDto attachmentDto = new AttachmentDto();
-        attachmentDto.setId(createImageResponseDto.getId());
+        attachmentDto.setId(createAttachmentResponseDto.getId());
         attachmentDto.setUrl(imageLink);
         attachmentDtoList.add(attachmentDto);
         //imageMap.put(createImageResponseDto.getId(), imageLink);
@@ -311,6 +303,43 @@ public class JobServiceImpl implements JobService {
       postVO.setAttachmentDtoList(attachmentDtoList);
       //postVO.setImageMap(imageMap);
     }
+
+
+    // post doc lists
+    List<CreateAttachmentResponseDto> docResponseDtoList = null;
+    if (jFiles != null && !jFiles.isEmpty()) {
+      docResponseDtoList = getPostService().postRawFiles(imgFiles, job.getId());
+      if (docResponseDtoList == null || docResponseDtoList.isEmpty()) {
+        JobResponse jobResponse = new JobResponse();
+        jobResponse.setException(Boolean.TRUE);
+        jobResponse.addMessage("Some Internal Exception Occurred!");
+        return jobResponse;
+      }
+    }
+
+    // set images link
+    if (docResponseDtoList != null) {
+      //List<String> imageLinks = new ArrayList<String>();
+      List<AttachmentDto> attachmentDtoList = new ArrayList<AttachmentDto>();
+      //Map<Long, String> imageMap = new HashMap<Long, String>();
+      for (CreateAttachmentResponseDto createAttachmentResponseDto : docResponseDtoList) {
+        String uploadLink = getUploadService()
+            .getCanonicalPathOfCloudResource(createAttachmentResponseDto.getPublicId(), createAttachmentResponseDto.getVersion()
+                , createAttachmentResponseDto.getFormat());
+        //imageLinks.add(imageLink);
+        AttachmentDto attachmentDto = new AttachmentDto();
+        attachmentDto.setId(createAttachmentResponseDto.getId());
+        attachmentDto.setUrl(uploadLink);
+        attachmentDto.setAttachmentType(EnumAttachmentType.DOC.getName());
+        attachmentDtoList.add(attachmentDto);
+
+        //imageMap.put(createImageResponseDto.getId(), imageLink);
+      }
+      //postVO.setImageList(imageLinks);
+      postVO.setAttachmentDtoList(attachmentDtoList);
+      //postVO.setImageMap(imageMap);
+    }
+
 
     // set circle
     List<CircleVO> circleVOList = new ArrayList<CircleVO>();
@@ -734,7 +763,7 @@ public class JobServiceImpl implements JobService {
     }
 
     // now upload images, trim images and upload them to amazon
-    List<CreateImageResponseDto> imageResponseDtoList = null;
+    List<CreateAttachmentResponseDto> imageResponseDtoList = null;
     if (imgFiles != null && !imgFiles.isEmpty()) {
       imageResponseDtoList = getPostService().postImages(imgFiles, job.getId());
       if (imageResponseDtoList == null || imageResponseDtoList.isEmpty()) {
