@@ -20,7 +20,7 @@ public class UserChangePasswordRequest extends GenericRequest {
     if (valid && StringUtils.isBlank(rePassword)) {
       valid = false;
     }
-    if (valid && rePassword.equals(password)) {
+    if (valid && !rePassword.equals(password)) {
       valid = false;
     }
     return valid;
