@@ -538,7 +538,7 @@ public class UserServiceImpl implements UserService {
     if (StringUtils.isBlank(email)) {
       throw new InValidInputException("Please provide valid email");
     }
-    if (BaseUtil.isValidEmail(email)) {
+    if (!BaseUtil.isValidEmail(email)) {
       throw new InValidInputException("Please provide valid email");
     }
     UserResponse userResponse = findByEmail(email);
