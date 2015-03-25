@@ -660,7 +660,7 @@ public class UserServiceImpl implements UserService {
   private Long getInstituteIdByEmail(String email) {
     Long instituteId = null;
 
-    if (StringUtils.isNotBlank(email) && !BaseUtil.isValidEmail(email)) {
+    if (StringUtils.isNotBlank(email) && BaseUtil.isValidEmail(email)) {
       List<InstituteVO> instituteVOs = getInstituteReadService().getAllInstitute();
       String emailSuffix = email.split("@")[1];
       for (InstituteVO instituteVO : instituteVOs) {
