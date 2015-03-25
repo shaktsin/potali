@@ -91,8 +91,8 @@ public class BaseUtil {
   }
 
   public static String trimContent(String content) {
-    if (content.length() > 150) {
-      return content.substring(0,150)+"...";
+    if (content.length() > 300) {
+      return content.substring(0,300)+"...";
     } else {
       return content+".";
     }
