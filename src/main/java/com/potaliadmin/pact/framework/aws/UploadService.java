@@ -15,13 +15,15 @@ public interface UploadService {
 
   String getCanonicalPathOfResource(String folderName, String fileName);
 
-  String getCanonicalPathOfCloudResource(String publicId, Long version, String format);
+  String getCanonicalPathOfCloudResource(String publicId, Long version, String format, EnumAttachmentType enumAttachmentType);
 
   boolean uploadProfileImageFiles(String secondaryBucketName, List<ImageDto> imageDtoList, boolean shouldDecrypt);
 
   boolean uploadPostImages(Long postId, List<ImageDto> imageDtoList);
 
   Map<String, Object> uploadImageToCloud(Long postId, ImageDto imageDtoList);
+
+  Map<String, Object> uploadImageToCloud(Long postId, Long attachmentId, String relativePath, String path);
 
   Map<String, Object> uploadProfImageToCloud(Long userId, File file);
 

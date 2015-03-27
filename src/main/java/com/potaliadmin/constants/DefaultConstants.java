@@ -42,6 +42,7 @@ public class DefaultConstants
   public static final String PROFILE = "profile";
   public static final String POST = "post";
   public static final String IMAGE = "image";
+  public static final String DOC = "doc";
   public static final String JD ="jd";
 
   public static final String SHARE_SUFFIX = "Shared By OfCampus";

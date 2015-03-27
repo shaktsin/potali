@@ -31,7 +31,8 @@ public class UploadServiceImpl implements UploadService {
 
   private static Logger logger = LoggerFactory.getLogger(UploadServiceImpl.class);
   private static final String AMZ_PATH = "https://s3-ap-southeast-1.amazonaws.com";
-  private static final String CLOUD_PATH = "http://res.cloudinary.com/shaktsin/image/upload/";
+  private static final String CLOUD_IMAGE_PATH = "http://res.cloudinary.com/shaktsin/image/upload/";
+  private static final String CLOUD_DOC_PATH = "http://res.cloudinary.com/shaktsin/raw/upload/";
 
   public static AWSCredentials basicAWSCredentials;
 
@@ -52,8 +53,14 @@ public class UploadServiceImpl implements UploadService {
   }
 
   @Override
-  public String getCanonicalPathOfCloudResource(String publicId, Long version, String format) {
-    return CLOUD_PATH  + "v" + version + DefaultConstants.PATH_SEPARATOR
+  public String getCanonicalPathOfCloudResource(String publicId, Long version, String format, EnumAttachmentType enumAttachmentType) {
+    String primaryPath = CLOUD_IMAGE_PATH;
+    if (enumAttachmentType.getId() == EnumAttachmentType.DOC.getId()) {
+      primaryPath = CLOUD_DOC_PATH;
+      return primaryPath  + "v" + version + DefaultConstants.PATH_SEPARATOR
+          + publicId ;
+    }
+    return primaryPath  + "v" + version + DefaultConstants.PATH_SEPARATOR
         + publicId + DefaultConstants.FILE_EXT_SEPARATOR +format;
   }
 
@@ -146,6 +153,31 @@ public class UploadServiceImpl implements UploadService {
 
       String fileName = imageDto.getCanonicalName();
       File toUpload = new File(fileName);
+      return cloudinary.uploader().upload(toUpload, params);
+
+    } catch (Throwable e) {
+      logger.error("Error occurred while uploading image is cloud",e);
+      throw new PotaliRuntimeException("Error occurred while uploading image is cloud");
+    }
+
+  }
+
+  @Override
+  @SuppressWarnings("unchecked")
+  public Map<String, Object> uploadImageToCloud(Long postId, Long attachmentId, String relativePath, String path) {
+    try {
+      Cloudinary cloudinary = new Cloudinary(Cloudinary.asMap(
+          "cloud_name", getAppProperties().getCloudName(),
+          "api_key", getAppProperties().getCloudApiKey(),
+          "api_secret", getAppProperties().getCloudSecKey()));
+
+      Map params = Cloudinary.asMap("public_id", attachmentId.toString());
+      params.put("use_filename",true);
+      String folder = DefaultConstants.POST + File.separator + relativePath;
+      params.put("folder", folder);
+
+      //String fileName = imageDto.getCanonicalName();
+      File toUpload = new File(path);
       return cloudinary.uploader().upload(toUpload, params);
 
     } catch (Throwable e) {

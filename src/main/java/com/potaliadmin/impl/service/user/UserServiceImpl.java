@@ -1,6 +1,7 @@
 package com.potaliadmin.impl.service.user;
 
 import com.potaliadmin.constants.DefaultConstants;
+import com.potaliadmin.constants.attachment.EnumAttachmentType;
 import com.potaliadmin.constants.attachment.EnumImageFormat;
 import com.potaliadmin.constants.circle.CircleType;
 import com.potaliadmin.domain.circle.Circle;
@@ -23,14 +24,12 @@ import com.potaliadmin.framework.cache.institute.InstituteCache;
 import com.potaliadmin.framework.elasticsearch.BaseESService;
 import com.potaliadmin.framework.elasticsearch.ESSearchFilter;
 import com.potaliadmin.framework.elasticsearch.response.ESSearchResponse;
-import com.potaliadmin.impl.framework.ServiceLocatorFactory;
 import com.potaliadmin.impl.framework.properties.AppProperties;
 import com.potaliadmin.pact.dao.circle.CircleDao;
 import com.potaliadmin.pact.dao.image.AvatarDao;
 import com.potaliadmin.pact.dao.user.UserDao;
 import com.potaliadmin.pact.framework.aws.UploadService;
 import com.potaliadmin.pact.service.cache.MemCacheService;
-import com.potaliadmin.pact.service.circle.CircleService;
 import com.potaliadmin.pact.service.institute.InstituteReadService;
 import com.potaliadmin.pact.service.users.UserService;
 import com.potaliadmin.security.Principal;
@@ -378,7 +377,7 @@ public class UserServiceImpl implements UserService {
         avatar.setVersion(version);
         avatar.setPublicId(pubId);
         avatar.setFormat(EnumImageFormat.getImageFormatByString(format));
-        String imageLink = getUploadService().getCanonicalPathOfCloudResource(pubId, version, format);
+        String imageLink = getUploadService().getCanonicalPathOfCloudResource(pubId, version, format, EnumAttachmentType.IMAGE);
         avatar.setUrl(imageLink);
         avatar.setUserId(user.getId());
         avatar.setUserInstituteId(user.getInstituteId());

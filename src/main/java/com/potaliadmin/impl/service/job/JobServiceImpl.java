@@ -291,7 +291,7 @@ public class JobServiceImpl implements JobService {
       for (CreateAttachmentResponseDto createAttachmentResponseDto : imageResponseDtoList) {
         String imageLink = getUploadService()
             .getCanonicalPathOfCloudResource(createAttachmentResponseDto.getPublicId(), createAttachmentResponseDto.getVersion()
-                , createAttachmentResponseDto.getFormat());
+                , createAttachmentResponseDto.getFormat(), EnumAttachmentType.IMAGE);
         //mageLinks.add(imageLink);
         AttachmentDto attachmentDto = new AttachmentDto();
         attachmentDto.setId(createAttachmentResponseDto.getId());
@@ -308,7 +308,7 @@ public class JobServiceImpl implements JobService {
     // post doc lists
     List<CreateAttachmentResponseDto> docResponseDtoList = null;
     if (jFiles != null && !jFiles.isEmpty()) {
-      docResponseDtoList = getPostService().postRawFiles(imgFiles, job.getId());
+      docResponseDtoList = getPostService().postRawFiles(jFiles, job.getId());
       if (docResponseDtoList == null || docResponseDtoList.isEmpty()) {
         JobResponse jobResponse = new JobResponse();
         jobResponse.setException(Boolean.TRUE);
@@ -325,7 +325,7 @@ public class JobServiceImpl implements JobService {
       for (CreateAttachmentResponseDto createAttachmentResponseDto : docResponseDtoList) {
         String uploadLink = getUploadService()
             .getCanonicalPathOfCloudResource(createAttachmentResponseDto.getPublicId(), createAttachmentResponseDto.getVersion()
-                , createAttachmentResponseDto.getFormat());
+                , createAttachmentResponseDto.getFormat(), EnumAttachmentType.DOC);
         //imageLinks.add(imageLink);
         AttachmentDto attachmentDto = new AttachmentDto();
         attachmentDto.setId(createAttachmentResponseDto.getId());
@@ -784,7 +784,7 @@ public class JobServiceImpl implements JobService {
       for (Attachment attachment : attachmentList) {
         String imageLink = getUploadService()
             .getCanonicalPathOfCloudResource(attachment.getPublicId(), attachment.getVersion()
-                , EnumImageFormat.getImageFormatById(attachment.getFormat()));
+                , EnumImageFormat.getImageFormatById(attachment.getFormat()), EnumAttachmentType.IMAGE);
         //imageMap.put(attachment.getId(), imageLink);
         AttachmentDto attachmentDto = new AttachmentDto();
         attachmentDto.setId(attachment.getId());
@@ -894,6 +894,7 @@ public class JobServiceImpl implements JobService {
     UserDto userDto = new UserDto();
     userDto.setId(userResponse.getId());
     userDto.setName(userResponse.getName());
+    userDto.setImage(userResponse.getImage());
     jobResponse.setUserDto(userDto);
 
     jobResponse.setImages(postVO.getImageList());

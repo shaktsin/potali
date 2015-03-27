@@ -5,7 +5,11 @@ import com.potaliadmin.constants.image.EnumImageSize;
 import com.potaliadmin.domain.attachment.Attachment;
 import com.potaliadmin.impl.framework.BaseDaoImpl;
 import com.potaliadmin.pact.dao.attachment.AttachmentDao;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -15,14 +19,19 @@ import java.util.List;
 @Repository
 public class AttachmentDaoImpl extends BaseDaoImpl implements AttachmentDao {
 
+  private Logger logger = LoggerFactory.getLogger(AttachmentDaoImpl.class);
+
   @Override
+  //@Transactional
   public Attachment createAttachment(EnumAttachmentType enumAttachmentType, String path, EnumImageSize enumImageSize,Long postId) {
     Attachment attachment = new Attachment();
     attachment.setAttachmentType(enumAttachmentType.getId());
     attachment.setSize(enumImageSize.getId());
     attachment.setPath(path);
     attachment.setPostId(postId);
+    logger.info(" type " +  enumAttachmentType.getName() +  " path " + path);
     return (Attachment)save(attachment);
+    //return attachment;
   }
 
   @Override

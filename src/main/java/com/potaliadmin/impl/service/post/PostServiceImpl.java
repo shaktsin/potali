@@ -11,6 +11,8 @@ import com.potaliadmin.constants.reactions.EnumReactions;
 import com.potaliadmin.domain.attachment.Attachment;
 import com.potaliadmin.domain.comment.Comment;
 import com.potaliadmin.domain.reactions.PostReactions;
+import com.potaliadmin.dto.internal.attachment.AttachmentDto;
+import com.potaliadmin.dto.internal.attachment.AttachmentMap;
 import com.potaliadmin.dto.internal.cache.address.CityVO;
 import com.potaliadmin.dto.internal.cache.es.job.*;
 import com.potaliadmin.dto.internal.cache.es.post.PostReactionVO;
@@ -36,6 +38,7 @@ import com.potaliadmin.framework.cache.industry.IndustryRolesCache;
 import com.potaliadmin.framework.elasticsearch.BaseESService;
 import com.potaliadmin.framework.elasticsearch.ESSearchFilter;
 import com.potaliadmin.framework.elasticsearch.response.ESSearchResponse;
+import com.potaliadmin.impl.framework.properties.AppProperties;
 import com.potaliadmin.pact.dao.attachment.AttachmentDao;
 import com.potaliadmin.pact.dao.post.PostCommentDao;
 import com.potaliadmin.pact.dao.post.PostReactionDao;
@@ -46,7 +49,10 @@ import com.potaliadmin.pact.service.post.PostService;
 import com.potaliadmin.pact.service.users.UserService;
 import com.potaliadmin.util.BaseUtil;
 import com.potaliadmin.util.DateUtils;
+import com.potaliadmin.util.image.AttachmentCloudTask;
+import com.potaliadmin.util.image.AttachmentUploaderTask;
 import com.potaliadmin.util.image.ImageNameBuilder;
+import com.potaliadmin.util.image.RawAttachmentCloudTask;
 import com.potaliadmin.vo.BaseElasticVO;
 import com.potaliadmin.vo.circle.CircleVO;
 import com.potaliadmin.vo.comment.CommentVO;
@@ -71,12 +77,8 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.io.File;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.Callable;
-import java.util.concurrent.Future;
+import java.util.*;
+import java.util.concurrent.*;
 
 /**
  * Created by Shakti Singh on 12/28/14.
@@ -102,6 +104,8 @@ public class PostServiceImpl implements PostService {
   UploadService uploadService;
   @Autowired
   AttachmentDao attachmentDao;
+  @Autowired
+  AppProperties appProperties;
 
 
 
@@ -541,17 +545,18 @@ public class PostServiceImpl implements PostService {
     return esSearchResponse.getTotalResults() > 0;
   }
 
-  @Override
+  /*@Override
   @Transactional(propagation = Propagation.REQUIRED)
   public List<CreateAttachmentResponseDto> postImages(List<FormDataBodyPart> imageList, final Long postId) {
     boolean isUploadSuccessful = false;
     List<CreateAttachmentResponseDto> createAttachmentResponseDtoList = new ArrayList<CreateAttachmentResponseDto>();
+    List<ImageDto> imageDtoList = new ArrayList<ImageDto>();
 
     for (final FormDataBodyPart image : imageList) {
 
-      Future<CreateAttachmentResponseDto> future = FileUploadService.EXECUTOR_SERVICE.submit(new Callable<CreateAttachmentResponseDto>() {
+      Future<ImageDto> future = FileUploadService.EXECUTOR_SERVICE.submit(new Callable<ImageDto>() {
         @Override
-        public CreateAttachmentResponseDto call() throws Exception {
+        public ImageDto call() throws Exception {
           List<FormDataBodyPart> formDataBodyParts = new ArrayList<FormDataBodyPart>();
           formDataBodyParts.add(image);
           boolean isUploadedToDisk = getFileUploadService().uploadFiles(formDataBodyParts, postId, EnumAttachmentType.IMAGE);
@@ -569,57 +574,274 @@ public class PostServiceImpl implements PostService {
               .addFileName(image.getContentDisposition().getFileName())
               .addSize(EnumImageSize.FIT).build();
 
+          return imageDto;
+
+        }
+      });
+
+
+      try {
+        ImageDto imageDto = future.get();
+        if (imageDto != null) {
+          logger.info("Image is uploaded to server" + imageDto.getFileName());
+          imageDtoList.add(imageDto);
+
           String path = imageDto.getRelativePath() + File.separator + imageDto.getFileName();
 
           Attachment attachment = getAttachmentDao()
               .createAttachment(EnumAttachmentType.IMAGE, path, EnumImageSize.getImageSizeById(imageDto.getSize()), postId);
 
+          //attachment = (Attachment) getAttachmentDao().save(attachment);
+
           imageDto.setAttachmentId(attachment.getId());
+          imageDtoList.add(imageDto);
 
-          Map<String,Object> map = getUploadService().uploadImageToCloud(postId, imageDto);
-          attachment.setWidth(((Long)map.get("width")).intValue());
-          attachment.setHeight(((Long) map.get("height")).intValue());
-          attachment.setVersion((Long) map.get("version"));
-          attachment.setPublicId((String) map.get("public_id"));
-          attachment.setFormat(EnumImageFormat.getImageFormatByString((String) map.get("format")));
-          attachment = (Attachment) getAttachmentDao().save(attachment);
-
-          //attachmentList.add(attachment);
-
-          CreateAttachmentResponseDto createAttachmentResponseDto = null;
-          if (attachment != null) {
-            createAttachmentResponseDto = new CreateAttachmentResponseDto();
-            createAttachmentResponseDto.setPath(attachment.getPath());
-            createAttachmentResponseDto.setEnumImageSize(EnumImageSize.getImageSizeById(attachment.getSize()));
-            createAttachmentResponseDto.setId(attachment.getId());
-            createAttachmentResponseDto.setFormat(EnumImageFormat.getImageFormatById(attachment.getFormat()));
-            createAttachmentResponseDto.setPublicId(attachment.getPublicId());
-            createAttachmentResponseDto.setVersion(attachment.getVersion());
-          }
-
-          return createAttachmentResponseDto;
-        }
-      });
-
-      //TODO should we use timeout here, evaluate later
-
-      try {
-        CreateAttachmentResponseDto attachmentResponseDto = future.get();
-        if (attachmentResponseDto != null) {
-          logger.info("Uploaded file for post" + postId);
-          createAttachmentResponseDtoList.add(attachmentResponseDto);
         }
       } catch (Exception e) {
         logger.error("Async upload for docs failed for post "+postId,e);
       }
+
+      for (final ImageDto imageDto : imageDtoList) {
+
+        Future<CreateAttachmentResponseDto> futureCloud = FileUploadService.EXECUTOR_SERVICE.submit(new Callable<CreateAttachmentResponseDto>() {
+          @Override
+          public CreateAttachmentResponseDto call() throws Exception {
+            Map<String,Object> map = getUploadService().uploadImageToCloud(postId, imageDto);
+
+            Attachment attachment = getAttachmentDao().get(Attachment.class, imageDto.getAttachmentId());
+            attachment.setWidth(((Long) map.get("width")).intValue());
+            attachment.setHeight(((Long) map.get("height")).intValue());
+            attachment.setVersion((Long) map.get("version"));
+            attachment.setPublicId((String) map.get("public_id"));
+            attachment.setFormat(EnumImageFormat.getImageFormatByString((String) map.get("format")));
+            attachment = (Attachment) getAttachmentDao().save(attachment);
+
+            //attachmentList.add(attachment);
+
+            CreateAttachmentResponseDto createAttachmentResponseDto = null;
+            if (attachment != null) {
+              createAttachmentResponseDto = new CreateAttachmentResponseDto();
+              createAttachmentResponseDto.setPath(attachment.getPath());
+              createAttachmentResponseDto.setEnumImageSize(EnumImageSize.getImageSizeById(attachment.getSize()));
+              createAttachmentResponseDto.setId(attachment.getId());
+              createAttachmentResponseDto.setFormat(EnumImageFormat.getImageFormatById(attachment.getFormat()));
+              createAttachmentResponseDto.setPublicId(attachment.getPublicId());
+              createAttachmentResponseDto.setVersion(attachment.getVersion());
+            }
+
+            return createAttachmentResponseDto;
+
+          }
+        });
+
+        try {
+          CreateAttachmentResponseDto createAttachmentResponseDto = futureCloud.get();
+          if (createAttachmentResponseDto != null) {
+            createAttachmentResponseDtoList.add(createAttachmentResponseDto);
+          }
+        } catch (Exception e) {
+          logger.error("Async upload for docs failed for post "+postId,e);
+        }
+
+      }
+
+
 
     }
 
 
     return createAttachmentResponseDtoList;
   }
-
+*/
   @Override
+  @Transactional(propagation = Propagation.REQUIRED)
+  public List<CreateAttachmentResponseDto> postImages(List<FormDataBodyPart> imageList, final Long postId) {
+    int size = imageList.size();
+    List<CreateAttachmentResponseDto> createAttachmentResponseDtoList = new ArrayList<CreateAttachmentResponseDto>();
+    ExecutorService executorService = Executors.newFixedThreadPool(size+size);
+    //List<Attachment> attachmentList = new ArrayList<Attachment>();
+    List<AttachmentMap> attachmentMapList = new ArrayList<AttachmentMap>();
+    List<Callable<AttachmentDto>> uploaderTasks = new ArrayList<Callable<AttachmentDto>>();
+    for (FormDataBodyPart formDataBodyPart : imageList) {
+      String uploadPath = appProperties.getUploadPicPath();
+      uploaderTasks.add(new AttachmentUploaderTask(formDataBodyPart, uploadPath, postId, EnumAttachmentType.IMAGE));
+    }
+    //Important - Not using CompletionService executor as it main thread in non blocking queue as soon as
+    // one threads completes
+    // hence using Normal executor method
+    //CompletionService<AttachmentDto> uploadCompletionTasks = new ExecutorCompletionService<AttachmentDto>(executorService);
+    Set<Future<AttachmentDto>> uploadCompletionTasks = new HashSet<Future<AttachmentDto>>();
+
+    // first upload to server
+    try {
+      for (Callable<AttachmentDto> task : uploaderTasks) {
+        uploadCompletionTasks.add(executorService.submit(task));
+      }
+
+      for (Future<AttachmentDto> attachmentDtoFuture : uploadCompletionTasks) {
+        //Future<AttachmentDto> attachmentDtoFuture = uploadCompletionTasks.take();
+        AttachmentDto attachmentDto = attachmentDtoFuture.get();
+        if (attachmentDto.getUploaded()) {
+          String path = attachmentDto.getRelativePath() + File.separator + attachmentDto.getFileName();
+
+          Attachment attachment = getAttachmentDao()
+              .createAttachment(EnumAttachmentType.IMAGE, path,
+                  EnumImageSize.FIT, postId);
+
+          //attachmentList.add(attachment);
+          AttachmentMap attachmentMap = new AttachmentMap();
+          attachmentMap.setAttachment(attachment);
+          attachmentMap.setAttachmentDto(attachmentDto);
+          attachmentMapList.add(attachmentMap);
+        }
+
+      }
+
+
+    } catch (Exception e) {
+      logger.error("Error in uploading images ",e);
+    }
+
+    // now upload attachments to cloudinary
+    List<Callable<Attachment>> cloudTasks = new ArrayList<Callable<Attachment>>();
+    for (AttachmentMap attachmentMap : attachmentMapList) {
+      String cloudName = appProperties.getCloudName();
+      String apiKey = appProperties.getCloudApiKey();
+      String apiSecret = appProperties.getCloudSecKey();
+      String relativePath = attachmentMap.getAttachmentDto().getRelativePath();
+      String path = attachmentMap.getAttachmentDto().getAbsolutePath() + File.separator +
+          attachmentMap.getAttachmentDto().getFileName();
+
+      Attachment attachment = attachmentMap.getAttachment();
+      cloudTasks.add(new AttachmentCloudTask(cloudName,apiKey,apiSecret,relativePath,path, attachment));
+    }
+
+    //CompletionService<Attachment> cloudCompletionTasks = new ExecutorCompletionService<Attachment>(executorService);
+    Set<Future<Attachment>> cloudCompletionTasks = new HashSet<Future<Attachment>>();
+    try {
+      for (Callable<Attachment> task : cloudTasks) {
+        cloudCompletionTasks.add(executorService.submit(task));
+      }
+
+      for (Future<Attachment> attachmentFuture : cloudCompletionTasks) {
+        //Future<Attachment> attachmentFuture = cloudCompletionTasks.take();
+
+        Attachment attachment = (Attachment) getAttachmentDao().save(attachmentFuture.get());
+        CreateAttachmentResponseDto createAttachmentResponseDto = null;
+        if (attachment != null) {
+          createAttachmentResponseDto = new CreateAttachmentResponseDto();
+          createAttachmentResponseDto.setPath(attachment.getPath());
+          createAttachmentResponseDto.setEnumImageSize(EnumImageSize.getImageSizeById(attachment.getSize()));
+          createAttachmentResponseDto.setId(attachment.getId());
+          createAttachmentResponseDto.setFormat(EnumImageFormat.getImageFormatById(attachment.getFormat()));
+          createAttachmentResponseDto.setPublicId(attachment.getPublicId());
+          createAttachmentResponseDto.setVersion(attachment.getVersion());
+        }
+        createAttachmentResponseDtoList.add(createAttachmentResponseDto);
+      }
+    } catch (Exception e) {
+      logger.error("Error in uploading images ",e);
+    }
+
+
+    executorService.shutdown();
+    return createAttachmentResponseDtoList;
+  }
+
+  public List<CreateAttachmentResponseDto> postRawFiles(List<FormDataBodyPart> docList, final Long postId) {
+    int size = docList.size();
+    List<CreateAttachmentResponseDto> createAttachmentResponseDtoList = new ArrayList<CreateAttachmentResponseDto>();
+    ExecutorService executorService = Executors.newFixedThreadPool(size+size);
+    //List<Attachment> attachmentList = new ArrayList<Attachment>();
+    List<AttachmentMap> attachmentMapList = new ArrayList<AttachmentMap>();
+    List<Callable<AttachmentDto>> uploaderTasks = new ArrayList<Callable<AttachmentDto>>();
+    for (FormDataBodyPart formDataBodyPart : docList) {
+      String uploadPath = appProperties.getUploadPicPath();
+      uploaderTasks.add(new AttachmentUploaderTask(formDataBodyPart, uploadPath, postId, EnumAttachmentType.DOC));
+    }
+    //Important - Not using CompletionService executor as it main thread in non blocking queue as soon as
+    // one threads completes
+    // hence using Normal executor method
+    //CompletionService<AttachmentDto> uploadCompletionTasks = new ExecutorCompletionService<AttachmentDto>(executorService);
+    Set<Future<AttachmentDto>> uploadCompletionTasks = new HashSet<Future<AttachmentDto>>();
+
+    // first upload to server
+    try {
+      for (Callable<AttachmentDto> task : uploaderTasks) {
+        uploadCompletionTasks.add(executorService.submit(task));
+      }
+
+      for (Future<AttachmentDto> attachmentDtoFuture : uploadCompletionTasks) {
+        //Future<AttachmentDto> attachmentDtoFuture = uploadCompletionTasks.take();
+        AttachmentDto attachmentDto = attachmentDtoFuture.get();
+        if (attachmentDto.getUploaded()) {
+          String path = attachmentDto.getRelativePath() + File.separator + attachmentDto.getFileName();
+
+          Attachment attachment = getAttachmentDao()
+              .createAttachment(EnumAttachmentType.DOC, path,
+                  EnumImageSize.FIT, postId);
+
+          //attachmentList.add(attachment);
+          AttachmentMap attachmentMap = new AttachmentMap();
+          attachmentMap.setAttachment(attachment);
+          attachmentMap.setAttachmentDto(attachmentDto);
+          attachmentMapList.add(attachmentMap);
+        }
+
+      }
+
+
+    } catch (Exception e) {
+      logger.error("Error in uploading images ",e);
+    }
+
+    // now upload attachments to cloudinary
+    List<Callable<Attachment>> cloudTasks = new ArrayList<Callable<Attachment>>();
+    for (AttachmentMap attachmentMap : attachmentMapList) {
+      String cloudName = appProperties.getCloudName();
+      String apiKey = appProperties.getCloudApiKey();
+      String apiSecret = appProperties.getCloudSecKey();
+      String relativePath = attachmentMap.getAttachmentDto().getRelativePath();
+      String path = attachmentMap.getAttachmentDto().getAbsolutePath() + File.separator +
+          attachmentMap.getAttachmentDto().getFileName();
+
+      Attachment attachment = attachmentMap.getAttachment();
+      cloudTasks.add(new RawAttachmentCloudTask(cloudName,apiKey,apiSecret,relativePath,path, attachment));
+    }
+
+    //CompletionService<Attachment> cloudCompletionTasks = new ExecutorCompletionService<Attachment>(executorService);
+    Set<Future<Attachment>> cloudCompletionTasks = new HashSet<Future<Attachment>>();
+    try {
+      for (Callable<Attachment> task : cloudTasks) {
+        cloudCompletionTasks.add(executorService.submit(task));
+      }
+
+      for (Future<Attachment> attachmentFuture : cloudCompletionTasks) {
+        //Future<Attachment> attachmentFuture = cloudCompletionTasks.take();
+
+        Attachment attachment = (Attachment) getAttachmentDao().save(attachmentFuture.get());
+        CreateAttachmentResponseDto createAttachmentResponseDto = null;
+        if (attachment != null) {
+          createAttachmentResponseDto = new CreateAttachmentResponseDto();
+          createAttachmentResponseDto.setPath(attachment.getPath());
+          createAttachmentResponseDto.setEnumImageSize(EnumImageSize.getImageSizeById(attachment.getSize()));
+          createAttachmentResponseDto.setId(attachment.getId());
+          createAttachmentResponseDto.setFormat(EnumImageFormat.getImageFormatById(attachment.getFormat()));
+          createAttachmentResponseDto.setPublicId(attachment.getPublicId());
+          createAttachmentResponseDto.setVersion(attachment.getVersion());
+        }
+        createAttachmentResponseDtoList.add(createAttachmentResponseDto);
+      }
+    } catch (Exception e) {
+      logger.error("Error in uploading images ",e);
+    }
+
+
+    executorService.shutdown();
+    return createAttachmentResponseDtoList;
+  }
+
+ /* @Override
   public List<CreateAttachmentResponseDto> postRawFiles(List<FormDataBodyPart> docList, final Long postId) {
     int numFiles = docList.size();
     int uploadCount = 0;
@@ -687,7 +909,7 @@ public class PostServiceImpl implements PostService {
 
     }
     return createAttachmentResponseDtoList;
-  }
+  }*/
 
   @Override
   public PostFiltersResponse getPostFilters() {
