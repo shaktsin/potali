@@ -36,6 +36,12 @@ public class GenericPostResponse extends GenericBaseResponse {
   private List<CircleDto> circleDtoList;
   private CommentListResponse commentListResponse;
   private List<AttachmentDto> attachmentDtoList;
+  private long numReplies;
+  private long numShared;
+  private long numHides;
+  private long numImportant;
+  private long numSpam;
+  private long numComment;
   //private Map<Long, String> imageMap;
 
 
@@ -62,6 +68,7 @@ public class GenericPostResponse extends GenericBaseResponse {
 
     this.setPostedOn(DateUtils.getPostedOnDate(genericPostVO.getCreatedDate()));
     this.setContent(BaseUtil.trimContent(genericPostVO.getContent()));
+
 
     // set User
     //UserResponse postUser = getUserService().findById(fullJobVO.getUserId());
@@ -118,6 +125,13 @@ public class GenericPostResponse extends GenericBaseResponse {
         circleDtos.add(circleDto);
       }
     }
+
+    this.setNumComment(postVO.getNumComment());
+    this.setNumHides(postVO.getNumHides());
+    this.setNumImportant(postVO.getNumImportant());
+    this.setNumReplies(postVO.getNumReplies());
+    this.setNumShared(postVO.getNumShared());
+    this.setNumSpam(postVO.getNumSpam());
 
 
     this.setCircleDtoList(circleDtos);
@@ -226,5 +240,53 @@ public class GenericPostResponse extends GenericBaseResponse {
 
   public void setAttachmentDtoList(List<AttachmentDto> attachmentDtoList) {
     this.attachmentDtoList = attachmentDtoList;
+  }
+
+  public long getNumReplies() {
+    return numReplies;
+  }
+
+  public void setNumReplies(long numReplies) {
+    this.numReplies = numReplies;
+  }
+
+  public long getNumShared() {
+    return numShared;
+  }
+
+  public void setNumShared(long numShared) {
+    this.numShared = numShared;
+  }
+
+  public long getNumHides() {
+    return numHides;
+  }
+
+  public void setNumHides(long numHides) {
+    this.numHides = numHides;
+  }
+
+  public long getNumImportant() {
+    return numImportant;
+  }
+
+  public void setNumImportant(long numImportant) {
+    this.numImportant = numImportant;
+  }
+
+  public long getNumSpam() {
+    return numSpam;
+  }
+
+  public void setNumSpam(long numSpam) {
+    this.numSpam = numSpam;
+  }
+
+  public long getNumComment() {
+    return numComment;
+  }
+
+  public void setNumComment(long numComment) {
+    this.numComment = numComment;
   }
 }

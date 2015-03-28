@@ -185,12 +185,12 @@ public class JobResources {
   @RequiresAuthentication
   public JobResponse editJob(@FormDataParam("jobs") FormDataBodyPart jobs,
                       @FormDataParam("iFile") List<FormDataBodyPart> imgFiles,
-                      @FormDataParam("jFile") FormDataBodyPart jFile
+                      @FormDataParam("jFile") List<FormDataBodyPart> jFiles
       ) {
     try {
       JobEditRequest jobEditRequest = (JobEditRequest)
           InputParserUtil.parseMultiPartObject(jobs.getValue(), JobEditRequest.class);
-      return getJobService().editJob(jobEditRequest, imgFiles, jFile);
+      return getJobService().editJob(jobEditRequest, imgFiles, jFiles);
     } catch (Exception e) {
       JobResponse jobResponse = new JobResponse();
       jobResponse.setException(Boolean.TRUE);

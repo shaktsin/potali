@@ -39,6 +39,13 @@ public class PostVO extends BaseElasticVO {
   private List<String> imageList;
   private List<CircleVO> circleList;
   private List<AttachmentDto> attachmentDtoList;
+  private long numReplies;
+  private long numShared;
+  private long numHides;
+  private long numImportant;
+  private long numSpam;
+  private long numComment;
+
   //Map<Long, String> imageMap;
 
   public PostVO() {}
@@ -186,5 +193,53 @@ public class PostVO extends BaseElasticVO {
 
   public void setAttachmentDtoList(List<AttachmentDto> attachmentDtoList) {
     this.attachmentDtoList = attachmentDtoList;
+  }
+
+  public long getNumReplies() {
+    return numReplies;
+  }
+
+  public void setNumReplies(long numReplies) {
+    this.numReplies = numReplies;
+  }
+
+  public long getNumShared() {
+    return numShared;
+  }
+
+  public void setNumShared(long numShared) {
+    this.numShared = numShared;
+  }
+
+  public long getNumHides() {
+    return numHides;
+  }
+
+  public void setNumHides(long numHides) {
+    this.numHides = numHides;
+  }
+
+  public long getNumImportant() {
+    return numImportant;
+  }
+
+  public void setNumImportant(long numImportant) {
+    this.numImportant = numImportant;
+  }
+
+  public long getNumSpam() {
+    return numSpam;
+  }
+
+  public void setNumSpam(long numSpam) {
+    this.numSpam = numSpam;
+  }
+
+  public long getNumComment() {
+    return numComment;
+  }
+
+  public void setNumComment(long numComment) {
+    this.numComment = numComment;
   }
 }

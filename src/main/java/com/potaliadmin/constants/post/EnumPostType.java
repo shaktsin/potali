@@ -9,7 +9,8 @@ public enum  EnumPostType {
 
   JOBS(0, "job", FullJobVO.class),
   CLASSIFIED(1, "classifieds", null),
-  MEETUPS(2, "meetups", null);
+  MEETUPS(2, "meetups", null),
+  NEWSFEED(3, "newsfeed", null);
 
   private int id;
   private String name;

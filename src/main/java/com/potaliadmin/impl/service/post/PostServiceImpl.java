@@ -153,7 +153,15 @@ public class PostServiceImpl implements PostService {
       // for comments and other things do something else
       //genericPostReactionResponse.setSuccess(published);
       if (published) {
-        return generatePostReactionResponse(postVO, postReactionVO);
+        GenericPostReactionResponse genericPostReactionResponse = generatePostReactionResponse(postVO, postReactionVO);
+        published = getBaseESService().put(postVO);
+        if (published) {
+          return genericPostReactionResponse;
+        } else {
+          getBaseESService().delete(postReactions.getId(), PostReactionVO.class);
+          throw new PotaliRuntimeException("Some exception occurred, please try again");
+        }
+
       } else {
         GenericPostReactionResponse genericPostReactionResponse = new GenericPostReactionResponse();
         genericPostReactionResponse.setSuccess(Boolean.FALSE);
@@ -256,6 +264,11 @@ public class PostServiceImpl implements PostService {
       commentResponse.setUserDto(userDto);
       commentResponse.setPostId(Long.parseLong(commentVO.getParentId()));
       commentResponse.setCommentedOn(DateUtils.getPostedOnDate(commentVO.getCommentedOn()));
+
+      // final publish how many comments
+      postVO.setNumComment(postVO.getNumComment() + 1);
+      getBaseESService().put(postVO);
+
       return commentResponse;
     } else {
       CommentResponse commentResponse = new CommentResponse();
@@ -963,6 +976,13 @@ public class PostServiceImpl implements PostService {
       throw new UnAuthorizedAccessException("UnAuthorized Action!");
     }
 
+
+    // first check if there is any post of this ID
+    PostVO postVO = (PostVO) getBaseESService().get(postReactionRequest.getPostId(), null , PostVO.class);
+    if (postVO == null) {
+      throw new PotaliRuntimeException("NO POST FOUND FOR POST ID "+postReactionRequest.getPostId());
+    }
+
     Long reactionId = EnumReactions.MARK_AS_IMPORTANT.getId();
     if (postReactionRequest.getActionId().equals(EnumReactions.MARK_AS_UN_IMPORTANT.getId())) {
       reactionId = EnumReactions.MARK_AS_IMPORTANT.getId();
@@ -1002,6 +1022,16 @@ public class PostServiceImpl implements PostService {
     if (!published) {
       throw new PotaliRuntimeException("Something went wrong! Please try again!");
     }
+
+    if (EnumReactions.HIDE_THIS_POST.getId().equals(reactionId)) {
+      postVO.setNumHides(postVO.getNumHides() - 1);
+    }
+
+    if (EnumReactions.MARK_AS_IMPORTANT.getId().equals(reactionId)) {
+      postVO.setNumImportant(postVO.getNumImportant() - 1);
+    }
+
+    getBaseESService().put(postVO);
 
     GenericPostReactionResponse genericPostReactionResponse = new GenericPostReactionResponse();
     genericPostReactionResponse.setSuccess(published);
@@ -1281,16 +1311,19 @@ public class PostServiceImpl implements PostService {
       ReplyEmailReactionResponse replyEmailReactionResponse = new ReplyEmailReactionResponse();
       replyEmailReactionResponse.setSuccess(true);
       replyEmailReactionResponse.setReplyEmail(postVO.getReplyEmail());
+      postVO.setNumReplies(postVO.getNumReplies() +  1);
       return replyEmailReactionResponse;
     } else if (EnumReactions.REPLY_VIA_PHONE.getId().equals(postReactionVO.getReactionId())) {
       ReplyPhoneEmailReactionResponse replyPhoneEmailReactionResponse = new ReplyPhoneEmailReactionResponse();
       replyPhoneEmailReactionResponse.setSuccess(true);
       replyPhoneEmailReactionResponse.setReplyPhone(postVO.getReplyPhone());
+      postVO.setNumReplies(postVO.getNumReplies() +  1);
       return replyPhoneEmailReactionResponse;
     } else if (EnumReactions.REPLY_VIA_WATSAPP.getId().equals(postReactionVO.getReactionId())) {
       ReplyWatsAppReactionResponse replyWatsAppReactionResponse = new ReplyWatsAppReactionResponse();
       replyWatsAppReactionResponse.setSuccess(true);
       replyWatsAppReactionResponse.setWatsApp(postVO.getReplyWatsApp());
+      postVO.setNumReplies(postVO.getNumReplies() +  1);
       return replyWatsAppReactionResponse;
     } else if (EnumReactions.SHARE_VIA_EMAIL.getId().equals(postReactionVO.getReactionId()) ||
         EnumReactions.SHARE_VIA_PHONE.getId().equals(postReactionVO.getReactionId()) ||
@@ -1299,14 +1332,30 @@ public class PostServiceImpl implements PostService {
       ShareReactionResponse shareReactionResponse = new ShareReactionResponse();
       shareReactionResponse.setSuccess(true);
       shareReactionResponse.setContent(postVO.getContent());
+      postVO.setNumShared(postVO.getNumShared() + 1);
       return shareReactionResponse;
 
     } else if (EnumReactions.COMMENT.getId().equals(postReactionVO.getReactionId())) {
       CommentPostReactionResponse commentPostReactionResponse = new CommentPostReactionResponse();
       commentPostReactionResponse.setSuccess(true);
       commentPostReactionResponse.setPostReactionId(postReactionVO.getId());
+      postVO.setNumComment(postVO.getNumComment() + 1);
       return commentPostReactionResponse;
     } else {
+
+      if (EnumReactions.HIDE_THIS_POST.getId().equals(postReactionVO.getId())) {
+        postVO.setNumHides(postVO.getNumHides() + 1);
+      }
+
+      if (EnumReactions.MARK_AS_IMPORTANT.getId().equals(postReactionVO.getId())) {
+        postVO.setNumImportant(postVO.getNumImportant() + 1);
+      }
+
+
+      if (EnumReactions.MARK_AS_SPAM.getId().equals(postReactionVO.getId())) {
+        postVO.setNumSpam(postVO.getNumSpam() + 1);
+      }
+
       GenericPostReactionResponse genericPostReactionResponse = new GenericPostReactionResponse();
       genericPostReactionResponse.setSuccess(true);
       return genericPostReactionResponse;

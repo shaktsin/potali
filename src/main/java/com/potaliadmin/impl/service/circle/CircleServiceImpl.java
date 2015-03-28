@@ -401,6 +401,7 @@ public class CircleServiceImpl implements CircleService {
   }
 
   @Override
+  @Transactional
   public GenericSuccessResponse unJoinCircle(CircleJoinRequest circleJoinRequest) {
     if (!circleJoinRequest.validate()) {
       throw new InValidInputException("Invalid input");

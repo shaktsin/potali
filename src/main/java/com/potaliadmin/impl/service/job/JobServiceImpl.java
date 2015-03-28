@@ -722,7 +722,7 @@ public class JobServiceImpl implements JobService {
 
   @Override
   @Transactional
-  public JobResponse editJob(JobEditRequest jobEditRequest,List<FormDataBodyPart> imgFiles,FormDataBodyPart jFile) {
+  public JobResponse editJob(JobEditRequest jobEditRequest,List<FormDataBodyPart> imgFiles,List<FormDataBodyPart> jFiles) {
     if (!jobEditRequest.validate()) {
       throw new InValidInputException("Please input valid request");
     }
@@ -793,6 +793,41 @@ public class JobServiceImpl implements JobService {
       }
       //postVO.setImageMap(imageMap);
       postVO.setAttachmentDtoList(attachmentDtoList);
+    }
+
+    // post doc lists
+    List<CreateAttachmentResponseDto> docResponseDtoList = null;
+    if (jFiles != null && !jFiles.isEmpty()) {
+      docResponseDtoList = getPostService().postRawFiles(jFiles, job.getId());
+      if (docResponseDtoList == null || docResponseDtoList.isEmpty()) {
+        JobResponse jobResponse = new JobResponse();
+        jobResponse.setException(Boolean.TRUE);
+        jobResponse.addMessage("Some Internal Exception Occurred!");
+        return jobResponse;
+      }
+    }
+
+    // set images link
+    if (docResponseDtoList != null) {
+      //List<String> imageLinks = new ArrayList<String>();
+      List<AttachmentDto> attachmentDtoList = new ArrayList<AttachmentDto>();
+      //Map<Long, String> imageMap = new HashMap<Long, String>();
+      for (CreateAttachmentResponseDto createAttachmentResponseDto : docResponseDtoList) {
+        String uploadLink = getUploadService()
+            .getCanonicalPathOfCloudResource(createAttachmentResponseDto.getPublicId(), createAttachmentResponseDto.getVersion()
+                , createAttachmentResponseDto.getFormat(), EnumAttachmentType.DOC);
+        //imageLinks.add(imageLink);
+        AttachmentDto attachmentDto = new AttachmentDto();
+        attachmentDto.setId(createAttachmentResponseDto.getId());
+        attachmentDto.setUrl(uploadLink);
+        attachmentDto.setAttachmentType(EnumAttachmentType.DOC.getName());
+        attachmentDtoList.add(attachmentDto);
+
+        //imageMap.put(createImageResponseDto.getId(), imageLink);
+      }
+      //postVO.setImageList(imageLinks);
+      postVO.setAttachmentDtoList(attachmentDtoList);
+      //postVO.setImageMap(imageMap);
     }
 
     List<CircleVO> circleVOList = new ArrayList<CircleVO>();
@@ -900,6 +935,12 @@ public class JobServiceImpl implements JobService {
     jobResponse.setImages(postVO.getImageList());
     jobResponse.setAttachmentDtoList(postVO.getAttachmentDtoList());
     //jobResponse.setImageMap(postVO.getImageMap());
+    jobResponse.setNumImportant(postVO.getNumImportant());
+    jobResponse.setNumSpam(postVO.getNumSpam());
+    jobResponse.setNumHides(postVO.getNumHides());
+    jobResponse.setNumComment(postVO.getNumComment());
+    jobResponse.setNumShared(postVO.getNumShared());
+    jobResponse.setNumReplies(postVO.getNumReplies());
 
     List<CircleVO> circleVOs = postVO.getCircleList();
 
