@@ -91,5 +91,21 @@
         <url-pattern>/*</url-pattern>
     </filter-mapping>
 
+    <!--CharsetFilter start-->
+
+    <filter>
+        <filter-name>CharsetFilter</filter-name>
+        <filter-class>com.potaliadmin.web.filters.CharsetFilter</filter-class>
+        <init-param>
+            <param-name>requestEncoding</param-name>
+            <param-value>UTF-8</param-value>
+        </init-param>
+    </filter>
+
+    <filter-mapping>
+        <filter-name>CharsetFilter</filter-name>
+        <url-pattern>/*</url-pattern>
+    </filter-mapping>
+
 
 </web-app>
