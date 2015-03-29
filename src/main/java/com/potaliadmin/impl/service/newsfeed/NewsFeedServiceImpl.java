@@ -475,6 +475,8 @@ public class NewsFeedServiceImpl implements NewsFeedService {
 
     NewsFeedSearchResponse newsFeedSearchResponse= new NewsFeedSearchResponse();
     AndFilterBuilder andFilterBuilder = new AndFilterBuilder();
+    andFilterBuilder.add(FilterBuilders.termFilter("postType", EnumPostType.NEWSFEED.getId()));
+
     andFilterBuilder.add(FilterBuilders.termFilter("userInstituteId", userResponse.getInstituteId()));
     // load more
     if (searchOperation != null && postId != null) {

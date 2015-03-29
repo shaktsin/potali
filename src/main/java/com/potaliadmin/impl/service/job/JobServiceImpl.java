@@ -443,6 +443,9 @@ public class JobServiceImpl implements JobService {
 
     JobSearchResponse jobSearchResponse= new JobSearchResponse();
     AndFilterBuilder andFilterBuilder = new AndFilterBuilder();
+
+    andFilterBuilder.add(FilterBuilders.termFilter("postType", EnumPostType.JOBS.getId()));
+
     andFilterBuilder.add(FilterBuilders.termFilter("userInstituteId", userResponse.getInstituteId()));
     // load more
     if (searchOperation != null && postId != null) {
