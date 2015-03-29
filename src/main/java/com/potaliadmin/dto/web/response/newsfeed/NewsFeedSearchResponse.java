@@ -10,18 +10,18 @@ import java.util.List;
  * Created by shaktsin on 3/28/15.
  */
 public class NewsFeedSearchResponse extends GenericBaseResponse {
-  private List<GenericPostResponse> jobCreateResponseList;
+  private List<GenericPostResponse> newsfeedList;
   private List<CityDto> cityDtoList;
   private long totalResults;
   private long pageNo;
   private long perPage;
 
-  public List<GenericPostResponse> getJobCreateResponseList() {
-    return jobCreateResponseList;
+  public List<GenericPostResponse> getNewsfeedList() {
+    return newsfeedList;
   }
 
-  public void setJobCreateResponseList(List<GenericPostResponse> jobCreateResponseList) {
-    this.jobCreateResponseList = jobCreateResponseList;
+  public void setNewsfeedList(List<GenericPostResponse> newsfeedList) {
+    this.newsfeedList = newsfeedList;
   }
 
   public List<CityDto> getCityDtoList() {

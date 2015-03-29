@@ -519,7 +519,7 @@ public class NewsFeedServiceImpl implements NewsFeedService {
       genericPostResponse.setImportant(isImp);
       genericPostResponseList.add(genericPostResponse);
     }
-    newsFeedSearchResponse.setJobCreateResponseList(genericPostResponseList);
+    newsFeedSearchResponse.setNewsfeedList(genericPostResponseList);
     newsFeedSearchResponse.setTotalResults(esSearchResponse.getTotalResults());
     newsFeedSearchResponse.setPerPage(perPage);
     newsFeedSearchResponse.setPageNo(pageNo);
