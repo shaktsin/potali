@@ -1,5 +1,6 @@
 package com.potaliadmin.dto.web.request.newsfeed;
 
+import com.potaliadmin.constants.DefaultConstants;
 import com.potaliadmin.constants.query.EnumSearchOperation;
 import com.potaliadmin.dto.web.request.framework.GenericRequest;
 
@@ -48,6 +49,9 @@ public class NewsFeedSearchRequest extends GenericRequest {
   }
 
   public int getPerPage() {
+    if (perPage == 0) {
+      return DefaultConstants.AND_APP_PER_PAGE;
+    }
     return perPage;
   }
 
@@ -56,10 +60,9 @@ public class NewsFeedSearchRequest extends GenericRequest {
   }
 
   public int getPageNo() {
+    if (pageNo == 0) {
+      return DefaultConstants.AND_APP_PAGE_NO;
+    }
     return pageNo;
-  }
-
-  public void setPageNo(int pageNo) {
-    this.pageNo = pageNo;
   }
 }
