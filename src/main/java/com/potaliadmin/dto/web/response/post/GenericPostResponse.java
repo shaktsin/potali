@@ -83,6 +83,7 @@ public class GenericPostResponse extends GenericBaseResponse {
   public GenericPostResponse(PostVO postVO, UserResponse postUser) {
     this.setPostId(postVO.getPostId());
     this.setSubject(postVO.getSubject());
+    this.postType = postVO.getPostType();
 
     ReplyDto replyDto = new ReplyDto(-1, -1, -1);
     if (StringUtils.isNotBlank(postVO.getReplyEmail())) {
