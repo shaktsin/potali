@@ -2,17 +2,20 @@ package com.potaliadmin.impl.service.cache;
 
 import com.potaliadmin.constants.cluster.EnumCluster;
 import com.potaliadmin.domain.address.City;
+import com.potaliadmin.domain.classified.PrimaryCategory;
 import com.potaliadmin.domain.cluster.CacheCluster;
 import com.potaliadmin.domain.industry.Industry;
 import com.potaliadmin.domain.industry.IndustryRoles;
 import com.potaliadmin.domain.institute.Institute;
 import com.potaliadmin.domain.user.User;
 import com.potaliadmin.dto.internal.cache.address.CityVO;
+import com.potaliadmin.dto.internal.cache.classified.PrimaryCategoryVO;
 import com.potaliadmin.dto.internal.cache.cluster.ClusterVO;
 import com.potaliadmin.dto.internal.cache.institute.InstituteVO;
 import com.potaliadmin.dto.internal.cache.job.IndustryRolesVO;
 import com.potaliadmin.dto.internal.cache.job.IndustryVO;
 import com.potaliadmin.framework.cache.address.CityCache;
+import com.potaliadmin.framework.cache.classified.PrimaryCategoryCache;
 import com.potaliadmin.framework.cache.cluster.ClusterCache;
 import com.potaliadmin.framework.cache.industry.IndustryCache;
 import com.potaliadmin.framework.cache.industry.IndustryRolesCache;
@@ -81,6 +84,22 @@ public class AppCacheServiceImpl implements AppCacheService {
       }
     }
     clusterCache.freeze();
+  }
+
+  @SuppressWarnings("unchecked")
+  private void reloadPrimaryCategory() {
+    String query = "select pc from PrimaryCategory pc";
+    PrimaryCategoryCache primaryCategoryCache = PrimaryCategoryCache.getCache();
+    List<PrimaryCategory> primaryCategoryList = getBaseDao().findByQuery(query);
+    for (PrimaryCategory primaryCategory : primaryCategoryList) {
+      PrimaryCategoryVO primaryCategoryVO = new PrimaryCategoryVO(primaryCategory);
+      primaryCategoryCache.addPrimaryCategory(primaryCategoryVO.getId(), primaryCategoryVO);
+      // now set up industry to industry roles map
+      String query2 = "select sc.id from SecondaryCategory sc where sc.primaryCategoryId=?";
+      List<Long> scList = getBaseDao().findByQuery(query2, new Object[]{primaryCategory.getId()});
+      primaryCategoryCache.addToIndustryToIndustryRolesMap(industry.getId(), rolesList);
+    }
+    industryCache.freeze();
   }
 
   @SuppressWarnings("unchecked")
