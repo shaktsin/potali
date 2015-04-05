@@ -25,10 +25,7 @@ import com.potaliadmin.vo.BaseElasticVO;
 import com.potaliadmin.vo.circle.CircleVO;
 import com.potaliadmin.vo.post.PostVO;
 import com.potaliadmin.vo.user.UserVO;
-import org.elasticsearch.index.query.BoolFilterBuilder;
-import org.elasticsearch.index.query.FilterBuilders;
-import org.elasticsearch.index.query.QueryBuilder;
-import org.elasticsearch.index.query.QueryBuilders;
+import org.elasticsearch.index.query.*;
 import org.elasticsearch.search.sort.SortOrder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -302,12 +299,21 @@ public class CircleServiceImpl implements CircleService {
     if (userResponse == null) {
       throw new UnAuthorizedAccessException("UnAuthorized Access!");
     }
+
+    AndFilterBuilder andFilterBuilder = FilterBuilders.andFilter();
     BoolFilterBuilder boolFilterBuilder = FilterBuilders.boolFilter();
     boolFilterBuilder.must(FilterBuilders.termFilter("instituteId", userResponse.getInstituteId()));
     boolFilterBuilder.must(FilterBuilders.termFilter("type", CircleType.CLUB.getId()));
 
+    andFilterBuilder.add(boolFilterBuilder);
+    NotFilterBuilder notFilterBuilder = FilterBuilders.notFilter(
+        FilterBuilders.inFilter("id", userResponse.getCircleList().toArray())
+    );
+
+    andFilterBuilder.add(notFilterBuilder);
+
     ESSearchFilter esSearchFilter =
-        new ESSearchFilter().setFilterBuilder(boolFilterBuilder)
+        new ESSearchFilter().setFilterBuilder(andFilterBuilder)
             .addSortedMap("id", SortOrder.DESC).setPageNo(circleGetRequest.getPageNo())
             .setPerPage(circleGetRequest.getPerPage());
 
@@ -333,9 +339,10 @@ public class CircleServiceImpl implements CircleService {
       CircleDto circleDto = new CircleDto();
       circleDto.setId(circleVO.getId());
       circleDto.setName(circleVO.getName());
-      if (userResponse.getCircleList().contains(circleVO.getId())) {
-        circleDto.setJoined(true);
-      }
+      //if (userResponse.getCircleList().contains(circleVO.getId())) {
+        //circleDto.setJoined(true);
+      //  continue;
+      //}
 
       if (circleVO.getAdmin().equals(userResponse.getId())) {
         circleDto.setAdmin(true);
