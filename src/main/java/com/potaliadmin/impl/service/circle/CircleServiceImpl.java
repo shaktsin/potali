@@ -536,8 +536,17 @@ public class CircleServiceImpl implements CircleService {
     }
 
     List<Long> circleList = userResponse.getCircleList();
-    int firstIndex = circleGetRequest.getPageNo() - 1;
-    int lastIndex = firstIndex + circleGetRequest.getPerPage();
+    int firstIndex = circleGetRequest.getPageNo();
+
+    int lastIndex = firstIndex*circleGetRequest.getPerPage() + circleGetRequest.getPerPage();
+    if (circleList.size() < lastIndex) {
+      lastIndex = circleList.size();
+    }
+
+    if (firstIndex > lastIndex) {
+      throw new InValidInputException("Invalid request!, last index cannot be greater than first index");
+    }
+
     List<Long> subList = circleList.subList(firstIndex, lastIndex);
     List<CircleDto> circleDtoList = new ArrayList<CircleDto>();
 
@@ -567,7 +576,9 @@ public class CircleServiceImpl implements CircleService {
 
       if (circleVO.getAdmin().equals(userResponse.getId())) {
         circleDto.setAdmin(true);
-        circleDto.setRequests(circleVO.getRequestList().size());
+        if (circleVO.getRequestList() != null) {
+          circleDto.setRequests(circleVO.getRequestList().size());
+        }
       }
 
       circleDto.setPosts(posts);
