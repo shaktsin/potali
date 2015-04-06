@@ -336,6 +336,10 @@ public class JobServiceImpl implements JobService {
         //imageMap.put(createImageResponseDto.getId(), imageLink);
       }
       //postVO.setImageList(imageLinks);
+      List<AttachmentDto> attchDtos = postVO.getAttachmentDtoList();
+      if (attchDtos != null) {
+        attachmentDtoList.addAll(attchDtos);
+      }
       postVO.setAttachmentDtoList(attachmentDtoList);
       //postVO.setImageMap(imageMap);
     }
