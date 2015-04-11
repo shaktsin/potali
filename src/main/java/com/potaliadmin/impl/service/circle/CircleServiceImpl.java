@@ -562,6 +562,10 @@ public class CircleServiceImpl implements CircleService {
       CircleVO circleVO = (CircleVO)
           getBaseESService().get(circleId, null, CircleVO.class);
 
+      if (circleVO.getType() != CircleType.CLUB.getId()) {
+        continue;
+      }
+
       if (!circleVO.isActive()) {
         continue;
       }
