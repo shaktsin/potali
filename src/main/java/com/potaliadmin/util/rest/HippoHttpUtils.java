@@ -18,6 +18,7 @@ import java.util.List;
 public class HippoHttpUtils {
 
   private static Logger logger = LoggerFactory.getLogger(HippoHttpUtils.class);
+  private static final String FROM = "support@ofcampus.com";
 
   public static boolean sendVerificationToken(int token, String firstName, String email) {
     //Client client = Client.create();
@@ -34,7 +35,7 @@ public class HippoHttpUtils {
 
 
     Form form = new Form();
-    form.param("from","shakti@ofcampus.com");
+    form.param("from",FROM);
     form.param("to",email);
     form.param("subject","Welcome to ofcampus");
     String text = "Congratulations "+firstName+ "! you have just joined Ofcampus!" + " Your verification token is "+token;
@@ -65,7 +66,7 @@ public class HippoHttpUtils {
 
 
     Form form = new Form();
-    form.param("from","shakti@ofcampus.com");
+    form.param("from",FROM;
     form.param("to",email);
     form.param("subject","Verification Token - OfCampus");
     String text = "Welcome Again "+firstName+ "! Your verification token is "+token;
@@ -95,7 +96,7 @@ public class HippoHttpUtils {
 
 
     Form form = new Form();
-    form.param("from","shakti@ofcampus.com");
+    form.param("from",FROM);
     form.param("to",email);
     form.param("subject","Password Recovery - OfCampus");
     String text = "Welcome Again!"+ "Your new password is "+password;
