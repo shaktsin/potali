@@ -66,7 +66,7 @@ public class HippoHttpUtils {
 
 
     Form form = new Form();
-    form.param("from",FROM;
+    form.param("from",FROM);
     form.param("to",email);
     form.param("subject","Verification Token - OfCampus");
     String text = "Welcome Again "+firstName+ "! Your verification token is "+token;
