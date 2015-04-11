@@ -492,6 +492,7 @@ public class UserServiceImpl implements UserService {
     if (user.getVerificationToken() == userVerificationRequest.getToken()) {
       user.setVerified(true);
       getUserDao().save(user);
+      isVerified = true;
     }
 
     List<Circle> circleList = getCircleDao().getUserCircle(user.getId());
@@ -506,7 +507,7 @@ public class UserServiceImpl implements UserService {
     }
 
     GenericSuccessResponse genericSuccessResponse = new GenericSuccessResponse();
-    genericSuccessResponse.setSuccess(true);
+    genericSuccessResponse.setSuccess(isVerified);
 
     return genericSuccessResponse;
   }
