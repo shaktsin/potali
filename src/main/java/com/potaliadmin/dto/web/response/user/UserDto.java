@@ -3,6 +3,7 @@ package com.potaliadmin.dto.web.response.user;
 
 import com.potaliadmin.dto.web.response.circle.CircleDto;
 
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -15,6 +16,7 @@ public class UserDto {
   private String image;
   private int circles;
   private int yearOfGrad;
+  private String memberSince;
 
   public UserDto() {}
 
@@ -64,5 +66,13 @@ public class UserDto {
 
   public void setYearOfGrad(int yearOfGrad) {
     this.yearOfGrad = yearOfGrad;
+  }
+
+  public String getMemberSince() {
+    return memberSince;
+  }
+
+  public void setMemberSince(String memberSince) {
+    this.memberSince = memberSince;
   }
 }

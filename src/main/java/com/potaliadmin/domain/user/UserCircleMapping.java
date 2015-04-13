@@ -2,6 +2,7 @@ package com.potaliadmin.domain.user;
 
 import javax.persistence.*;
 import java.io.Serializable;
+import java.util.Date;
 
 /**
  * Created by shakti on 24/1/15.
@@ -25,6 +26,9 @@ public class UserCircleMapping implements Serializable {
   @Column(name = "authorized",nullable = false)
   private boolean authorised;
 
+  @Column(name = "created_date",nullable = false)
+  private Date createdDate = new Date();
+
   public UserCircleMappingKey getUserCircleMappingKey() {
     return userCircleMappingKey;
   }
@@ -47,5 +51,13 @@ public class UserCircleMapping implements Serializable {
 
   public void setAuthorised(boolean authorised) {
     this.authorised = authorised;
+  }
+
+  public Date getCreatedDate() {
+    return createdDate;
+  }
+
+  public void setCreatedDate(Date createdDate) {
+    this.createdDate = createdDate;
   }
 }
