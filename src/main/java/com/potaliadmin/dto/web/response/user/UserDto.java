@@ -12,6 +12,7 @@ public class UserDto {
   private String emailId;
   private int circles;
   private int yearOfGrad;
+  private String memberSince;
 
   public UserDto() {}
 
@@ -71,4 +72,12 @@ public class UserDto {
     public void setEmailId(String emailId) {
         this.emailId = emailId;
     }
+
+  public String getMemberSince() {
+    return memberSince;
+  }
+
+  public void setMemberSince(String memberSince) {
+    this.memberSince = memberSince;
+  }
 }

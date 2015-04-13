@@ -10,6 +10,7 @@ import com.potaliadmin.constants.reactions.EnumReactions;
 import com.potaliadmin.domain.attachment.Attachment;
 import com.potaliadmin.domain.comment.Comment;
 import com.potaliadmin.domain.reactions.PostReactions;
+import com.potaliadmin.domain.user.UserCircleMapping;
 import com.potaliadmin.dto.internal.attachment.AttachmentDto;
 import com.potaliadmin.dto.internal.attachment.AttachmentMap;
 import com.potaliadmin.dto.internal.cache.address.CityVO;
@@ -48,6 +49,7 @@ import com.potaliadmin.framework.elasticsearch.ESSearchFilter;
 import com.potaliadmin.framework.elasticsearch.response.ESSearchResponse;
 import com.potaliadmin.impl.framework.properties.AppProperties;
 import com.potaliadmin.pact.dao.attachment.AttachmentDao;
+import com.potaliadmin.pact.dao.circle.CircleDao;
 import com.potaliadmin.pact.dao.post.PostCommentDao;
 import com.potaliadmin.pact.dao.post.PostReactionDao;
 import com.potaliadmin.pact.framework.aws.UploadService;
@@ -127,6 +129,8 @@ public class PostServiceImpl implements PostService {
   AttachmentDao attachmentDao;
   @Autowired
   AppProperties appProperties;
+  @Autowired
+  CircleDao circleDao;
 
 
 
@@ -1209,6 +1213,11 @@ public class PostServiceImpl implements PostService {
     List<UserDto> userDtoList = new ArrayList<UserDto>();
     for (BaseElasticVO baseElasticVO : baseElasticVOs) {
       UserVO userVO = (UserVO) baseElasticVO;
+
+      UserCircleMapping userCircleMapping =
+          (UserCircleMapping) getCircleDao().findUniqueByNamedQueryAndNamedParam("findByUserAndCircle",
+              new String[]{"userId", "circleId"}, new Object[]{userVO.getId(), circleVO.getId()});
+
       UserDto userDto = new UserDto();
       userDto.setId(userVO.getId());
       userDto.setYearOfGrad(userVO.getYearOfGrad());
@@ -1216,6 +1225,8 @@ public class PostServiceImpl implements PostService {
       userDto.setEmailId(userVO.getEmail());
       userDto.setImage(userVO.getImage());
       userDto.setCircles(userVO.getCircleList().size());
+      userDto.setMemberSince(DateUtils.getMemberSince(userCircleMapping.getCreatedDate()));
+
       userDtoList.add(userDto);
     }
     CircleProfileResponse circleProfileResponse = new CircleProfileResponse();
@@ -1416,5 +1427,9 @@ public class PostServiceImpl implements PostService {
 
   public AttachmentDao getAttachmentDao() {
     return attachmentDao;
+  }
+
+  public CircleDao getCircleDao() {
+    return circleDao;
   }
 }
