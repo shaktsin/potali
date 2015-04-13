@@ -1197,12 +1197,9 @@ public class PostServiceImpl implements PostService {
           (UserCircleMapping) getCircleDao().findByNamedQueryAndNamedParam("findByUserAndCircle",
               new String[]{"userId", "circleId"}, new Object[]{userVO.getId(), circleVO.getId()});
 
-      if (userCircleMapping != null) {
+      if (userCircleMapping == null) {
         continue;
       }
-
-
-
 
       UserDto userDto = new UserDto();
       userDto.setId(userVO.getId());
@@ -1210,7 +1207,11 @@ public class PostServiceImpl implements PostService {
       userDto.setName(userVO.getAccountName());
       userDto.setImage(userVO.getImage());
       userDto.setCircles(userVO.getCircleList().size());
-      userDto.setMemberSince(DateUtils.getMemberSince(userCircleMapping.getCreatedDate()));
+      Date memberSince = userCircleMapping.getCreatedDate();
+      if (memberSince == null) {
+        memberSince = new Date();
+      }
+      userDto.setMemberSince(DateUtils.getMemberSince(memberSince));
 
       userDtoList.add(userDto);
     }
