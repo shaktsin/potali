@@ -4,7 +4,6 @@ import com.potaliadmin.domain.circle.Circle;
 import com.potaliadmin.framework.elasticsearch.annotation.ElasticEntity;
 import com.potaliadmin.vo.BaseElasticVO;
 
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -14,6 +13,7 @@ import java.util.List;
 public class CircleVO extends BaseElasticVO {
 
   private String name;
+  private String desc;
   private int type;
   private boolean moderate;
   private Long admin;
@@ -27,6 +27,7 @@ public class CircleVO extends BaseElasticVO {
   public CircleVO(Circle circle) {
     super(circle.getId());
     name = circle.getName();
+    desc = circle.getDescription();
     type = circle.getCircleType();
     moderate = !circle.isPublicCircle();
   }
@@ -87,4 +88,12 @@ public class CircleVO extends BaseElasticVO {
   public void setRequestList(List<Long> requestList) {
     this.requestList = requestList;
   }
+
+    public String getDesc() {
+        return desc;
+    }
+
+    public void setDesc(String desc) {
+        this.desc = desc;
+    }
 }

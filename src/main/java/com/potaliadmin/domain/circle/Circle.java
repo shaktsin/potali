@@ -29,6 +29,9 @@ public class Circle implements Serializable {
   @Column(name = "created_date",nullable = false)
   private Date createdDate = new Date();
 
+    @Column(name = "description", length = 500)
+    private String description;
+
   @Temporal(TemporalType.TIMESTAMP)
   @Column(name = "updated_date",nullable = false)
   private Date updatedDate = new Date();
@@ -80,4 +83,12 @@ public class Circle implements Serializable {
   public void setUpdatedDate(Date updatedDate) {
     this.updatedDate = updatedDate;
   }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
 }

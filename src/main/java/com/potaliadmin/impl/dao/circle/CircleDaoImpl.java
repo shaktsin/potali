@@ -27,7 +27,7 @@ public class CircleDaoImpl extends BaseDaoImpl implements CircleDao {
 
   @Override
   @Transactional(propagation = Propagation.NESTED)
-  public Circle createCircle(String name, CircleType circleType, UserResponse userResponse, boolean moderate) {
+  public Circle createCircle(String name, String desc, CircleType circleType, UserResponse userResponse, boolean moderate) {
     if (StringUtils.isBlank(name)) {
       throw new InValidInputException("CIRCLE_NAME_CANNOT_BE_NULL");
     }
@@ -41,6 +41,7 @@ public class CircleDaoImpl extends BaseDaoImpl implements CircleDao {
     circle.setName(name);
     circle.setCircleType(circleType.getId());
     circle.setPublicCircle(!moderate);
+    circle.setDescription(desc);
 
     circle = (Circle) save(circle);
 

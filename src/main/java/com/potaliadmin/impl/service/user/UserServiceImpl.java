@@ -281,7 +281,7 @@ public class UserServiceImpl implements UserService {
     } else {
       //create a circle for first user
       //throw new PotaliRuntimeException("Some Exception occurred in sign up! Please Try Again");
-      Circle circle = getCircleDao().createCircle(CircleType.ALL.getName(), CircleType.ALL,
+      Circle circle = getCircleDao().createCircle(CircleType.ALL.getName(), "Default club for the institute", CircleType.ALL,
           userResponse, false);
 
       if (circle == null) {
@@ -429,7 +429,7 @@ public class UserServiceImpl implements UserService {
         circleIdList.add(circleVO.getId());
         userVO.setCircleList(circleIdList);
       } else {
-        Circle circle = getCircleDao().createCircle(batchName, CircleType.YEAR,
+        Circle circle = getCircleDao().createCircle(batchName,  "Club for Year -" + user.getYearOfGraduation() , CircleType.YEAR,
             userResponse, false);
 
         if (circle == null) {
