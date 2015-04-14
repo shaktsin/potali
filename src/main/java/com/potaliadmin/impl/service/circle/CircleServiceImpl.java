@@ -2,9 +2,12 @@ package com.potaliadmin.impl.service.circle;
 
 import com.potaliadmin.constants.circle.CircleType;
 import com.potaliadmin.domain.circle.Circle;
-import com.potaliadmin.domain.user.User;
 import com.potaliadmin.domain.user.UserCircleMapping;
-import com.potaliadmin.dto.web.request.circle.*;
+import com.potaliadmin.dto.web.request.circle.CircleAuthorizeRequest;
+import com.potaliadmin.dto.web.request.circle.CircleCreateRequest;
+import com.potaliadmin.dto.web.request.circle.CircleGetRequest;
+import com.potaliadmin.dto.web.request.circle.CircleJoinListRequest;
+import com.potaliadmin.dto.web.request.circle.CircleJoinRequest;
 import com.potaliadmin.dto.web.response.base.GenericSuccessResponse;
 import com.potaliadmin.dto.web.response.circle.CircleDto;
 import com.potaliadmin.dto.web.response.circle.CircleGetResponse;
@@ -25,7 +28,12 @@ import com.potaliadmin.vo.BaseElasticVO;
 import com.potaliadmin.vo.circle.CircleVO;
 import com.potaliadmin.vo.post.PostVO;
 import com.potaliadmin.vo.user.UserVO;
-import org.elasticsearch.index.query.*;
+import org.elasticsearch.index.query.AndFilterBuilder;
+import org.elasticsearch.index.query.BoolFilterBuilder;
+import org.elasticsearch.index.query.FilterBuilders;
+import org.elasticsearch.index.query.NotFilterBuilder;
+import org.elasticsearch.index.query.QueryBuilder;
+import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.search.sort.SortOrder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -60,7 +68,7 @@ public class CircleServiceImpl implements CircleService {
     }
 
     //Circle circle = getCircleService().createCircle(circleCreateRequest);
-    Circle circle = getCircleDao().createCircle(circleCreateRequest.getName(),
+    Circle circle = getCircleDao().createCircle(circleCreateRequest.getName(), circleCreateRequest.getDesc(),
         CircleType.getById(circleCreateRequest.getCircleId()), userResponse, false);
 
     CircleVO circleVO = new CircleVO(circle);
