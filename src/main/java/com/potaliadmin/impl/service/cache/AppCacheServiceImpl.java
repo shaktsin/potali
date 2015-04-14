@@ -111,10 +111,6 @@ public class AppCacheServiceImpl implements AppCacheService {
   private void reloadInstituteCache() {
     boolean isProd = getAppProperties().isProd();
     String query = "select inst from Institute inst";
-    if (isProd) {
-      query = "select inst from Institute inst where inst.type = 0";
-    }
-
     InstituteCache instituteCache = InstituteCache.getCache();
     List<Institute> institutes = getBaseDao().findByQuery(query);
     for (Institute institute : institutes) {
