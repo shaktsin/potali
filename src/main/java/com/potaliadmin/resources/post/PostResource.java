@@ -42,7 +42,8 @@ public class PostResource {
   @RequiresAuthentication
   public GenericPostReactionResponse reverseReaction(PostReactionRequest postReactionRequest) {
     try {
-      return getPostService().reverseReaction(postReactionRequest);
+        GenericPostReactionResponse genericPostReactionResponse = getPostService().reverseReaction(postReactionRequest);
+      return genericPostReactionResponse;
 
     } catch (Exception e) {
       GenericPostReactionResponse genericPostReactionResponse = new GenericPostReactionResponse();
