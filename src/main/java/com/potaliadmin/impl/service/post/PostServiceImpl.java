@@ -92,12 +92,7 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.io.File;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -1218,6 +1213,9 @@ public class PostServiceImpl implements PostService {
           (UserCircleMapping) getCircleDao().findUniqueByNamedQueryAndNamedParam("findByUserAndCircle",
               new String[]{"userId", "circleId"}, new Object[]{userVO.getId(), circleVO.getId()});
 
+      if (userCircleMapping == null) {
+        continue;
+      }
       UserDto userDto = new UserDto();
       userDto.setId(userVO.getId());
       userDto.setYearOfGrad(userVO.getYearOfGrad());
@@ -1225,7 +1223,11 @@ public class PostServiceImpl implements PostService {
       userDto.setEmailId(userVO.getEmail());
       userDto.setImage(userVO.getImage());
       userDto.setCircles(userVO.getCircleList().size());
-      userDto.setMemberSince(DateUtils.getMemberSince(userCircleMapping.getCreatedDate()));
+      Date memberSince = userCircleMapping.getCreatedDate();
+      if (memberSince == null) {
+        memberSince = new Date();
+      }
+      userDto.setMemberSince(DateUtils.getMemberSince(memberSince));
 
       userDtoList.add(userDto);
     }
