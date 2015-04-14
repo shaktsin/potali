@@ -248,6 +248,10 @@ public class NewsFeedServiceImpl implements NewsFeedService {
         //imageMap.put(createImageResponseDto.getId(), imageLink);
       }
       //postVO.setImageList(imageLinks);
+      List<AttachmentDto> docList = postVO.getAttachmentDtoList();
+      if (docList != null && !docList.isEmpty()) {
+        attachmentDtoList.addAll(docList);
+      }
       postVO.setAttachmentDtoList(attachmentDtoList);
       //postVO.setImageMap(imageMap);
     }

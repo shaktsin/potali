@@ -4,17 +4,22 @@ import com.potaliadmin.constants.DefaultConstants;
 import com.potaliadmin.constants.attachment.EnumAttachmentType;
 import com.potaliadmin.constants.attachment.EnumImageFormat;
 import com.potaliadmin.constants.cache.ESIndexKeys;
-import com.potaliadmin.constants.image.EnumBucket;
 import com.potaliadmin.constants.image.EnumImageSize;
 import com.potaliadmin.constants.json.DtoJsonConstants;
 import com.potaliadmin.constants.reactions.EnumReactions;
 import com.potaliadmin.domain.attachment.Attachment;
 import com.potaliadmin.domain.comment.Comment;
 import com.potaliadmin.domain.reactions.PostReactions;
+import com.potaliadmin.domain.user.UserCircleMapping;
 import com.potaliadmin.dto.internal.attachment.AttachmentDto;
 import com.potaliadmin.dto.internal.attachment.AttachmentMap;
 import com.potaliadmin.dto.internal.cache.address.CityVO;
-import com.potaliadmin.dto.internal.cache.es.job.*;
+import com.potaliadmin.dto.internal.cache.es.job.BaseRangeDto;
+import com.potaliadmin.dto.internal.cache.es.job.CityDto;
+import com.potaliadmin.dto.internal.cache.es.job.ExperienceRangeDto;
+import com.potaliadmin.dto.internal.cache.es.job.IndustryDto;
+import com.potaliadmin.dto.internal.cache.es.job.IndustryRolesDto;
+import com.potaliadmin.dto.internal.cache.es.job.SalaryRangeDto;
 import com.potaliadmin.dto.internal.cache.es.post.PostReactionVO;
 import com.potaliadmin.dto.internal.cache.job.IndustryRolesVO;
 import com.potaliadmin.dto.internal.cache.job.IndustryVO;
@@ -22,8 +27,12 @@ import com.potaliadmin.dto.internal.filter.BaseFilterDto;
 import com.potaliadmin.dto.internal.filter.GeneralFilterDto;
 import com.potaliadmin.dto.internal.filter.JobFilterDto;
 import com.potaliadmin.dto.internal.image.CreateAttachmentResponseDto;
-import com.potaliadmin.dto.internal.image.ImageDto;
-import com.potaliadmin.dto.web.request.posts.*;
+import com.potaliadmin.dto.web.request.posts.AllPostReactionRequest;
+import com.potaliadmin.dto.web.request.posts.BookMarkPostRequest;
+import com.potaliadmin.dto.web.request.posts.CirclePostRequest;
+import com.potaliadmin.dto.web.request.posts.PostCommentRequest;
+import com.potaliadmin.dto.web.request.posts.PostReactionRequest;
+import com.potaliadmin.dto.web.request.posts.UserProfileRequest;
 import com.potaliadmin.dto.web.response.circle.CircleDto;
 import com.potaliadmin.dto.web.response.post.*;
 import com.potaliadmin.dto.web.response.user.UserDto;
@@ -40,6 +49,7 @@ import com.potaliadmin.framework.elasticsearch.ESSearchFilter;
 import com.potaliadmin.framework.elasticsearch.response.ESSearchResponse;
 import com.potaliadmin.impl.framework.properties.AppProperties;
 import com.potaliadmin.pact.dao.attachment.AttachmentDao;
+import com.potaliadmin.pact.dao.circle.CircleDao;
 import com.potaliadmin.pact.dao.post.PostCommentDao;
 import com.potaliadmin.pact.dao.post.PostReactionDao;
 import com.potaliadmin.pact.framework.aws.UploadService;
@@ -51,7 +61,6 @@ import com.potaliadmin.util.BaseUtil;
 import com.potaliadmin.util.DateUtils;
 import com.potaliadmin.util.image.AttachmentCloudTask;
 import com.potaliadmin.util.image.AttachmentUploaderTask;
-import com.potaliadmin.util.image.ImageNameBuilder;
 import com.potaliadmin.util.image.RawAttachmentCloudTask;
 import com.potaliadmin.vo.BaseElasticVO;
 import com.potaliadmin.vo.circle.CircleVO;
@@ -60,7 +69,13 @@ import com.potaliadmin.vo.post.PostVO;
 import com.potaliadmin.vo.user.UserVO;
 import org.elasticsearch.action.count.CountResponse;
 import org.elasticsearch.action.search.SearchResponse;
-import org.elasticsearch.index.query.*;
+import org.elasticsearch.index.query.AndFilterBuilder;
+import org.elasticsearch.index.query.BoolFilterBuilder;
+import org.elasticsearch.index.query.FilterBuilders;
+import org.elasticsearch.index.query.HasChildFilterBuilder;
+import org.elasticsearch.index.query.QueryBuilder;
+import org.elasticsearch.index.query.QueryBuilders;
+import org.elasticsearch.index.query.TermFilterBuilder;
 import org.elasticsearch.search.aggregations.AggregationBuilders;
 import org.elasticsearch.search.aggregations.metrics.max.Max;
 import org.elasticsearch.search.aggregations.metrics.max.MaxBuilder;
@@ -77,8 +92,16 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.io.File;
-import java.util.*;
-import java.util.concurrent.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 
 /**
  * Created by Shakti Singh on 12/28/14.
@@ -106,6 +129,8 @@ public class PostServiceImpl implements PostService {
   AttachmentDao attachmentDao;
   @Autowired
   AppProperties appProperties;
+  @Autowired
+  CircleDao circleDao;
 
 
 
@@ -1188,17 +1213,26 @@ public class PostServiceImpl implements PostService {
     List<UserDto> userDtoList = new ArrayList<UserDto>();
     for (BaseElasticVO baseElasticVO : baseElasticVOs) {
       UserVO userVO = (UserVO) baseElasticVO;
+
+      UserCircleMapping userCircleMapping =
+          (UserCircleMapping) getCircleDao().findUniqueByNamedQueryAndNamedParam("findByUserAndCircle",
+              new String[]{"userId", "circleId"}, new Object[]{userVO.getId(), circleVO.getId()});
+
       UserDto userDto = new UserDto();
       userDto.setId(userVO.getId());
       userDto.setYearOfGrad(userVO.getYearOfGrad());
       userDto.setName(userVO.getAccountName());
+      userDto.setEmailId(userVO.getEmail());
       userDto.setImage(userVO.getImage());
       userDto.setCircles(userVO.getCircleList().size());
+      userDto.setMemberSince(DateUtils.getMemberSince(userCircleMapping.getCreatedDate()));
+
       userDtoList.add(userDto);
     }
     CircleProfileResponse circleProfileResponse = new CircleProfileResponse();
     circleProfileResponse.setId(circleVO.getId());
     circleProfileResponse.setName(circleVO.getName());
+    circleProfileResponse.setDesc(circleVO.getDesc());
     circleProfileResponse.setModerate(circleVO.isModerate());
     if (!userResponse.getCircleList().contains(circleVO.getId())) {
       circleProfileResponse.setJoined(false);
@@ -1393,5 +1427,9 @@ public class PostServiceImpl implements PostService {
 
   public AttachmentDao getAttachmentDao() {
     return attachmentDao;
+  }
+
+  public CircleDao getCircleDao() {
+    return circleDao;
   }
 }

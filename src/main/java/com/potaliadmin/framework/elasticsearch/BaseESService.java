@@ -5,7 +5,9 @@ import com.potaliadmin.vo.BaseElasticVO;
 import org.elasticsearch.action.search.SearchRequest;
 import org.elasticsearch.action.search.SearchRequestBuilder;
 import org.elasticsearch.index.query.FilterBuilder;
+import org.elasticsearch.index.query.MatchQueryBuilder;
 import org.elasticsearch.index.query.QueryBuilder;
+import org.elasticsearch.search.SearchHits;
 import org.elasticsearch.search.sort.SortOrder;
 
 import java.util.List;
@@ -26,4 +28,8 @@ public interface BaseESService {
     public boolean delete(Long id, Class className);
 
     public boolean update(BaseElasticVO baseElasticVO);
+
+    public SearchHits search(MatchQueryBuilder queryBuilder);
+
+    public Object parserResponse(String result, Class className) throws Exception;
 }

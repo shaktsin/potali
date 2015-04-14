@@ -2,9 +2,12 @@ package com.potaliadmin.impl.service.circle;
 
 import com.potaliadmin.constants.circle.CircleType;
 import com.potaliadmin.domain.circle.Circle;
-import com.potaliadmin.domain.user.User;
 import com.potaliadmin.domain.user.UserCircleMapping;
-import com.potaliadmin.dto.web.request.circle.*;
+import com.potaliadmin.dto.web.request.circle.CircleAuthorizeRequest;
+import com.potaliadmin.dto.web.request.circle.CircleCreateRequest;
+import com.potaliadmin.dto.web.request.circle.CircleGetRequest;
+import com.potaliadmin.dto.web.request.circle.CircleJoinListRequest;
+import com.potaliadmin.dto.web.request.circle.CircleJoinRequest;
 import com.potaliadmin.dto.web.response.base.GenericSuccessResponse;
 import com.potaliadmin.dto.web.response.circle.CircleDto;
 import com.potaliadmin.dto.web.response.circle.CircleGetResponse;
@@ -25,8 +28,10 @@ import com.potaliadmin.vo.BaseElasticVO;
 import com.potaliadmin.vo.circle.CircleVO;
 import com.potaliadmin.vo.post.PostVO;
 import com.potaliadmin.vo.user.UserVO;
+import org.elasticsearch.index.query.AndFilterBuilder;
 import org.elasticsearch.index.query.BoolFilterBuilder;
 import org.elasticsearch.index.query.FilterBuilders;
+import org.elasticsearch.index.query.NotFilterBuilder;
 import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.search.sort.SortOrder;
@@ -63,7 +68,7 @@ public class CircleServiceImpl implements CircleService {
     }
 
     //Circle circle = getCircleService().createCircle(circleCreateRequest);
-    Circle circle = getCircleDao().createCircle(circleCreateRequest.getName(),
+    Circle circle = getCircleDao().createCircle(circleCreateRequest.getName(), circleCreateRequest.getDesc(),
         CircleType.getById(circleCreateRequest.getCircleId()), userResponse, false);
 
     CircleVO circleVO = new CircleVO(circle);
@@ -302,12 +307,21 @@ public class CircleServiceImpl implements CircleService {
     if (userResponse == null) {
       throw new UnAuthorizedAccessException("UnAuthorized Access!");
     }
+
+    AndFilterBuilder andFilterBuilder = FilterBuilders.andFilter();
     BoolFilterBuilder boolFilterBuilder = FilterBuilders.boolFilter();
     boolFilterBuilder.must(FilterBuilders.termFilter("instituteId", userResponse.getInstituteId()));
     boolFilterBuilder.must(FilterBuilders.termFilter("type", CircleType.CLUB.getId()));
 
+    andFilterBuilder.add(boolFilterBuilder);
+    NotFilterBuilder notFilterBuilder = FilterBuilders.notFilter(
+        FilterBuilders.inFilter("id", userResponse.getCircleList().toArray())
+    );
+
+    andFilterBuilder.add(notFilterBuilder);
+
     ESSearchFilter esSearchFilter =
-        new ESSearchFilter().setFilterBuilder(boolFilterBuilder)
+        new ESSearchFilter().setFilterBuilder(andFilterBuilder)
             .addSortedMap("id", SortOrder.DESC).setPageNo(circleGetRequest.getPageNo())
             .setPerPage(circleGetRequest.getPerPage());
 
@@ -333,9 +347,10 @@ public class CircleServiceImpl implements CircleService {
       CircleDto circleDto = new CircleDto();
       circleDto.setId(circleVO.getId());
       circleDto.setName(circleVO.getName());
-      if (userResponse.getCircleList().contains(circleVO.getId())) {
-        circleDto.setJoined(true);
-      }
+      //if (userResponse.getCircleList().contains(circleVO.getId())) {
+        //circleDto.setJoined(true);
+      //  continue;
+      //}
 
       if (circleVO.getAdmin().equals(userResponse.getId())) {
         circleDto.setAdmin(true);
@@ -536,8 +551,17 @@ public class CircleServiceImpl implements CircleService {
     }
 
     List<Long> circleList = userResponse.getCircleList();
-    int firstIndex = circleGetRequest.getPageNo() - 1;
+    int firstIndex = circleGetRequest.getPageNo()*circleGetRequest.getPerPage();
+
     int lastIndex = firstIndex + circleGetRequest.getPerPage();
+    if (circleList.size() < lastIndex) {
+      lastIndex = circleList.size();
+    }
+
+    if (firstIndex > lastIndex) {
+      throw new InValidInputException("Invalid request!, last index cannot be greater than first index");
+    }
+
     List<Long> subList = circleList.subList(firstIndex, lastIndex);
     List<CircleDto> circleDtoList = new ArrayList<CircleDto>();
 
@@ -545,6 +569,10 @@ public class CircleServiceImpl implements CircleService {
 
       CircleVO circleVO = (CircleVO)
           getBaseESService().get(circleId, null, CircleVO.class);
+
+      if (circleVO.getType() != CircleType.CLUB.getId()) {
+        continue;
+      }
 
       if (!circleVO.isActive()) {
         continue;
@@ -567,7 +595,9 @@ public class CircleServiceImpl implements CircleService {
 
       if (circleVO.getAdmin().equals(userResponse.getId())) {
         circleDto.setAdmin(true);
-        circleDto.setRequests(circleVO.getRequestList().size());
+        if (circleVO.getRequestList() != null) {
+          circleDto.setRequests(circleVO.getRequestList().size());
+        }
       }
 
       circleDto.setPosts(posts);

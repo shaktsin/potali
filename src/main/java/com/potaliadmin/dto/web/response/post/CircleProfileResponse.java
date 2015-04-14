@@ -12,6 +12,7 @@ public class CircleProfileResponse extends GenericBaseResponse {
 
   private Long id;
   private String name;
+  private String desc;
   private boolean moderate;
   private boolean joined;
   private List<GenericPostResponse> posts;
@@ -103,4 +104,12 @@ public class CircleProfileResponse extends GenericBaseResponse {
   public void setPerPage(int perPage) {
     this.perPage = perPage;
   }
+
+    public String getDesc() {
+        return desc;
+    }
+
+    public void setDesc(String desc) {
+        this.desc = desc;
+    }
 }

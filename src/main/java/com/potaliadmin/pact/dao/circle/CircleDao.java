@@ -13,7 +13,7 @@ import java.util.List;
  */
 public interface CircleDao extends BaseDao {
 
-  Circle createCircle(String name, CircleType circleType, UserResponse userResponse, boolean moderate);
+  Circle createCircle(String name, String desc, CircleType circleType, UserResponse userResponse, boolean moderate);
 
   UserCircleMapping joinCircle(UserResponse userResponse, Long circleId, boolean authorized,boolean isAdmin);
 

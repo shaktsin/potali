@@ -23,6 +23,7 @@ import org.elasticsearch.action.update.UpdateRequestBuilder;
 import org.elasticsearch.action.update.UpdateResponse;
 import org.elasticsearch.index.IndexException;
 import org.elasticsearch.index.query.FilterBuilder;
+import org.elasticsearch.index.query.MatchQueryBuilder;
 import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.search.SearchHit;
@@ -262,7 +263,7 @@ public class BaseESServiceImpl implements BaseESService {
   }
 
 
-  private Object parserResponse(String result, Class className) throws Exception {
+  public Object parserResponse(String result, Class className) throws Exception {
     return objectMapper.readValue(result.getBytes(), className);
   }
 
@@ -335,6 +336,26 @@ public class BaseESServiceImpl implements BaseESService {
     }
     return published;
 
+  }
+
+  @Override
+  public SearchHits search(MatchQueryBuilder queryBuilder) {
+
+    SearchRequestBuilder searchRequestBuilder =  ESCacheManager.getInstance().getClient()
+        .prepareSearch(getAppProperties().getEsClusterName()).setQuery(queryBuilder);
+
+    try {
+
+      SearchResponse searchResponse = searchRequestBuilder.execute().actionGet();
+      if (searchResponse.status().getStatus() == HttpStatus.OK.value()) {
+        return searchResponse.getHits();
+      }
+
+    } catch (Exception e) {
+      logger.error("Error while searching token ",queryBuilder.toString());
+    }
+
+    return null;
   }
 
 

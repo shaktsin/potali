@@ -1,10 +1,6 @@
 package com.potaliadmin.dto.web.response.user;
 
 
-import com.potaliadmin.dto.web.response.circle.CircleDto;
-
-import java.util.List;
-
 /**
  * Created by Shakti Singh on 12/24/14.
  */
@@ -13,8 +9,10 @@ public class UserDto {
   private Long id;
   private String name;
   private String image;
+  private String emailId;
   private int circles;
   private int yearOfGrad;
+  private String memberSince;
 
   public UserDto() {}
 
@@ -22,6 +20,7 @@ public class UserDto {
     this.id = userResponse.getId();
     this.name = userResponse.getName();
     this.image = userResponse.getImage();
+    this.emailId = userResponse.getEmail();
     yearOfGrad = userResponse.getYearOfGrad();
     circles = userResponse.getCircleList().size();
   }
@@ -64,5 +63,21 @@ public class UserDto {
 
   public void setYearOfGrad(int yearOfGrad) {
     this.yearOfGrad = yearOfGrad;
+  }
+
+    public String getEmailId() {
+        return emailId;
+    }
+
+    public void setEmailId(String emailId) {
+        this.emailId = emailId;
+    }
+
+  public String getMemberSince() {
+    return memberSince;
+  }
+
+  public void setMemberSince(String memberSince) {
+    this.memberSince = memberSince;
   }
 }
