@@ -1051,7 +1051,13 @@ public class PostServiceImpl implements PostService {
       postVO.setNumImportant(postVO.getNumImportant() - 1);
     }
 
-    getBaseESService().put(postVO);
+      if(!published) {
+          try {
+              getBaseESService().put(postVO);
+          } catch (Exception ex){
+              logger.error("Error while saving reaction count to ES");
+          }
+      }
 
     GenericPostReactionResponse genericPostReactionResponse = new GenericPostReactionResponse();
     genericPostReactionResponse.setSuccess(published);
