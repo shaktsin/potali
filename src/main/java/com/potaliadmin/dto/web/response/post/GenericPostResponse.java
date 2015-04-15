@@ -106,7 +106,7 @@ public class GenericPostResponse extends GenericBaseResponse {
     // set User
     //UserResponse postUser = getUserService().findById(fullJobVO.getUserId());
     UserDto userDto = new UserDto();
-    userDto.setName(postUser.getName());
+    userDto.setName(BaseUtil.capitalize(postUser.getName()));
     userDto.setId(postUser.getId());
     userDto.setImage(postUser.getImage());
 
@@ -122,7 +122,7 @@ public class GenericPostResponse extends GenericBaseResponse {
       for (CircleVO circleVO : postVO.getCircleList()) {
         CircleDto circleDto = new CircleDto();
         circleDto.setId(circleVO.getId());
-        circleDto.setName(circleVO.getName());
+        circleDto.setName(BaseUtil.capitalize(circleVO.getName()));
         circleDtos.add(circleDto);
       }
     }
