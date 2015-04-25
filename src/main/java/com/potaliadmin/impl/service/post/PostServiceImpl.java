@@ -1017,7 +1017,7 @@ public class PostServiceImpl implements PostService {
 
     if (postReactions != null) {
       postReactions.setReactionId(postReactionRequest.getActionId());
-      getPostReactionDao().save(postReactions);
+      postReactions = (PostReactions) getPostReactionDao().save(postReactions);
     }
 
 
@@ -1037,6 +1037,10 @@ public class PostServiceImpl implements PostService {
       postReactionVO.setReactionId(postReactionRequest.getActionId());
 
       published = getBaseESService().put(postReactionVO);
+    } else {
+      PostReactionVO postReactionVO = new PostReactionVO(postReactions);
+      //boolean published = getEsCacheService().put(ESIndexKeys.REACTION_INDEX, postReactionVO, postReactionVO.getPostId());
+      published = getBaseESService().put(postReactionVO);
     }
 
     if (!published) {
@@ -1051,16 +1055,15 @@ public class PostServiceImpl implements PostService {
       postVO.setNumImportant(postVO.getNumImportant() - 1);
     }
 
-      if(!published) {
-          try {
-              getBaseESService().put(postVO);
-          } catch (Exception ex){
-              logger.error("Error while saving reaction count to ES");
-          }
-      }
+    try {
+      getBaseESService().put(postVO);
+    } catch (Exception ex){
+      logger.error("Error while saving reaction count to ES");
+    }
+
 
     GenericPostReactionResponse genericPostReactionResponse = new GenericPostReactionResponse();
-    genericPostReactionResponse.setSuccess(published);
+    genericPostReactionResponse.setSuccess(true);
 
 
 
