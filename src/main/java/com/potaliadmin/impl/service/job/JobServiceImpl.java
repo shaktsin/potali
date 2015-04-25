@@ -948,6 +948,8 @@ public class JobServiceImpl implements JobService {
     jobResponse.setNumComment(postVO.getNumComment());
     jobResponse.setNumShared(postVO.getNumShared());
     jobResponse.setNumReplies(postVO.getNumReplies());
+    jobResponse.setNumLikes(postVO.getNumLikes());
+
 
     List<CircleVO> circleVOs = postVO.getCircleList();
 

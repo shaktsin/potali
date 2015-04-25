@@ -583,6 +583,7 @@ public class NewsFeedServiceImpl implements NewsFeedService {
     postResponse.setNumSpam(postVO.getNumSpam());
     postResponse.setNumShared(postVO.getNumShared());
     postResponse.setNumReplies(postVO.getNumReplies());
+    postResponse.setNumLikes(postVO.getNumLikes());
 
     return postResponse;
   }

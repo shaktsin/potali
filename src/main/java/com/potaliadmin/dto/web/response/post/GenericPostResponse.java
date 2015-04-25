@@ -42,6 +42,7 @@ public class GenericPostResponse extends GenericBaseResponse {
   private long numImportant;
   private long numSpam;
   private long numComment;
+  private long numLikes;
   //private Map<Long, String> imageMap;
 
 
@@ -133,6 +134,7 @@ public class GenericPostResponse extends GenericBaseResponse {
     this.setNumReplies(postVO.getNumReplies());
     this.setNumShared(postVO.getNumShared());
     this.setNumSpam(postVO.getNumSpam());
+    this.setNumLikes(postVO.getNumLikes());
 
 
     this.setCircleDtoList(circleDtos);
@@ -289,5 +291,13 @@ public class GenericPostResponse extends GenericBaseResponse {
 
   public void setNumComment(long numComment) {
     this.numComment = numComment;
+  }
+
+  public long getNumLikes() {
+    return numLikes;
+  }
+
+  public void setNumLikes(long numLikes) {
+    this.numLikes = numLikes;
   }
 }
