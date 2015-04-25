@@ -152,7 +152,8 @@ public class PostServiceImpl implements PostService {
     // first reverse it in DB and then In ES
     PostReactions postReactions = null;
     if (postReactionRequest.getActionId().equals(EnumReactions.MARK_AS_IMPORTANT.getId())
-        || postReactionRequest.getActionId().equals(EnumReactions.HIDE_THIS_POST.getId())) {
+        || postReactionRequest.getActionId().equals(EnumReactions.HIDE_THIS_POST.getId())
+        || postReactionRequest.getActionId().equals(EnumReactions.LIKE_IT.getId())) {
 
       postReactions = getPostReactionDao().getPostReactionByReactionAndPostId(postReactionRequest.getActionId(),
           postReactionRequest.getPostId(), userResponse.getId());
@@ -1400,6 +1401,10 @@ public class PostServiceImpl implements PostService {
 
       if (EnumReactions.MARK_AS_SPAM.getId().equals(postReactionVO.getId())) {
         postVO.setNumSpam(postVO.getNumSpam() + 1);
+      }
+
+      if (EnumReactions.LIKE_IT.getId().equals(postReactionVO.getId())) {
+        postVO.setNumLikes(postVO.getNumLikes() + 1);
       }
 
       GenericPostReactionResponse genericPostReactionResponse = new GenericPostReactionResponse();

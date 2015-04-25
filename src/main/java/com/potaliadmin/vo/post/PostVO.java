@@ -45,6 +45,7 @@ public class PostVO extends BaseElasticVO {
   private long numImportant;
   private long numSpam;
   private long numComment;
+  private long numLikes;
 
   //Map<Long, String> imageMap;
 
@@ -241,5 +242,13 @@ public class PostVO extends BaseElasticVO {
 
   public void setNumComment(long numComment) {
     this.numComment = numComment;
+  }
+
+  public long getNumLikes() {
+    return numLikes;
+  }
+
+  public void setNumLikes(long numLikes) {
+    this.numLikes = numLikes;
   }
 }
