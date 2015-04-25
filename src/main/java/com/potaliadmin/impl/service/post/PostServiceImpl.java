@@ -544,6 +544,27 @@ public class PostServiceImpl implements PostService {
   }
 
   @Override
+  public boolean isPostLikedForUser(Long postId, Long userId) {
+    boolean isImp = false;
+
+    if (userId == null) {
+      throw new InValidInputException("USER_ID_CANNOT_BE_NULL");
+    }
+    if (postId == null) {
+      throw new InValidInputException("POST_ID_CANNOT_BE_NULL");
+    }
+
+    AndFilterBuilder andFilterBuilder = FilterBuilders.andFilter(FilterBuilders.termFilter("userId", userId),
+        FilterBuilders.termFilter("postId", postId), FilterBuilders.termFilter("reactionId", EnumReactions.LIKE_IT.getId()));
+
+    ESSearchFilter esSearchFilter =
+        new ESSearchFilter().setFilterBuilder(andFilterBuilder);
+
+    ESSearchResponse esSearchResponse = getBaseESService().search(esSearchFilter, PostReactionVO.class);
+    return esSearchResponse.getTotalResults() > 0;
+  }
+
+  @Override
   public boolean isPostMarkHiddenOrSpammed(Long postId, Long userId) {
     if (userId == null) {
       throw new InValidInputException("USER_ID_CANNOT_BE_NULL");

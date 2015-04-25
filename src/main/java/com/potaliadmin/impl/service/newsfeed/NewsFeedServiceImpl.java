@@ -520,7 +520,9 @@ public class NewsFeedServiceImpl implements NewsFeedService {
       UserResponse postUser = getUserService().findById(postVO.getUserId());
       GenericPostResponse genericPostResponse = new GenericPostResponse(postVO, postUser);
       boolean isImp = getPostService().isPostImportantForUser(postVO.getPostId(), userResponse.getId());
+      boolean isLiked = getPostService().isPostLikedForUser(postVO.getPostId(), userResponse.getId());
       genericPostResponse.setImportant(isImp);
+      genericPostResponse.setLiked(isLiked);
       genericPostResponseList.add(genericPostResponse);
     }
     newsFeedSearchResponse.setNewsfeedList(genericPostResponseList);
