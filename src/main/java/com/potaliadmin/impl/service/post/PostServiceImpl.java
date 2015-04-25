@@ -1226,7 +1226,6 @@ public class PostServiceImpl implements PostService {
       if (userCircleMapping == null) {
         continue;
       }
-
       UserDto userDto = new UserDto();
       userDto.setId(userVO.getId());
       userDto.setYearOfGrad(userVO.getYearOfGrad());
