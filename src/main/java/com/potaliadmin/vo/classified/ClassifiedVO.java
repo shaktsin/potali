@@ -1,11 +1,13 @@
 package com.potaliadmin.vo.classified;
 
+import com.potaliadmin.domain.address.City;
 import com.potaliadmin.domain.classified.ClassifiedPost;
 import com.potaliadmin.domain.classified.SecondaryCategory;
 import com.potaliadmin.dto.internal.cache.classified.PrimaryCategoryDto;
 import com.potaliadmin.dto.internal.cache.classified.PrimaryCategoryVO;
 import com.potaliadmin.dto.internal.cache.classified.SecondaryCategoryDto;
 import com.potaliadmin.dto.internal.cache.classified.SecondaryCategoryVO;
+import com.potaliadmin.dto.internal.cache.es.job.CityDto;
 import com.potaliadmin.framework.cache.classified.PrimaryCategoryCache;
 import com.potaliadmin.framework.cache.classified.SecondaryCategoryCache;
 import com.potaliadmin.framework.elasticsearch.annotation.ElasticEntity;
@@ -23,12 +25,23 @@ public class ClassifiedVO extends BaseElasticVO {
 
   private List<PrimaryCategoryDto> primaryCategoryDtoList;
   private List<SecondaryCategoryDto> secondaryCategoryDtoList;
+  private List<CityDto> locationList;
 
   public ClassifiedVO() {}
 
   public ClassifiedVO(ClassifiedPost classifiedPost) {
     super(classifiedPost.getId());
     this.setParentId(classifiedPost.getId().toString());
+
+    List<CityDto> cityDtoList = new ArrayList<CityDto>();
+    for (City city : classifiedPost.getCitySet()) {
+      CityDto cityDto = new CityDto();
+      cityDto.setId(city.getId());
+      cityDto.setName(city.getName());
+      cityDtoList.add(cityDto);
+    }
+    this.setLocationList(cityDtoList);
+
     Set<SecondaryCategory> secondaryCategorySet = classifiedPost.getSecondaryCategorySet();
     List<PrimaryCategoryDto> primaryCategoryDtoList = new ArrayList<PrimaryCategoryDto>();
     List<SecondaryCategoryDto> secondaryCategoryDtoList = new ArrayList<SecondaryCategoryDto>();
@@ -66,5 +79,13 @@ public class ClassifiedVO extends BaseElasticVO {
 
   public void setSecondaryCategoryDtoList(List<SecondaryCategoryDto> secondaryCategoryDtoList) {
     this.secondaryCategoryDtoList = secondaryCategoryDtoList;
+  }
+
+  public List<CityDto> getLocationList() {
+    return locationList;
+  }
+
+  public void setLocationList(List<CityDto> locationList) {
+    this.locationList = locationList;
   }
 }

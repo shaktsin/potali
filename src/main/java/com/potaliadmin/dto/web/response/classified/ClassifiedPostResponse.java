@@ -1,6 +1,8 @@
 package com.potaliadmin.dto.web.response.classified;
 
 import com.potaliadmin.dto.internal.cache.classified.PrimaryCategoryDto;
+import com.potaliadmin.dto.internal.cache.classified.SecondaryCategoryDto;
+import com.potaliadmin.dto.internal.cache.es.job.CityDto;
 import com.potaliadmin.dto.web.response.post.GenericPostResponse;
 
 import java.util.List;
@@ -10,13 +12,22 @@ import java.util.List;
  */
 public class ClassifiedPostResponse extends GenericPostResponse {
 
-  private List<PrimaryCategoryDto> primaryCategoryDtoList;
+  private List<SecondaryCategoryDto> secondaryCategoryDtoList;
+  private List<CityDto> cityDtoList;
 
-  public List<PrimaryCategoryDto> getPrimaryCategoryDtoList() {
-    return primaryCategoryDtoList;
+  public List<SecondaryCategoryDto> getSecondaryCategoryDtoList() {
+    return secondaryCategoryDtoList;
   }
 
-  public void setPrimaryCategoryDtoList(List<PrimaryCategoryDto> primaryCategoryDtoList) {
-    this.primaryCategoryDtoList = primaryCategoryDtoList;
+  public void setSecondaryCategoryDtoList(List<SecondaryCategoryDto> secondaryCategoryDtoList) {
+    this.secondaryCategoryDtoList = secondaryCategoryDtoList;
+  }
+
+  public List<CityDto> getCityDtoList() {
+    return cityDtoList;
+  }
+
+  public void setCityDtoList(List<CityDto> cityDtoList) {
+    this.cityDtoList = cityDtoList;
   }
 }

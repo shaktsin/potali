@@ -782,6 +782,7 @@ public class PostServiceImpl implements PostService {
     return createAttachmentResponseDtoList;
   }
 
+  @Transactional(propagation = Propagation.REQUIRED)
   public List<CreateAttachmentResponseDto> postRawFiles(List<FormDataBodyPart> docList, final Long postId) {
     int size = docList.size();
     List<CreateAttachmentResponseDto> createAttachmentResponseDtoList = new ArrayList<CreateAttachmentResponseDto>();

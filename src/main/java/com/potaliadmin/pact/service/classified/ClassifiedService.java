@@ -1,6 +1,7 @@
 package com.potaliadmin.pact.service.classified;
 
 import com.potaliadmin.dto.web.request.classified.ClassifiedPostRequest;
+import com.potaliadmin.dto.web.response.classified.ClassifiedPostResponse;
 import com.potaliadmin.dto.web.response.classified.PrepareClassifiedResponse;
 import com.potaliadmin.dto.web.response.post.GenericPostResponse;
 import org.glassfish.jersey.media.multipart.FormDataBodyPart;
@@ -14,7 +15,7 @@ public interface ClassifiedService {
 
   PrepareClassifiedResponse prepareClassifiedResponse();
 
-  GenericPostResponse createClassifiedPost(ClassifiedPostRequest classifiedPostRequest,
+  ClassifiedPostResponse createClassifiedPost(ClassifiedPostRequest classifiedPostRequest,
                                      List<FormDataBodyPart> imgFiles,
                                      List<FormDataBodyPart> jFiles);
 }

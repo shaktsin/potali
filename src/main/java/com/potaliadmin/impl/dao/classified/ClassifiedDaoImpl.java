@@ -16,6 +16,7 @@ import com.potaliadmin.pact.dao.post.PostBlobDao;
 import com.potaliadmin.pact.service.users.UserService;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Repository;
 
 import javax.transaction.Transactional;
 import java.util.Set;
@@ -23,6 +24,7 @@ import java.util.Set;
 /**
  * Created by shaktsin on 4/26/15.
  */
+@Repository
 public class ClassifiedDaoImpl extends BaseDaoImpl implements ClassifiedDao {
 
 

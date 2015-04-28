@@ -1,6 +1,7 @@
 package com.potaliadmin.dto.web.response.classified;
 
 import com.potaliadmin.dto.internal.cache.classified.PrimaryCategoryDto;
+import com.potaliadmin.dto.internal.cache.es.job.CityDto;
 import com.potaliadmin.dto.web.response.base.GenericBaseResponse;
 import com.potaliadmin.dto.web.response.circle.CircleDto;
 import com.potaliadmin.dto.web.response.post.GenericPostResponse;
@@ -14,6 +15,7 @@ public class PrepareClassifiedResponse extends GenericBaseResponse {
 
   private List<CircleDto> circleDtoList;
   private List<PrimaryCategoryDto> primaryCategoryDtoList;
+  private List<CityDto> cityDtoList;
 
   public List<CircleDto> getCircleDtoList() {
     return circleDtoList;
@@ -29,5 +31,13 @@ public class PrepareClassifiedResponse extends GenericBaseResponse {
 
   public void setPrimaryCategoryDtoList(List<PrimaryCategoryDto> primaryCategoryDtoList) {
     this.primaryCategoryDtoList = primaryCategoryDtoList;
+  }
+
+  public List<CityDto> getCityDtoList() {
+    return cityDtoList;
+  }
+
+  public void setCityDtoList(List<CityDto> cityDtoList) {
+    this.cityDtoList = cityDtoList;
   }
 }

@@ -7,10 +7,12 @@ import com.potaliadmin.domain.classified.ClassifiedPost;
 import com.potaliadmin.domain.post.Post;
 import com.potaliadmin.domain.post.PostBlob;
 import com.potaliadmin.domain.user.UserCircleMapping;
+import com.potaliadmin.dto.internal.cache.address.CityVO;
 import com.potaliadmin.dto.internal.cache.classified.PrimaryCategoryDto;
 import com.potaliadmin.dto.internal.cache.classified.PrimaryCategoryVO;
 import com.potaliadmin.dto.internal.cache.classified.SecondaryCategoryDto;
 import com.potaliadmin.dto.internal.cache.classified.SecondaryCategoryVO;
+import com.potaliadmin.dto.internal.cache.es.job.CityDto;
 import com.potaliadmin.dto.internal.image.CreateAttachmentResponseDto;
 import com.potaliadmin.dto.web.request.classified.ClassifiedPostRequest;
 import com.potaliadmin.dto.web.response.attachment.AttachmentDto;
@@ -24,6 +26,7 @@ import com.potaliadmin.dto.web.response.post.ReplyDto;
 import com.potaliadmin.dto.web.response.user.UserDto;
 import com.potaliadmin.dto.web.response.user.UserResponse;
 import com.potaliadmin.exceptions.InValidInputException;
+import com.potaliadmin.framework.cache.address.CityCache;
 import com.potaliadmin.framework.cache.classified.PrimaryCategoryCache;
 import com.potaliadmin.framework.cache.classified.SecondaryCategoryCache;
 import com.potaliadmin.framework.elasticsearch.BaseESService;
@@ -132,17 +135,27 @@ public class ClassifiedServiceImpl implements ClassifiedService {
       primaryCategoryDtoList.add(primaryCategoryDto);
     }
 
+    List<CityDto> cityDtoList = new ArrayList<CityDto>();
+    List<CityVO> cityVOList = CityCache.getCache().getCityVO();
+    for (CityVO cityVO : cityVOList) {
+      CityDto cityDto = new CityDto();
+      cityDto.setId(cityVO.getId());
+      cityDto.setName(cityVO.getName());
+      cityDtoList.add(cityDto);
+    }
+
 
 
     PrepareClassifiedResponse prepareClassifiedResponse = new PrepareClassifiedResponse();
     prepareClassifiedResponse.setCircleDtoList(circleDtoList);
     prepareClassifiedResponse.setPrimaryCategoryDtoList(primaryCategoryDtoList);
+    prepareClassifiedResponse.setCityDtoList(cityDtoList);
 
     return prepareClassifiedResponse;
   }
 
   @Override
-  public GenericPostResponse createClassifiedPost(ClassifiedPostRequest classifiedPostRequest,
+  public ClassifiedPostResponse createClassifiedPost(ClassifiedPostRequest classifiedPostRequest,
                                                   List<FormDataBodyPart> imgFiles,
                                                   List<FormDataBodyPart> jFiles) {
 
@@ -168,7 +181,7 @@ public class ClassifiedServiceImpl implements ClassifiedService {
     }
 
     if (!isAuthorized) {
-      GenericPostResponse genericPostResponse = new GenericPostResponse();
+      ClassifiedPostResponse genericPostResponse = new ClassifiedPostResponse();
       genericPostResponse.setException(true);
       genericPostResponse.addMessage("You are not the part of this club");
       return genericPostResponse;
@@ -178,10 +191,10 @@ public class ClassifiedServiceImpl implements ClassifiedService {
     // set blob
     PostBlob postBlob = getPostBlobDao().findByPostId(post.getId());
     if (postBlob == null) {
-      JobResponse jobResponse = new JobResponse();
-      jobResponse.setException(Boolean.TRUE);
-      jobResponse.addMessage("Some Internal Exception Occurred!");
-      return jobResponse;
+      ClassifiedPostResponse genericPostResponse = new ClassifiedPostResponse();
+      genericPostResponse.setException(Boolean.TRUE);
+      genericPostResponse.addMessage("Some Internal Exception Occurred!");
+      return genericPostResponse;
     }
 
     PostVO postVO = new PostVO(post, postBlob);
@@ -194,10 +207,10 @@ public class ClassifiedServiceImpl implements ClassifiedService {
     if (imgFiles != null && !imgFiles.isEmpty()) {
       imageResponseDtoList = getPostService().postImages(imgFiles, post.getId());
       if (imageResponseDtoList == null || imageResponseDtoList.isEmpty()) {
-        JobResponse jobResponse = new JobResponse();
-        jobResponse.setException(Boolean.TRUE);
-        jobResponse.addMessage("Some Internal Exception Occurred!");
-        return jobResponse;
+        ClassifiedPostResponse genericPostResponse = new ClassifiedPostResponse();
+        genericPostResponse.setException(Boolean.TRUE);
+        genericPostResponse.addMessage("Some Internal Exception Occurred!");
+        return genericPostResponse;
       }
     }
 
@@ -228,10 +241,10 @@ public class ClassifiedServiceImpl implements ClassifiedService {
     if (jFiles != null && !jFiles.isEmpty()) {
       docResponseDtoList = getPostService().postRawFiles(jFiles, post.getId());
       if (docResponseDtoList == null || docResponseDtoList.isEmpty()) {
-        JobResponse jobResponse = new JobResponse();
-        jobResponse.setException(Boolean.TRUE);
-        jobResponse.addMessage("Some Internal Exception Occurred!");
-        return jobResponse;
+        ClassifiedPostResponse classifiedPostResponse = new ClassifiedPostResponse();
+        classifiedPostResponse.setException(Boolean.TRUE);
+        classifiedPostResponse.addMessage("Some Internal Exception Occurred!");
+        return classifiedPostResponse;
       }
     }
 
@@ -273,22 +286,27 @@ public class ClassifiedServiceImpl implements ClassifiedService {
     boolean published = getBaseESService().put(postVO);
     if (published) {
       ClassifiedVO classifiedVO = new ClassifiedVO(post);
+      boolean classifiedPublished = getBaseESService().put(classifiedVO);
+      if (!classifiedPublished) {
+        getBaseESService().delete(postVO.getId(), PostVO.class);
+        ClassifiedPostResponse classifiedPostResponse = new ClassifiedPostResponse();
+        classifiedPostResponse.setException(true);
+        classifiedPostResponse.addMessage("Something unexpected occurred ! Try Again");
+        return classifiedPostResponse;
+      } else {
+        return createPostResponse(postVO, classifiedVO,userResponse);
+      }
 
-      return createPostResponse(postVO, userResponse);
     } else {
-      GenericPostResponse postResponse = new GenericPostResponse();
-      postResponse.setException(true);
-      postResponse.addMessage("Something unexpected occurred ! Try Again");
-      return postResponse;
+      ClassifiedPostResponse classifiedPostResponse = new ClassifiedPostResponse();
+      classifiedPostResponse.setException(true);
+      classifiedPostResponse.addMessage("Something unexpected occurred ! Try Again");
+      return classifiedPostResponse;
     }
 
-
-
-
-    return null;
   }
 
-  private ClassifiedPostResponse createPostResponse(PostVO postVO, UserResponse userResponse) {
+  private ClassifiedPostResponse createPostResponse(PostVO postVO, ClassifiedVO classifiedVO,UserResponse userResponse) {
     ClassifiedPostResponse postResponse = new ClassifiedPostResponse();
     postResponse.setPostId(postVO.getPostId());
     postResponse.setSubject(postVO.getSubject());
@@ -330,6 +348,8 @@ public class ClassifiedServiceImpl implements ClassifiedService {
     }
 
     postResponse.setCircleDtoList(circleDtoList);
+    postResponse.setCityDtoList(classifiedVO.getLocationList());
+    postResponse.setSecondaryCategoryDtoList(classifiedVO.getSecondaryCategoryDtoList());
 
     postResponse.setNumComment(postVO.getNumComment());
     postResponse.setNumImportant(postVO.getNumImportant());
