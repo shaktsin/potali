@@ -1,5 +1,6 @@
 package com.potaliadmin.dto.internal.cache.classified;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -10,7 +11,7 @@ public class PrimaryCategoryDto {
   private Long id;
   private String name;
   private Boolean selected;
-  private List<SecondaryCategoryDto> secondaryCategoryDtoList;
+  private List<SecondaryCategoryDto> secondaryCategoryDtoList = new ArrayList<SecondaryCategoryDto>();
 
 
   public Long getId() {
@@ -43,5 +44,11 @@ public class PrimaryCategoryDto {
 
   public void setSecondaryCategoryDtoList(List<SecondaryCategoryDto> secondaryCategoryDtoList) {
     this.secondaryCategoryDtoList = secondaryCategoryDtoList;
+  }
+
+  public void addSecondaryCategoryDto(SecondaryCategoryDto secondaryCategoryDto) {
+    if (secondaryCategoryDto != null) {
+      this.secondaryCategoryDtoList.add(secondaryCategoryDto);
+    }
   }
 }

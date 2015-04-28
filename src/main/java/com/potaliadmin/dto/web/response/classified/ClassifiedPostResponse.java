@@ -1,27 +1,16 @@
 package com.potaliadmin.dto.web.response.classified;
 
 import com.potaliadmin.dto.internal.cache.classified.PrimaryCategoryDto;
-import com.potaliadmin.dto.web.response.base.GenericBaseResponse;
-import com.potaliadmin.dto.web.response.circle.CircleDto;
 import com.potaliadmin.dto.web.response.post.GenericPostResponse;
 
 import java.util.List;
 
 /**
- * Created by shaktsin on 4/5/15.
+ * Created by shaktsin on 4/26/15.
  */
-public class PrepareClassifiedResponse extends GenericBaseResponse {
+public class ClassifiedPostResponse extends GenericPostResponse {
 
-  private List<CircleDto> circleDtoList;
   private List<PrimaryCategoryDto> primaryCategoryDtoList;
-
-  public List<CircleDto> getCircleDtoList() {
-    return circleDtoList;
-  }
-
-  public void setCircleDtoList(List<CircleDto> circleDtoList) {
-    this.circleDtoList = circleDtoList;
-  }
 
   public List<PrimaryCategoryDto> getPrimaryCategoryDtoList() {
     return primaryCategoryDtoList;

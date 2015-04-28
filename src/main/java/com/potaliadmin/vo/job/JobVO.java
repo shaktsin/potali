@@ -34,7 +34,7 @@ public class JobVO extends BaseElasticVO {
     super(id);
   }
 
-  public JobVO(Job job) {
+  public  JobVO(Job job) {
     super(job.getId());
     this.setParentId(job.getId().toString());
     this.setTimeSpecified(job.isTimeSpecified());
