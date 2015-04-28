@@ -71,6 +71,7 @@ public class UserResource {
       UserResponse userResponse = getLoginService().signUp(userSignUpRequest);
       if (!userResponse.isException()) {
         UserResourceResponse userResourceResponse = new UserResourceResponse();
+        userResourceResponse.setUserId(userResponse.getId());
         userResourceResponse.setName(userResponse.getName());
         userResourceResponse.setEmail(userResponse.getEmail());
         userResourceResponse.setVerified(userResponse.isVerified());
@@ -125,6 +126,7 @@ public class UserResource {
       UserResponse userResponse = getLoginService().login(email, password);
       if (!userResponse.isException()) {
         UserResourceResponse userResourceResponse = new UserResourceResponse();
+        userResourceResponse.setUserId(userResponse.getId());
         userResourceResponse.setName(userResponse.getName());
         userResourceResponse.setEmail(userResponse.getEmail());
         userResourceResponse.setAuthToken(SecurityToken.getSecurityToken(email, password, userResponse.getInstituteId()));
