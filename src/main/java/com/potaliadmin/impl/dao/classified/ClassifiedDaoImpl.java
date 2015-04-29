@@ -5,9 +5,13 @@ import com.potaliadmin.domain.address.City;
 import com.potaliadmin.domain.classified.ClassifiedPost;
 import com.potaliadmin.domain.classified.SecondaryCategory;
 import com.potaliadmin.domain.industry.IndustryRoles;
+import com.potaliadmin.domain.post.PostBlob;
 import com.potaliadmin.dto.internal.hibernate.post.CreatePostBlobRequest;
+import com.potaliadmin.dto.web.request.classified.ClassifiedEditRequest;
 import com.potaliadmin.dto.web.request.classified.ClassifiedPostRequest;
+import com.potaliadmin.dto.web.response.user.UserResponse;
 import com.potaliadmin.exceptions.InValidInputException;
+import com.potaliadmin.exceptions.PotaliRuntimeException;
 import com.potaliadmin.impl.framework.BaseDaoImpl;
 import com.potaliadmin.pact.dao.city.CityDao;
 import com.potaliadmin.pact.dao.classified.ClassifiedDao;
@@ -82,6 +86,49 @@ public class ClassifiedDaoImpl extends BaseDaoImpl implements ClassifiedDao {
 
 
     return classifiedPost;
+  }
+
+  @Override
+  public ClassifiedPost editClassified(ClassifiedEditRequest classifiedEditRequest) {
+    ClassifiedPost classifiedPost = get(ClassifiedPost.class, classifiedEditRequest.getPostId());
+    if (classifiedPost == null) {
+      throw new InValidInputException("Attachment with no post associated");
+    }
+
+    UserResponse postUser = getUserService().findById(classifiedPost.getUserId());
+    if (postUser == null) {
+      throw new RuntimeException("Something unexpected occurred, please try again");
+    }
+
+    classifiedPost.setUserId(classifiedEditRequest.getUserId());
+    classifiedPost.setUserInstituteId(classifiedEditRequest.getUserInstituteId());
+    classifiedPost.setSubject(classifiedEditRequest.getSubject());
+    classifiedPost.setContent(StringUtils.substring(classifiedEditRequest.getContent(), 0, CONTENT_SIZE));
+    classifiedPost.setReplyEmail(classifiedEditRequest.getReplyEmail());
+    classifiedPost.setReplyPhone(classifiedEditRequest.getReplyPhone());
+    classifiedPost.setReplyWatsApp(classifiedEditRequest.getReplyWatsApp());
+    classifiedPost.setShareEmail(EnumReactions.isValidShareReaction(classifiedEditRequest.getShareDto().getShareEmail()));
+    classifiedPost.setSharePhone(EnumReactions.isValidShareReaction(classifiedEditRequest.getShareDto().getSharePhone()));
+    classifiedPost.setShareWatsApp(EnumReactions.isValidShareReaction(classifiedEditRequest.getShareDto().getShareWatsApp()));
+
+
+    // set location set
+    Set<City> citySet = getCityDao().findListOfCity(classifiedEditRequest.getLocationIdList());
+    classifiedPost.setCitySet(citySet);
+
+    Set<SecondaryCategory> industryRolesSet = getSecondaryCategoryDao().
+        findSecondaryCategoryByIdList(classifiedEditRequest.getSecondaryCatList());
+    classifiedPost.setSecondaryCategorySet(industryRolesSet);
+
+    PostBlob postBlob = getPostBlobDao().findByPostId(classifiedEditRequest.getPostId());
+    if (postBlob == null) {
+      throw new PotaliRuntimeException("Some exception occurred, please try again");
+    }
+    postBlob.setContent(classifiedEditRequest.getContent());
+    getPostBlobDao().save(postBlob);
+
+
+    return (ClassifiedPost)save(classifiedPost);
   }
 
 

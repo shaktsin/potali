@@ -20,7 +20,7 @@ import java.util.Set;
 /**
  * Created by shaktsin on 4/27/15.
  */
-@ElasticEntity(type = "job", parentType = "post")
+@ElasticEntity(type = "classified", parentType = "post")
 public class ClassifiedVO extends BaseElasticVO {
 
   private List<PrimaryCategoryDto> primaryCategoryDtoList;
