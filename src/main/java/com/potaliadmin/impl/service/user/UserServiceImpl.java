@@ -235,7 +235,7 @@ public class UserServiceImpl implements UserService {
     userResponse.setInstituteId(user.getInstituteId());
     userResponse.setImage(user.getProfileImage());
     userResponse.setFirstName(user.getFirstName());
-    userResponse.setLastName(user.getFirstName());
+    userResponse.setLastName(user.getLastName());
     userResponse.setYearOfGrad(user.getYearOfGraduation());
     userResponse.setVerified(false);
 

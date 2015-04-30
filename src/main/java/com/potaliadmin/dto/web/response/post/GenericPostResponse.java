@@ -32,6 +32,7 @@ public class GenericPostResponse extends GenericBaseResponse {
   private ShareDto shareDto;
   private int postType;
   public boolean important;
+  private boolean liked;
   private List<String> images;
   private List<CircleDto> circleDtoList;
   private CommentListResponse commentListResponse;
@@ -299,5 +300,13 @@ public class GenericPostResponse extends GenericBaseResponse {
 
   public void setNumLikes(long numLikes) {
     this.numLikes = numLikes;
+  }
+
+  public boolean isLiked() {
+    return liked;
+  }
+
+  public void setLiked(boolean liked) {
+    this.liked = liked;
   }
 }
