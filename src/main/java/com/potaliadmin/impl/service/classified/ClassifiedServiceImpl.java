@@ -614,6 +614,13 @@ public class ClassifiedServiceImpl implements ClassifiedService {
     if (postVO != null && classifiedVO != null) {
       UserResponse postUser = getUserService().findById(postVO.getUserId());
       ClassifiedPostResponse classifiedPostResponse = createPostResponse(postVO, classifiedVO, postUser);
+
+      boolean isImp = getPostService().isPostImportantForUser(postVO.getPostId(), userResponse.getId());
+      boolean isLiked = getPostService().isPostLikedForUser(postVO.getPostId(), userResponse.getId());
+
+      classifiedPostResponse.setImportant(isImp);
+      classifiedPostResponse.setLiked(isLiked);
+
       boolean hasComments = getPostService().postHasComments(postId);
       if (hasComments) {
         TermFilterBuilder termFilterBuilder = FilterBuilders.termFilter("parentId", postVO.getPostId());

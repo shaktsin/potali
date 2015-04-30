@@ -392,6 +392,12 @@ public class JobServiceImpl implements JobService {
       UserResponse postUser = getUserService().findById(postVO.getUserId());
       JobResponse jobResponse = createJobResponse(postVO, jobVO, postUser);
 
+      boolean isImp = getPostService().isPostImportantForUser(postVO.getPostId(), userResponse.getId());
+      boolean isLiked = getPostService().isPostLikedForUser(postVO.getPostId(), userResponse.getId());
+
+      jobResponse.setImportant(isImp);
+      jobResponse.setLiked(isLiked);
+
       boolean hasComments = getPostService().postHasComments(postId);
       if (hasComments) {
         TermFilterBuilder termFilterBuilder = FilterBuilders.termFilter("parentId", postVO.getPostId());
