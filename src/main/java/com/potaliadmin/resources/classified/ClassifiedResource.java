@@ -20,6 +20,8 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.shiro.authz.annotation.RequiresAuthentication;
 import org.glassfish.jersey.media.multipart.FormDataBodyPart;
 import org.glassfish.jersey.media.multipart.FormDataParam;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -33,6 +35,8 @@ import java.util.List;
 @Path("/classified")
 @Component
 public class ClassifiedResource {
+
+  private Logger logger = LoggerFactory.getLogger(ClassifiedResource.class);
 
   @Autowired
   ClassifiedService classifiedService;
@@ -70,6 +74,7 @@ public class ClassifiedResource {
       //return getJobService().createJob(createJobRequest, imgFiles, jFile);
       return getClassifiedService().createClassifiedPost(createJobRequest, imgFiles, jFile);
     } catch (Exception e) {
+      logger.error("Error while creating classified ",e);
       ClassifiedPostResponse classifiedPostResponse = new ClassifiedPostResponse();
       classifiedPostResponse.setException(Boolean.TRUE);
       classifiedPostResponse.addMessage(e.getMessage());

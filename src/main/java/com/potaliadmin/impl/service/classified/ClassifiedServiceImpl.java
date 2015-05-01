@@ -62,6 +62,8 @@ import org.apache.commons.lang.StringUtils;
 import org.elasticsearch.index.query.*;
 import org.elasticsearch.search.sort.SortOrder;
 import org.glassfish.jersey.media.multipart.FormDataBodyPart;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -74,6 +76,9 @@ import java.util.List;
  */
 @Service
 public class ClassifiedServiceImpl implements ClassifiedService {
+
+  private Logger logger = LoggerFactory.getLogger(ClassifiedServiceImpl.class);
+
 
   @Autowired
   UserService userService;
@@ -312,6 +317,7 @@ public class ClassifiedServiceImpl implements ClassifiedService {
       ClassifiedVO classifiedVO = new ClassifiedVO(post);
       boolean classifiedPublished = getBaseESService().put(classifiedVO);
       if (!classifiedPublished) {
+        logger.error("Could not publish post classified" + " " + postVO.getId());
         getBaseESService().delete(postVO.getId(), PostVO.class);
         ClassifiedPostResponse classifiedPostResponse = new ClassifiedPostResponse();
         classifiedPostResponse.setException(true);
