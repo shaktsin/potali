@@ -54,7 +54,7 @@ public class ClassifiedVO extends BaseElasticVO {
       secondaryCategoryDto.setName(secondaryCategoryVO.getName());
       secondaryCategoryDtoList.add(secondaryCategoryDto);
 
-      PrimaryCategoryVO primaryCategoryVO = PrimaryCategoryCache.getCache().getPrimaryCategoryVO(secondaryCategory.getId());
+      PrimaryCategoryVO primaryCategoryVO = PrimaryCategoryCache.getCache().getPrimaryCategoryVO(secondaryCategory.getPrimaryCategoryId());
       PrimaryCategoryDto primaryCategoryDto = new PrimaryCategoryDto();
       primaryCategoryDto.setId(primaryCategoryVO.getId());
       primaryCategoryDto.setName(primaryCategoryDto.getName());
