@@ -14,8 +14,8 @@ public class ClassifiedSearchRequest extends GenericRequest {
   String circleFilter;
   Long postId;
   int operation;
-  int perPage;
-  int pageNo;
+  int perPage = 8;
+  int pageNo = 0;
 
 
   @Override
