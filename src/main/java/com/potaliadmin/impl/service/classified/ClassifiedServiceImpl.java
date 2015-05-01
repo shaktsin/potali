@@ -146,7 +146,7 @@ public class ClassifiedServiceImpl implements ClassifiedService {
     for (PrimaryCategoryVO primaryCategoryVO : primaryCategoryVOs) {
       PrimaryCategoryDto primaryCategoryDto = new PrimaryCategoryDto();
       primaryCategoryDto.setId(primaryCategoryVO.getId());
-      primaryCategoryDto.setName(primaryCategoryDto.getName());
+      primaryCategoryDto.setName(primaryCategoryVO.getName());
       List<Long> secondaryIdList = PrimaryCategoryCache.getCache().getSecondaryCategoriesFromPC(primaryCategoryVO.getId());
       for (Long secondId : secondaryIdList) {
         SecondaryCategoryVO secondaryCategoryVO = SecondaryCategoryCache.getCache().getSecondaryCategoryVO(secondId);
