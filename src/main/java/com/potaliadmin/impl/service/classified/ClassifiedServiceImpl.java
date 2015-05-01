@@ -484,7 +484,7 @@ public class ClassifiedServiceImpl implements ClassifiedService {
     ClassifiedSearchResponse classifiedSearchResponse= new ClassifiedSearchResponse();
     AndFilterBuilder andFilterBuilder = new AndFilterBuilder();
 
-    andFilterBuilder.add(FilterBuilders.termFilter("postType", EnumPostType.JOBS.getId()));
+    andFilterBuilder.add(FilterBuilders.termFilter("postType", EnumPostType.CLASSIFIED.getId()));
 
     andFilterBuilder.add(FilterBuilders.termFilter("userInstituteId", userResponse.getInstituteId()));
     // load more
