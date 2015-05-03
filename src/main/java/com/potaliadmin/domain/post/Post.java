@@ -1,8 +1,12 @@
 package com.potaliadmin.domain.post;
 
+import com.potaliadmin.domain.address.City;
+import com.potaliadmin.domain.circle.Circle;
+
 import javax.persistence.*;
 import java.io.Serializable;
 import java.util.Date;
+import java.util.Set;
 
 /**
  * Created by Shakti Singh on 12/16/14.
@@ -54,6 +58,12 @@ public class Post implements Serializable {
 
   @Column(name = "user_institute_id", nullable = false)
   private Long userInstituteId;
+
+  @ManyToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+  @JoinTable(name="post_has_circle", joinColumns = {
+      @JoinColumn(name = "post_id", nullable = false, updatable = false)} ,
+      inverseJoinColumns = {@JoinColumn(name = "circle_id", nullable = false, updatable = false)})
+  private Set<Circle> circleSet;
 
 
   public Long getId() {
@@ -158,5 +168,13 @@ public class Post implements Serializable {
 
   public void setUserInstituteId(Long userInstituteId) {
     this.userInstituteId = userInstituteId;
+  }
+
+  public Set<Circle> getCircleSet() {
+    return circleSet;
+  }
+
+  public void setCircleSet(Set<Circle> circleSet) {
+    this.circleSet = circleSet;
   }
 }

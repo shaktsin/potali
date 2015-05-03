@@ -2,6 +2,7 @@ package com.potaliadmin.impl.dao.classified;
 
 import com.potaliadmin.constants.reactions.EnumReactions;
 import com.potaliadmin.domain.address.City;
+import com.potaliadmin.domain.circle.Circle;
 import com.potaliadmin.domain.classified.ClassifiedPost;
 import com.potaliadmin.domain.classified.SecondaryCategory;
 import com.potaliadmin.domain.industry.IndustryRoles;
@@ -13,6 +14,7 @@ import com.potaliadmin.dto.web.response.user.UserResponse;
 import com.potaliadmin.exceptions.InValidInputException;
 import com.potaliadmin.exceptions.PotaliRuntimeException;
 import com.potaliadmin.impl.framework.BaseDaoImpl;
+import com.potaliadmin.pact.dao.circle.CircleDao;
 import com.potaliadmin.pact.dao.city.CityDao;
 import com.potaliadmin.pact.dao.classified.ClassifiedDao;
 import com.potaliadmin.pact.dao.classified.SecondaryCategoryDao;
@@ -23,6 +25,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
 import javax.transaction.Transactional;
+import java.util.HashSet;
 import java.util.Set;
 
 /**
@@ -46,6 +49,9 @@ public class ClassifiedDaoImpl extends BaseDaoImpl implements ClassifiedDao {
   @Autowired
   SecondaryCategoryDao secondaryCategoryDao;
 
+  @Autowired
+  CircleDao circleDao;
+
   @Override
   @Transactional
   public ClassifiedPost createClassified(ClassifiedPostRequest classifiedPostRequest) {
@@ -66,6 +72,13 @@ public class ClassifiedDaoImpl extends BaseDaoImpl implements ClassifiedDao {
     classifiedPost.setShareEmail(EnumReactions.isValidShareReaction(classifiedPostRequest.getShareDto().getShareEmail()));
     classifiedPost.setSharePhone(EnumReactions.isValidShareReaction(classifiedPostRequest.getShareDto().getSharePhone()));
     classifiedPost.setShareWatsApp(EnumReactions.isValidShareReaction(classifiedPostRequest.getShareDto().getShareWatsApp()));
+
+    Set<Circle> circles = new HashSet<Circle>();
+    for (long circleId : classifiedPostRequest.getCircleList()) {
+      Circle circle = getCircleDao().get(Circle.class, circleId);
+      circles.add(circle);
+    }
+    classifiedPost.setCircleSet(circles);
 
 
     // set location set
@@ -111,6 +124,13 @@ public class ClassifiedDaoImpl extends BaseDaoImpl implements ClassifiedDao {
     classifiedPost.setSharePhone(EnumReactions.isValidShareReaction(classifiedEditRequest.getShareDto().getSharePhone()));
     classifiedPost.setShareWatsApp(EnumReactions.isValidShareReaction(classifiedEditRequest.getShareDto().getShareWatsApp()));
 
+    Set<Circle> circles = new HashSet<Circle>();
+    for (long circleId : classifiedEditRequest.getCircleList()) {
+      Circle circle = getCircleDao().get(Circle.class, circleId);
+      circles.add(circle);
+    }
+    classifiedPost.setCircleSet(circles);
+
 
     // set location set
     Set<City> citySet = getCityDao().findListOfCity(classifiedEditRequest.getLocationIdList());
@@ -148,5 +168,7 @@ public class ClassifiedDaoImpl extends BaseDaoImpl implements ClassifiedDao {
     return secondaryCategoryDao;
   }
 
-
+  public CircleDao getCircleDao() {
+    return circleDao;
+  }
 }

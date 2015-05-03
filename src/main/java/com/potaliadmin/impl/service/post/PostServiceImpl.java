@@ -288,6 +288,8 @@ public class PostServiceImpl implements PostService {
 
       // final publish how many comments
       postVO.setNumComment(postVO.getNumComment() + 1);
+      postVO.setUpdatedDate(new Date());
+
       getBaseESService().put(postVO);
 
       return commentResponse;

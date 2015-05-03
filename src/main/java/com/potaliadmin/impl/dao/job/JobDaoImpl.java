@@ -2,6 +2,7 @@ package com.potaliadmin.impl.dao.job;
 
 import com.potaliadmin.constants.reactions.EnumReactions;
 import com.potaliadmin.domain.address.City;
+import com.potaliadmin.domain.circle.Circle;
 import com.potaliadmin.domain.industry.IndustryRoles;
 import com.potaliadmin.domain.job.Job;
 import com.potaliadmin.domain.post.PostBlob;
@@ -12,6 +13,7 @@ import com.potaliadmin.dto.web.response.user.UserResponse;
 import com.potaliadmin.exceptions.InValidInputException;
 import com.potaliadmin.exceptions.PotaliRuntimeException;
 import com.potaliadmin.impl.framework.BaseDaoImpl;
+import com.potaliadmin.pact.dao.circle.CircleDao;
 import com.potaliadmin.pact.dao.city.CityDao;
 import com.potaliadmin.pact.dao.industry.IndustryRolesDao;
 import com.potaliadmin.pact.dao.job.JobDao;
@@ -22,6 +24,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.HashSet;
 import java.util.Set;
 
 /**
@@ -43,6 +46,9 @@ public class JobDaoImpl extends BaseDaoImpl implements JobDao {
 
   @Autowired
   UserService userService;
+
+  @Autowired
+  CircleDao circleDao;
 
   @Override
   @Transactional
@@ -70,6 +76,14 @@ public class JobDaoImpl extends BaseDaoImpl implements JobDao {
     job.setShareEmail(EnumReactions.isValidShareReaction(jobCreateRequest.getShareDto().getShareEmail()));
     job.setSharePhone(EnumReactions.isValidShareReaction(jobCreateRequest.getShareDto().getSharePhone()));
     job.setShareWatsApp(EnumReactions.isValidShareReaction(jobCreateRequest.getShareDto().getShareWatsApp()));
+
+
+    Set<Circle> circles = new HashSet<Circle>();
+    for (long circleId : jobCreateRequest.getCircleList()) {
+      Circle circle = getCircleDao().get(Circle.class, circleId);
+      circles.add(circle);
+    }
+    job.setCircleSet(circles);
 
 
     // set location set
@@ -119,6 +133,13 @@ public class JobDaoImpl extends BaseDaoImpl implements JobDao {
     job.setSharePhone(EnumReactions.isValidShareReaction(jobEditRequest.getShareDto().getSharePhone()));
     job.setShareWatsApp(EnumReactions.isValidShareReaction(jobEditRequest.getShareDto().getShareWatsApp()));
 
+    Set<Circle> circles = new HashSet<Circle>();
+    for (long circleId : jobEditRequest.getCircleList()) {
+      Circle circle = getCircleDao().get(Circle.class, circleId);
+      circles.add(circle);
+    }
+    job.setCircleSet(circles);
+
 
     PostBlob postBlob = getPostBlobDao().findByPostId(job.getId());
     if (postBlob == null) {
@@ -149,5 +170,9 @@ public class JobDaoImpl extends BaseDaoImpl implements JobDao {
 
   public UserService getUserService() {
     return userService;
+  }
+
+  public CircleDao getCircleDao() {
+    return circleDao;
   }
 }

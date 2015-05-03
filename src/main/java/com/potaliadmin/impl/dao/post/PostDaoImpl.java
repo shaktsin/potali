@@ -1,6 +1,7 @@
 package com.potaliadmin.impl.dao.post;
 
 import com.potaliadmin.constants.reactions.EnumReactions;
+import com.potaliadmin.domain.circle.Circle;
 import com.potaliadmin.domain.job.Job;
 import com.potaliadmin.domain.post.Post;
 import com.potaliadmin.domain.post.PostBlob;
@@ -11,6 +12,7 @@ import com.potaliadmin.dto.web.response.user.UserResponse;
 import com.potaliadmin.exceptions.InValidInputException;
 import com.potaliadmin.exceptions.PotaliRuntimeException;
 import com.potaliadmin.impl.framework.BaseDaoImpl;
+import com.potaliadmin.pact.dao.circle.CircleDao;
 import com.potaliadmin.pact.dao.post.PostBlobDao;
 import com.potaliadmin.pact.dao.post.PostDao;
 import com.potaliadmin.pact.service.users.UserService;
@@ -18,6 +20,9 @@ import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * Created by shaktsin on 3/28/15.
@@ -31,6 +36,8 @@ public class PostDaoImpl extends BaseDaoImpl implements PostDao {
   PostBlobDao postBlobDao;
   @Autowired
   UserService userService;
+  @Autowired
+  CircleDao circleDao;
 
 
   @Override
@@ -53,6 +60,13 @@ public class PostDaoImpl extends BaseDaoImpl implements PostDao {
     post.setShareEmail(EnumReactions.isValidShareReaction(newsFeedCreateRequest.getShareDto().getShareEmail()));
     post.setSharePhone(EnumReactions.isValidShareReaction(newsFeedCreateRequest.getShareDto().getSharePhone()));
     post.setShareWatsApp(EnumReactions.isValidShareReaction(newsFeedCreateRequest.getShareDto().getShareWatsApp()));
+
+    Set<Circle> circles = new HashSet<Circle>();
+    for (long circleId : newsFeedCreateRequest.getCircleList()) {
+      Circle circle = getCircleDao().get(Circle.class, circleId);
+      circles.add(circle);
+    }
+    post.setCircleSet(circles);
 
     //save job
     post = (Post) save(post);
@@ -89,6 +103,13 @@ public class PostDaoImpl extends BaseDaoImpl implements PostDao {
     post.setSharePhone(EnumReactions.isValidShareReaction(newsFeedEditRequest.getShareDto().getSharePhone()));
     post.setShareWatsApp(EnumReactions.isValidShareReaction(newsFeedEditRequest.getShareDto().getShareWatsApp()));
 
+    Set<Circle> circles = new HashSet<Circle>();
+    for (long circleId : newsFeedEditRequest.getCircleList()) {
+      Circle circle = getCircleDao().get(Circle.class, circleId);
+      circles.add(circle);
+    }
+    post.setCircleSet(circles);
+
 
     PostBlob postBlob = getPostBlobDao().findByPostId(post.getId());
     if (postBlob == null) {
@@ -107,5 +128,9 @@ public class PostDaoImpl extends BaseDaoImpl implements PostDao {
 
   public UserService getUserService() {
     return userService;
+  }
+
+  public CircleDao getCircleDao() {
+    return circleDao;
   }
 }

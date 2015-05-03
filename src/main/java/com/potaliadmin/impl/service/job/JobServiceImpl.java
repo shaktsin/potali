@@ -439,8 +439,10 @@ public class JobServiceImpl implements JobService {
   }
 
 
-  public JobSearchResponse searchJob(Long[] circleList,Long[] locationList, Long[] rolesList,Long[] industryList,
-                                     Double[] salaryRange,Integer[] experienceRange, EnumSearchOperation searchOperation,
+  public JobSearchResponse searchJob(Long[] circleList,Long[] locationList,
+                                     Long[] rolesList,Long[] industryList,
+                                     Double[] salaryRange,Integer[] experienceRange,
+                                     EnumSearchOperation searchOperation,
                                      Long postId,int perPage, int pageNo) {
 
     long totalHits=0;
@@ -550,7 +552,7 @@ public class JobServiceImpl implements JobService {
 
 
     ESSearchFilter esSearchFilter = new ESSearchFilter().setFilterBuilder(andFilterBuilder)
-        .addSortedMap("id", SortOrder.DESC).setPageNo(pageNo).setPerPage(perPage);
+        .addSortedMap("updatedDate", SortOrder.DESC).setPageNo(pageNo).setPerPage(perPage);
 
     ESSearchResponse esSearchResponse = getBaseESService().search(esSearchFilter, PostVO.class);
 
