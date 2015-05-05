@@ -207,7 +207,7 @@ public class PostServiceImpl implements PostService {
 
     SearchRequestBuilder searchRequestBuilder =  ESCacheManager.getInstance().getClient().
         prepareSearch(ESIndexKeys.INDEX).setTypes(ESIndexKeys.POST)
-        .setQuery(QueryBuilders.rangeQuery("createdDate").gt(currentDate));
+        .setQuery(QueryBuilders.rangeQuery("createdDate").gt(DateUtils.formatDate(currentDate, DateUtils.DEFAULT_ES_DATE_FORMAT)));
 
 
     //List<BaseElasticVO> genericPostResponseList = new ArrayList<BaseElasticVO>();

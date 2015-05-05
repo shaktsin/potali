@@ -36,4 +36,12 @@ public class DateUtils {
     sdf.applyPattern(DEFAULT_ES_DATE_FORMAT);
     return sdf.parse(dateStr);
   }
+
+  public static String formatDate(Date date, String format) {
+    if (null == format) {
+      format = DEFAULT_ES_DATE_FORMAT;
+    }
+    sdf.applyPattern(format);
+    return sdf.format(date);
+  }
 }
