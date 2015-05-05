@@ -33,7 +33,7 @@ public class DateUtils {
   }
 
   public static Date convertFromString(String dateStr) throws Exception {
-    sdf.applyPattern(POSTED_ON_PATTERN);
+    sdf.applyPattern(DEFAULT_ES_DATE_FORMAT);
     return sdf.parse(dateStr);
   }
 }

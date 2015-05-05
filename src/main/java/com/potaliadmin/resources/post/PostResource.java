@@ -3,11 +3,13 @@ package com.potaliadmin.resources.post;
 import com.potaliadmin.dto.web.request.posts.*;
 import com.potaliadmin.dto.web.response.post.*;
 import com.potaliadmin.pact.service.post.PostService;
+import com.potaliadmin.util.DateUtils;
 import org.apache.shiro.authz.annotation.RequiresAuthentication;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import javax.ws.rs.*;
+import java.util.Date;
 
 /**
  * Created by Shakti Singh on 12/28/14.
@@ -174,8 +176,8 @@ public class PostResource {
     }
 
     try {
-      //Date date = DateUtils.convertFromString(postSyncRequest.getPostDate());
-      return getPostService().syncPost(postSyncRequest.getPostId());
+      Date date = DateUtils.convertFromString(postSyncRequest.getPostDate());
+      return getPostService().syncPost(date);
     } catch (Exception e) {
       PostSyncResponse postSyncResponse = new PostSyncResponse();
       postSyncResponse.setException(true);

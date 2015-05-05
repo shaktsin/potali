@@ -9,6 +9,7 @@ import org.apache.commons.lang.StringUtils;
 public class PostSyncRequest extends GenericRequest {
 
   Long postId;
+  String postDate;
 
   public PostSyncRequest() {
   }
@@ -21,7 +22,7 @@ public class PostSyncRequest extends GenericRequest {
   @Override
   public boolean validate() {
     boolean isValid = super.validate();
-    if (isValid && null == postId) {
+    if (isValid && null == postDate) {
       isValid = false;
     }
     return isValid;
@@ -33,5 +34,13 @@ public class PostSyncRequest extends GenericRequest {
 
   public void setPostId(Long postId) {
     this.postId = postId;
+  }
+
+  public String getPostDate() {
+    return postDate;
+  }
+
+  public void setPostDate(String postDate) {
+    this.postDate = postDate;
   }
 }

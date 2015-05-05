@@ -5,6 +5,7 @@ import com.potaliadmin.dto.web.request.posts.*;
 import com.potaliadmin.dto.web.response.post.*;
 import org.glassfish.jersey.media.multipart.FormDataBodyPart;
 
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -14,7 +15,7 @@ public interface PostService {
 
   GenericPostReactionResponse postReaction(PostReactionRequest postReactionRequest);
 
-  PostSyncResponse syncPost(Long postId);
+  PostSyncResponse syncPost(Date currentDate);
 
   CommentResponse postComment(PostCommentRequest postCommentRequest);
 

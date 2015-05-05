@@ -6,6 +6,7 @@ import com.potaliadmin.constants.attachment.EnumImageFormat;
 import com.potaliadmin.constants.cache.ESIndexKeys;
 import com.potaliadmin.constants.image.EnumImageSize;
 import com.potaliadmin.constants.json.DtoJsonConstants;
+import com.potaliadmin.constants.post.EnumPostType;
 import com.potaliadmin.constants.reactions.EnumReactions;
 import com.potaliadmin.domain.attachment.Attachment;
 import com.potaliadmin.domain.comment.Comment;
@@ -68,6 +69,7 @@ import com.potaliadmin.vo.comment.CommentVO;
 import com.potaliadmin.vo.post.PostVO;
 import com.potaliadmin.vo.user.UserVO;
 import org.elasticsearch.action.count.CountResponse;
+import org.elasticsearch.action.search.SearchRequestBuilder;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.index.query.AndFilterBuilder;
 import org.elasticsearch.index.query.BoolFilterBuilder;
@@ -76,6 +78,8 @@ import org.elasticsearch.index.query.HasChildFilterBuilder;
 import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.index.query.TermFilterBuilder;
+import org.elasticsearch.search.SearchHit;
+import org.elasticsearch.search.SearchHits;
 import org.elasticsearch.search.aggregations.AggregationBuilders;
 import org.elasticsearch.search.aggregations.metrics.max.Max;
 import org.elasticsearch.search.aggregations.metrics.max.MaxBuilder;
@@ -197,21 +201,45 @@ public class PostServiceImpl implements PostService {
   }
 
   @Override
-  @Deprecated
-  public PostSyncResponse syncPost(Long postId) {
+  public PostSyncResponse syncPost(Date currentDate) {
     PostSyncResponse postSyncResponse = new PostSyncResponse();
+    long newsFeeds =0, classifieds = 0, jobs = 0;
+
+    SearchRequestBuilder searchRequestBuilder =  ESCacheManager.getInstance().getClient().
+        prepareSearch(ESIndexKeys.INDEX).setTypes(ESIndexKeys.POST)
+        .setQuery(QueryBuilders.rangeQuery("currentDate").gt(currentDate));
 
 
-    CountResponse countResponse = ESCacheManager.getInstance().getClient()
-        .prepareCount(ESIndexKeys.INDEX).setTypes(ESIndexKeys.JOB_TYPE)
-        .setQuery(QueryBuilders.rangeQuery("postId").gt(postId).includeLower(false).includeUpper(false))
-        .execute().actionGet();
+    //List<BaseElasticVO> genericPostResponseList = new ArrayList<BaseElasticVO>();
+    try {
+      SearchResponse searchResponse = searchRequestBuilder.execute().actionGet();
 
-    if (countResponse.status().getStatus() == HttpStatus.OK.value()) {
-      postSyncResponse.setJobCount(countResponse.getCount());
-    } else {
-      postSyncResponse.setException(true);
-      postSyncResponse.addMessage("Something went wrong, please try again");
+      if (searchResponse.status().getStatus() == HttpStatus.OK.value()) {
+        SearchHits searchHits = searchResponse.getHits();
+        //totalHits = searchHits.getTotalHits();
+        for (SearchHit searchHit : searchHits) {
+          try {
+            PostVO baseElasticVO = (PostVO)
+                getBaseESService().parserResponse(searchHit.getSourceAsString(), PostVO.class);
+            if (EnumPostType.NEWSFEED.getId() == baseElasticVO.getPostType()) {
+              newsFeeds += 1;
+            } else if (EnumPostType.CLASSIFIED.getId() == baseElasticVO.getPostType()) {
+              classifieds += 1;
+            } else if (EnumPostType.JOBS.getId() == baseElasticVO.getPostType()) {
+              jobs += 1;
+            }
+          } catch (Exception e) {
+            logger.info("Some exception occurred while parsing data ", e);
+          }
+        }
+
+      }
+
+      postSyncResponse.setJobCount(jobs);
+      postSyncResponse.setClassCount(classifieds);
+      postSyncResponse.setNewsFeedCount(newsFeeds);
+    } catch (Exception e) {
+      logger.error("Error while running search in ES ",e);
     }
     return postSyncResponse;
   }

@@ -9,7 +9,7 @@ public class PostSyncResponse extends GenericBaseResponse {
 
   long jobCount;
   long classCount;
-  long meetCount;
+  long newsFeedCount;
 
   public long getJobCount() {
     return jobCount;
@@ -27,11 +27,11 @@ public class PostSyncResponse extends GenericBaseResponse {
     this.classCount = classCount;
   }
 
-  public long getMeetCount() {
-    return meetCount;
+  public long getNewsFeedCount() {
+    return newsFeedCount;
   }
 
-  public void setMeetCount(long meetCount) {
-    this.meetCount = meetCount;
+  public void setNewsFeedCount(long newsFeedCount) {
+    this.newsFeedCount = newsFeedCount;
   }
 }
