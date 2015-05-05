@@ -164,7 +164,7 @@ public class PostResource {
 
 
   @POST
-  @Path("/post/sync")
+  @Path("/sync")
   @Produces("application/json")
   @RequiresAuthentication
   public PostSyncResponse postSyncResponse(PostSyncRequest postSyncRequest) {
