@@ -10,6 +10,7 @@ import com.potaliadmin.dto.web.response.job.JobSearchResponse;
 import com.potaliadmin.dto.web.response.post.GenericPostResponse;
 import org.glassfish.jersey.media.multipart.FormDataBodyPart;
 
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -29,7 +30,7 @@ public interface ClassifiedService {
 
   ClassifiedSearchResponse searchClassified(Long[] circleList,Long[] locationList, Long[] primaryCatList,
                                                    Long[] secondaryCatList,EnumSearchOperation searchOperation,
-                                                   Long postId, int perPage, int pageNo);
+                                                   Date postDate,Long postId, int perPage, int pageNo);
 
 
   ClassifiedPostResponse getClassified(Long id);

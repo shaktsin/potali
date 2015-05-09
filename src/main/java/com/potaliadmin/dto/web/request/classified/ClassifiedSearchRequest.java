@@ -12,6 +12,7 @@ public class ClassifiedSearchRequest extends GenericRequest {
   String primaryCatFilter;
   String secondaryCatFilter;
   String circleFilter;
+  String postDate;
   Long postId;
   int operation;
   int perPage = 8;
@@ -89,5 +90,13 @@ public class ClassifiedSearchRequest extends GenericRequest {
 
   public void setPageNo(int pageNo) {
     this.pageNo = pageNo;
+  }
+
+  public String getPostDate() {
+    return postDate;
+  }
+
+  public void setPostDate(String postDate) {
+    this.postDate = postDate;
   }
 }

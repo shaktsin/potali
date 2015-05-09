@@ -126,6 +126,8 @@ public class JobResources {
     String[] salaryFilterList=null;
     String[] experienceFilterList=null;
     String[] circleFilterList = null;
+    Date postDate = null;
+
     try {
       if (StringUtils.isNotBlank(jobSearchRequest.getLocationFilter())) {
         locationFilterList = jobSearchRequest.getLocationFilter().split(DefaultConstants.REQUEST_SEPARATOR);
@@ -153,9 +155,14 @@ public class JobResources {
         postId = jobSearchRequest.getPostId();
       }
 
+      if (jobSearchRequest.getPostDate() != null) {
+        postDate = DateUtils.convertFromString(jobSearchRequest.getPostDate());
+      }
+
       return getJobService().searchJob(BaseUtil.convertToLong(circleFilterList),BaseUtil.convertToLong(locationFilterList),BaseUtil.convertToLong(rolesFilterList),
                                         BaseUtil.convertToLong(industryFiltersList),BaseUtil.convertToDouble(salaryFilterList),
-                                        BaseUtil.convertToInteger(experienceFilterList),enumSearchOperation, postId,jobSearchRequest.getPerPage(),jobSearchRequest.getPageNo());
+                                        BaseUtil.convertToInteger(experienceFilterList),enumSearchOperation,
+                                        postDate,postId,jobSearchRequest.getPerPage(),jobSearchRequest.getPageNo());
 
 
 

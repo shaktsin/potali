@@ -15,6 +15,7 @@ import com.potaliadmin.dto.web.response.job.JobResponse;
 import com.potaliadmin.dto.web.response.newsfeed.PrepareNewsFeedResponse;
 import com.potaliadmin.pact.service.classified.ClassifiedService;
 import com.potaliadmin.util.BaseUtil;
+import com.potaliadmin.util.DateUtils;
 import com.potaliadmin.util.rest.InputParserUtil;
 import org.apache.commons.lang.StringUtils;
 import org.apache.shiro.authz.annotation.RequiresAuthentication;
@@ -27,6 +28,7 @@ import org.springframework.stereotype.Component;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -110,6 +112,8 @@ public class ClassifiedResource {
     String[] salaryFilterList=null;
     String[] experienceFilterList=null;
     String[] circleFilterList = null;
+    Date postDate = null;
+
     try {
       if (StringUtils.isNotBlank(classifiedSearchRequest.getLocationFilter())) {
         locationFilterList = classifiedSearchRequest.getLocationFilter().split(DefaultConstants.REQUEST_SEPARATOR);
@@ -134,9 +138,13 @@ public class ClassifiedResource {
         postId = classifiedSearchRequest.getPostId();
       }
 
+      if (classifiedSearchRequest.getPostDate() != null) {
+        postDate = DateUtils.convertFromString(classifiedSearchRequest.getPostDate());
+      }
+
       return getClassifiedService().searchClassified(BaseUtil.convertToLong(circleFilterList),
           BaseUtil.convertToLong(locationFilterList), BaseUtil.convertToLong(primaryCatList),
-          BaseUtil.convertToLong(secondaryCatList), enumSearchOperation, postId, classifiedSearchRequest.getPerPage(),
+          BaseUtil.convertToLong(secondaryCatList), enumSearchOperation, postDate,postId, classifiedSearchRequest.getPerPage(),
           classifiedSearchRequest.getPageNo());
 
 

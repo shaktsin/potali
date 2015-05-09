@@ -16,6 +16,7 @@ public class JobSearchRequest extends GenericRequest {
   String salaryFilter;
   String experienceFilter;
   String circleFilter;
+  String postDate;
   Long postId;
   int operation;
   int perPage;
@@ -115,5 +116,13 @@ public class JobSearchRequest extends GenericRequest {
 
   public void setCircleFilter(String circleFilter) {
     this.circleFilter = circleFilter;
+  }
+
+  public String getPostDate() {
+    return postDate;
+  }
+
+  public void setPostDate(String postDate) {
+    this.postDate = postDate;
   }
 }

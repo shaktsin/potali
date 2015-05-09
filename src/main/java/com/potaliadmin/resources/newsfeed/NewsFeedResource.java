@@ -17,6 +17,7 @@ import com.potaliadmin.dto.web.response.newsfeed.PrepareNewsFeedResponse;
 import com.potaliadmin.dto.web.response.post.GenericPostResponse;
 import com.potaliadmin.pact.service.post.NewsFeedService;
 import com.potaliadmin.util.BaseUtil;
+import com.potaliadmin.util.DateUtils;
 import com.potaliadmin.util.rest.InputParserUtil;
 import org.apache.commons.lang.StringUtils;
 import org.apache.shiro.authz.annotation.RequiresAuthentication;
@@ -27,6 +28,7 @@ import org.springframework.stereotype.Component;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -123,6 +125,7 @@ public class NewsFeedResource {
 
 
     String[] circleFilterList = null;
+    Date postDate = null;
     try {
 
       if (StringUtils.isNotBlank(newsFeedSearchRequest.getCircleFilter())) {
@@ -136,8 +139,13 @@ public class NewsFeedResource {
         postId = newsFeedSearchRequest.getPostId();
       }
 
+      if (newsFeedSearchRequest.getPostDate() != null) {
+        postDate = DateUtils.convertFromString(newsFeedSearchRequest.getPostDate());
+      }
+
+
       return getNewsFeedService().searchNewsFeed(BaseUtil.convertToLong(circleFilterList),
-          enumSearchOperation, postId, newsFeedSearchRequest.getPerPage(), newsFeedSearchRequest.getPageNo());
+          enumSearchOperation, postDate,postId, newsFeedSearchRequest.getPerPage(), newsFeedSearchRequest.getPageNo());
 
 
 

@@ -69,6 +69,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -479,7 +480,7 @@ public class ClassifiedServiceImpl implements ClassifiedService {
   @Override
   public ClassifiedSearchResponse searchClassified(Long[] circleList,Long[] locationList, Long[] primaryCatList,
                                             Long[] secondaryCatList,EnumSearchOperation searchOperation,
-                                            Long postId, int perPage, int pageNo) {
+                                            Date postDate,Long postId, int perPage, int pageNo) {
 
     UserResponse userResponse = getUserService().getLoggedInUser();
 
@@ -500,6 +501,11 @@ public class ClassifiedServiceImpl implements ClassifiedService {
       } else {
         andFilterBuilder.add(FilterBuilders.rangeFilter("postId").lt(postId).gte(postId-perPage));
       }
+    }
+
+    if (postDate != null) {
+      andFilterBuilder.add(FilterBuilders.rangeFilter("createdDate").
+          lt(DateUtils.formatDate(postDate, DateUtils.DEFAULT_ES_DATE_FORMAT)));
     }
 
     if (locationList != null && locationList.length > 0) {

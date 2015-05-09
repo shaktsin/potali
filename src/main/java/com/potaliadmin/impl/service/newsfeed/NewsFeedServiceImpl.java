@@ -56,6 +56,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -476,7 +477,7 @@ public class NewsFeedServiceImpl implements NewsFeedService {
 
   @Override
   public NewsFeedSearchResponse searchNewsFeed(Long[] circleList, EnumSearchOperation searchOperation,
-                                               Long postId, int perPage, int pageNo) {
+                                               Date postDate,Long postId, int perPage, int pageNo) {
 
     UserResponse userResponse = getUserService().getLoggedInUser();
 
@@ -496,6 +497,11 @@ public class NewsFeedServiceImpl implements NewsFeedService {
       } else {
         andFilterBuilder.add(FilterBuilders.rangeFilter("postId").lt(postId).gte(postId-perPage));
       }
+    }
+
+    if (postDate != null) {
+      andFilterBuilder.add(FilterBuilders.rangeFilter("createdDate").
+          lt(DateUtils.formatDate(postDate, DateUtils.DEFAULT_ES_DATE_FORMAT)));
     }
 
     if (circleList != null && circleList.length > 0) {

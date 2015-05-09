@@ -26,7 +26,7 @@ public interface JobService {
 
   public JobSearchResponse searchJob(Long[] circleList,Long[] locationList, Long[] rolesList, Long[] industryList,
                                      Double[] salaryRange, Integer[] experienceRage, EnumSearchOperation searchOperation,
-                                     Long postId, int perPage, int pageNo);
+                                     Date postDate,Long postId, int perPage, int pageNo);
 
   public JobFilterDto getJobFilters(UserResponse userResponse);
 

@@ -8,6 +8,7 @@ import com.potaliadmin.dto.web.response.newsfeed.PrepareNewsFeedResponse;
 import com.potaliadmin.dto.web.response.post.GenericPostResponse;
 import org.glassfish.jersey.media.multipart.FormDataBodyPart;
 
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -29,7 +30,7 @@ public interface NewsFeedService {
                                    List<FormDataBodyPart> jFiles);
 
   public NewsFeedSearchResponse searchNewsFeed(Long[] circleList, EnumSearchOperation searchOperation,
-                                               Long postId, int perPage, int pageNo);
+                                               Date postDate,Long postId, int perPage, int pageNo);
 
 
 }

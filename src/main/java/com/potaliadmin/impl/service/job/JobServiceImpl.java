@@ -443,7 +443,7 @@ public class JobServiceImpl implements JobService {
                                      Long[] rolesList,Long[] industryList,
                                      Double[] salaryRange,Integer[] experienceRange,
                                      EnumSearchOperation searchOperation,
-                                     Long postId,int perPage, int pageNo) {
+                                     Date postDate,Long postId,int perPage, int pageNo) {
 
     long totalHits=0;
 
@@ -466,6 +466,11 @@ public class JobServiceImpl implements JobService {
       } else {
         andFilterBuilder.add(FilterBuilders.rangeFilter("postId").lt(postId).gte(postId-perPage));
       }
+    }
+
+    if (postDate != null) {
+      andFilterBuilder.add(FilterBuilders.rangeFilter("createdDate").
+          lt(DateUtils.formatDate(postDate, DateUtils.DEFAULT_ES_DATE_FORMAT)));
     }
 
     /*// hide all mark as hidden and spam posts from list

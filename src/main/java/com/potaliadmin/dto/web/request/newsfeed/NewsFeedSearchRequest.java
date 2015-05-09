@@ -14,6 +14,7 @@ public class NewsFeedSearchRequest extends GenericRequest {
   int operation;
   int perPage;
   int pageNo;
+  String postDate;
 
   @Override
   public boolean validate() {
@@ -64,5 +65,13 @@ public class NewsFeedSearchRequest extends GenericRequest {
       return DefaultConstants.AND_APP_PAGE_NO;
     }
     return pageNo;
+  }
+
+  public String getPostDate() {
+    return postDate;
+  }
+
+  public void setPostDate(String postDate) {
+    this.postDate = postDate;
   }
 }
