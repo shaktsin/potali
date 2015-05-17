@@ -308,10 +308,14 @@ public class CircleServiceImpl implements CircleService {
       throw new UnAuthorizedAccessException("UnAuthorized Access!");
     }
 
+    if (circleGetRequest.getCircleId() == null) {
+      circleGetRequest.setCircleId(CircleType.CLUB.getId());
+    }
+
     AndFilterBuilder andFilterBuilder = FilterBuilders.andFilter();
     BoolFilterBuilder boolFilterBuilder = FilterBuilders.boolFilter();
     boolFilterBuilder.must(FilterBuilders.termFilter("instituteId", userResponse.getInstituteId()));
-    boolFilterBuilder.must(FilterBuilders.termFilter("type", CircleType.CLUB.getId()));
+    boolFilterBuilder.must(FilterBuilders.termFilter("type", circleGetRequest.getCircleId()));
 
     andFilterBuilder.add(boolFilterBuilder);
     NotFilterBuilder notFilterBuilder = FilterBuilders.notFilter(

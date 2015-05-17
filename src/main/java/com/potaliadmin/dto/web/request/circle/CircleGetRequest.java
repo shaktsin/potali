@@ -11,6 +11,8 @@ public class CircleGetRequest extends GenericRequest {
   private int perPage = DefaultConstants.AND_APP_PER_PAGE;
   private int pageNo = DefaultConstants.AND_APP_PAGE_NO;
 
+  private Integer circleId;
+
   public int getPerPage() {
     return perPage;
   }
@@ -27,4 +29,11 @@ public class CircleGetRequest extends GenericRequest {
     this.pageNo = pageNo;
   }
 
+  public Integer getCircleId() {
+    return circleId;
+  }
+
+  public void setCircleId(Integer circleId) {
+    this.circleId = circleId;
+  }
 }
