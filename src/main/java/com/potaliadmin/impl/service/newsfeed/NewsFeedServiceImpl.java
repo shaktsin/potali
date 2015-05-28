@@ -573,6 +573,7 @@ public class NewsFeedServiceImpl implements NewsFeedService {
     userDto.setId(userResponse.getId());
     userDto.setName(userResponse.getName());
     userDto.setImage(userResponse.getImage());
+    userDto.setGcmId(userResponse.getGcmId());
     postResponse.setUserDto(userDto);
 
     postResponse.setImages(postVO.getImageList());

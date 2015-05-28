@@ -78,6 +78,7 @@ public class GenericPostResponse extends GenericBaseResponse {
     userDto.setName(postUser.getName());
     userDto.setId(postUser.getId());
     userDto.setImage(postUser.getImage());
+    userDto.setGcmId(postUser.getGcmId());
     this.setUserDto(userDto);
 
   }
@@ -111,6 +112,7 @@ public class GenericPostResponse extends GenericBaseResponse {
     userDto.setName(BaseUtil.capitalize(postUser.getName()));
     userDto.setId(postUser.getId());
     userDto.setImage(postUser.getImage());
+    userDto.setGcmId(postUser.getGcmId());
 
     this.setUserDto(userDto);
 

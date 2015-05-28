@@ -952,6 +952,7 @@ public class JobServiceImpl implements JobService {
     userDto.setId(userResponse.getId());
     userDto.setName(userResponse.getName());
     userDto.setImage(userResponse.getImage());
+    userDto.setGcmId(userResponse.getGcmId());
     jobResponse.setUserDto(userDto);
 
     jobResponse.setImages(postVO.getImageList());

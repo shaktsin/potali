@@ -17,6 +17,7 @@ public class UserResourceResponse extends GenericBaseResponse {
   private String firstName;
   private String lastName;
   private int yearOfGrad;
+  private String gcmId;
   //private JobSearchResponse jobSearchResponse;
 
 
@@ -90,5 +91,13 @@ public class UserResourceResponse extends GenericBaseResponse {
 
   public void setYearOfGrad(int yearOfGrad) {
     this.yearOfGrad = yearOfGrad;
+  }
+
+  public String getGcmId() {
+    return gcmId;
+  }
+
+  public void setGcmId(String gcmId) {
+    this.gcmId = gcmId;
   }
 }

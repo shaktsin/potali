@@ -22,6 +22,7 @@ public class UserResponse extends GenericBaseResponse {
   private String firstName;
   private String lastName;
   private int yearOfGrad;
+  private String gcmId;
 
   public UserResponse() {}
 
@@ -38,6 +39,7 @@ public class UserResponse extends GenericBaseResponse {
     firstName = userVO.getFirstName();
     lastName = userVO.getLastName();
     yearOfGrad = userVO.getYearOfGrad();
+    gcmId = userVO.getGcmId();
 
   }
 
@@ -127,6 +129,14 @@ public class UserResponse extends GenericBaseResponse {
 
   public void setYearOfGrad(int yearOfGrad) {
     this.yearOfGrad = yearOfGrad;
+  }
+
+  public String getGcmId() {
+    return gcmId;
+  }
+
+  public void setGcmId(String gcmId) {
+    this.gcmId = gcmId;
   }
 
   /*@Override

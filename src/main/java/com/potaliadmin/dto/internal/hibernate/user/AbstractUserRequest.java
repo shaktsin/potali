@@ -13,6 +13,7 @@ public abstract class AbstractUserRequest {
   protected Boolean verified;
   protected String hash;
   protected Long instituteId;
+  protected String gcmId;
 
   public abstract boolean verify();
 
@@ -78,5 +79,13 @@ public abstract class AbstractUserRequest {
 
   public void setInstituteId(Long instituteId) {
     this.instituteId = instituteId;
+  }
+
+  public String getGcmId() {
+    return gcmId;
+  }
+
+  public void setGcmId(String gcmId) {
+    this.gcmId = gcmId;
   }
 }

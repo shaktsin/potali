@@ -45,8 +45,8 @@ public class UserDaoImpl extends BaseDaoImpl implements UserDao {
     user.setVerificationToken(BaseUtil.generateVerificationToken());
     user.setPasswordChecksum(userSignUpQueryRequest.getHash());
     user.setInstituteId(userSignUpQueryRequest.getInstituteId());
+    user.setGcmId(userSignUpQueryRequest.getGcmId());
     user = (User) save(user);
-
     return user;
   }
 }

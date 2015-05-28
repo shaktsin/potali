@@ -21,12 +21,32 @@ public class Test {
 
     //System.out.println(contentDisposition.toString());
 
-    Integer a = 0;
-    System.out.println("Please enter a number");
+    Test test = new Test();
+    Integer a = 0 ;
+    System.out.println("Choose 1 to check whether a number is neon or not, " +
+        "Choose 2 to check whether (m, n) is brown number or not,"+ "Choose 3 to exit");
+
     Scanner in = new Scanner(System.in);
     a = in.nextInt();
 
-    boolean palindrome = false ;
+
+    switch (a) {
+      case 1:
+        test.isNeonNumber();
+        break;
+      case 2:
+        test.isBrown();
+        break;
+      case 3:
+        System.exit(0);
+        break;
+      default:
+        System.exit(0);
+
+    }
+
+
+    /*boolean palindrome = false ;
     String num = a.toString();
     for (int i=0, j = num.length() - 1; i <= j ; i++, j--) {
       palindrome = (num.charAt(i) == num.charAt(j));
@@ -37,7 +57,9 @@ public class Test {
       System.out.println("Number "+num + " is a palindrome");
     } else {
       System.out.println("Number "+num + " is a not palindrome");
-    }
+    }*/
+
+
 
 
 
@@ -78,6 +100,46 @@ public class Test {
     //System.out.println(test.fact(100));
 
 
+  }
+
+
+  public void isNeonNumber() {
+    int temp = 0, digit = 0 , sum = 0, number = 0;
+    System.out.println("Enter a number");
+    Scanner in = new Scanner(System.in);
+    number = in.nextInt();
+
+    temp = number;
+
+    do {
+      digit = temp%10;
+      sum +=digit;
+      temp = temp/10;
+    } while(temp != 0);
+
+    if (sum*sum == number) {
+      System.out.println("Number " + number + " is a neon number");
+    } else {
+      System.out.println("Number " + number + " is not a neon number");
+    }
+  }
+
+  public void isBrown() {
+    int m = 0, n =0 , square = 0;
+    System.out.println("Enter a number m");
+    Scanner in = new Scanner(System.in);
+    m = in.nextInt();
+    System.out.println("Enter a number n");
+    in = new Scanner(System.in);
+    n = in.nextInt();
+
+    square = n*n;
+
+    if (square == m+1) {
+      System.out.println("Numbers (" + m +", "+ n +") is a brown number");
+    } else {
+      System.out.println("Numbers (" + m +", "+ n +") is not brown number");
+    }
   }
 
 

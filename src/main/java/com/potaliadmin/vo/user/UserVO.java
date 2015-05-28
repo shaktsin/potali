@@ -27,6 +27,7 @@ public class UserVO extends BaseElasticVO {
   private String firstName;
   private String lastName;
   private int yearOfGrad;
+  private String gcmId;
 
   public UserVO() {
   }
@@ -46,6 +47,7 @@ public class UserVO extends BaseElasticVO {
     firstName = user.getFirstName();
     lastName = user.getLastName();
     yearOfGrad = user.getYearOfGraduation();
+    gcmId = user.getGcmId();
 
     if (circleList == null || circleList.isEmpty()) {
       List<Long> emptyArrayList = new ArrayList<Long>();
@@ -68,6 +70,7 @@ public class UserVO extends BaseElasticVO {
     lastName = userResponse.getLastName();
     yearOfGrad = userResponse.getYearOfGrad();
     circleList = userResponse.getCircleList();
+    gcmId = userResponse.getGcmId();
   }
 
   @Override
@@ -158,5 +161,13 @@ public class UserVO extends BaseElasticVO {
 
   public void setYearOfGrad(int yearOfGrad) {
     this.yearOfGrad = yearOfGrad;
+  }
+
+  public String getGcmId() {
+    return gcmId;
+  }
+
+  public void setGcmId(String gcmId) {
+    this.gcmId = gcmId;
   }
 }

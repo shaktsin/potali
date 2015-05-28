@@ -14,6 +14,7 @@ public class UserProfileUpdateResponse extends GenericBaseResponse {
   private String lastName;
   private int yearOfGrad;
   private String email;
+  private String gcmId;
 
 
   public String getAccountName() {
@@ -70,5 +71,13 @@ public class UserProfileUpdateResponse extends GenericBaseResponse {
 
   public void setEmail(String email) {
     this.email = email;
+  }
+
+  public String getGcmId() {
+    return gcmId;
+  }
+
+  public void setGcmId(String gcmId) {
+    this.gcmId = gcmId;
   }
 }

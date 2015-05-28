@@ -80,7 +80,7 @@ public class UserResource {
         userResourceResponse.setYearOfGrad(userResponse.getYearOfGrad());
         userResourceResponse.setImage(userResponse.getImage());
         userResourceResponse.setAuthToken(SecurityToken.getSecurityToken(userResponse.getEmail(), userSignUpRequest.getPassword(), userSignUpRequest.getInstituteId()));
-
+        userResourceResponse.setGcmId(userResponse.getGcmId());
         return userResourceResponse;
 
       } else {
@@ -135,6 +135,7 @@ public class UserResource {
         userResourceResponse.setLastName(userResponse.getLastName());
         userResourceResponse.setYearOfGrad(userResponse.getYearOfGrad());
         userResourceResponse.setImage(userResponse.getImage());
+        userResourceResponse.setGcmId(userResponse.getGcmId());
         return userResourceResponse;
       } else {
         UserResourceResponse userResourceResponse = new UserResourceResponse();

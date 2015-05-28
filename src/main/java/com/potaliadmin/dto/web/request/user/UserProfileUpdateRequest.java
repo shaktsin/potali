@@ -15,6 +15,7 @@ public class UserProfileUpdateRequest extends GenericRequest {
   private String lastName;
   private String accountName;
   private Integer yearOfGrad;
+  private String gcmId;
   //private List<ImageDto> imageDtoList;
 
   public UserProfileUpdateRequest() {
@@ -68,4 +69,11 @@ public class UserProfileUpdateRequest extends GenericRequest {
     this.yearOfGrad = yearOfGrad;
   }
 
+  public String getGcmId() {
+    return gcmId;
+  }
+
+  public void setGcmId(String gcmId) {
+    this.gcmId = gcmId;
+  }
 }

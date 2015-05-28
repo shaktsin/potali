@@ -20,6 +20,7 @@ public class UserSignUpRequest {
   private Integer gender;
   private Boolean verified;
   private boolean thirdPartAuth;
+  private String gcmId;
 
   public boolean validate() {
     boolean isValid = Boolean.TRUE;
@@ -132,5 +133,13 @@ public class UserSignUpRequest {
 
   public void setThirdPartAuth(boolean thirdPartAuth) {
     this.thirdPartAuth = thirdPartAuth;
+  }
+
+  public String getGcmId() {
+    return gcmId;
+  }
+
+  public void setGcmId(String gcmId) {
+    this.gcmId = gcmId;
   }
 }

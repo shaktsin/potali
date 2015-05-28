@@ -60,6 +60,9 @@ public class User implements Serializable {
   @Column(name = "updated_date", nullable = true)
   private Date updateDate = new Date();
 
+  @Column(name = "gcm_id", nullable = false, length = 512)
+  private String gcmId;
+
 
   public Long getId() {
     return id;
@@ -171,5 +174,13 @@ public class User implements Serializable {
 
   public void setVerificationToken(int verificationToken) {
     this.verificationToken = verificationToken;
+  }
+
+  public String getGcmId() {
+    return gcmId;
+  }
+
+  public void setGcmId(String gcmId) {
+    this.gcmId = gcmId;
   }
 }

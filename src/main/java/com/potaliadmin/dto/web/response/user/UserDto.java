@@ -13,6 +13,7 @@ public class UserDto {
   private int circles;
   private int yearOfGrad;
   private String memberSince;
+  private String gcmId;
 
   public UserDto() {}
 
@@ -23,6 +24,7 @@ public class UserDto {
     this.emailId = userResponse.getEmail();
     yearOfGrad = userResponse.getYearOfGrad();
     circles = userResponse.getCircleList().size();
+    gcmId = userResponse.getGcmId();
   }
 
   public Long getId() {
@@ -65,11 +67,11 @@ public class UserDto {
     this.yearOfGrad = yearOfGrad;
   }
 
-    public String getEmailId() {
+  public String getEmailId() {
         return emailId;
     }
 
-    public void setEmailId(String emailId) {
+  public void setEmailId(String emailId) {
         this.emailId = emailId;
     }
 
@@ -79,5 +81,13 @@ public class UserDto {
 
   public void setMemberSince(String memberSince) {
     this.memberSince = memberSince;
+  }
+
+  public String getGcmId() {
+    return gcmId;
+  }
+
+  public void setGcmId(String gcmId) {
+    this.gcmId = gcmId;
   }
 }

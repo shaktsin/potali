@@ -113,6 +113,7 @@ public class UserServiceImpl implements UserService {
       userResponse.setPasswordChecksum(user.getPasswordChecksum());
       userResponse.setInstituteId(user.getInstituteId());
       userResponse.setImage(user.getProfileImage());
+      userResponse.setGcmId(user.getGcmId());
 
       // put in es
       //getMemCacheService().put(MemCacheNS.USER_BY_ID, user.getId().toString(), userResponse);
@@ -158,6 +159,7 @@ public class UserServiceImpl implements UserService {
       userResponse.setFirstName(user.getFirstName());
       userResponse.setLastName(user.getLastName());
       userResponse.setYearOfGrad(user.getYearOfGraduation());
+      userResponse.setGcmId(user.getGcmId());
 
       // put in es
       //getMemCacheService().put(MemCacheNS.USER_BY_ID, user.getId().toString(), userResponse);
@@ -238,6 +240,7 @@ public class UserServiceImpl implements UserService {
     userResponse.setLastName(user.getLastName());
     userResponse.setYearOfGrad(user.getYearOfGraduation());
     userResponse.setVerified(false);
+    userResponse.setGcmId(user.getGcmId());
 
     // put in mem cache
     //getMemCacheService().put(MemCacheNS.USER_BY_ID, user.getId().toString(), userResponse);
@@ -358,6 +361,9 @@ public class UserServiceImpl implements UserService {
       user.setYearOfGraduation(userProfileUpdateRequest.getYearOfGrad());
 
     }
+    if (userProfileUpdateRequest.getGcmId() != null) {
+      user.setGcmId(userProfileUpdateRequest.getGcmId());
+    }
 
     if (img!=null && img.getContentDisposition().getFileName() != null) {
       try {
@@ -475,6 +481,7 @@ public class UserServiceImpl implements UserService {
     userProfileUpdateResponse.setFirstName(user.getFirstName());
     userProfileUpdateResponse.setLastName(user.getLastName());
     userProfileUpdateResponse.setEmail(user.getEmail());
+    userProfileUpdateRequest.setGcmId(user.getGcmId());
 
     return userProfileUpdateResponse;
   }

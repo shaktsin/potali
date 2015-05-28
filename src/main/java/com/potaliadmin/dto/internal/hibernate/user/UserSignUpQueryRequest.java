@@ -27,6 +27,7 @@ public class UserSignUpQueryRequest extends AbstractUserRequest {
     this.verified = userSignUpRequest.getVerified();
     this.instituteId = userSignUpRequest.getInstituteId();
     this.hash = BaseUtil.passwordEncrypt(userSignUpRequest.getPassword());
+    this.gcmId = userSignUpRequest.getGcmId();
   }
 
   public boolean verify() {
