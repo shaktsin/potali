@@ -90,9 +90,12 @@ public class BaseUtil {
     return new Md5Hash(password, DefaultConstants.passwordSalt, DefaultConstants.hashIterations).toBase64();
   }
 
-  public static String trimContent(String content) {
-    if (content.length() > 300) {
-      return content.substring(0,300)+"...";
+  public static String trimContent(String content, int len) {
+    if (len == 0) {
+      len = 300;
+    }
+    if (content.length() > len) {
+      return content.substring(0,len)+"...";
     } else {
       return content+".";
     }

@@ -56,6 +56,7 @@ import com.potaliadmin.pact.dao.post.PostReactionDao;
 import com.potaliadmin.pact.framework.aws.UploadService;
 import com.potaliadmin.pact.framework.utils.FileUploadService;
 import com.potaliadmin.pact.service.cache.ESCacheService;
+import com.potaliadmin.pact.service.notification.NotificationService;
 import com.potaliadmin.pact.service.post.PostService;
 import com.potaliadmin.pact.service.users.UserService;
 import com.potaliadmin.util.BaseUtil;
@@ -130,7 +131,8 @@ public class PostServiceImpl implements PostService {
   AppProperties appProperties;
   @Autowired
   CircleDao circleDao;
-
+  @Autowired
+  NotificationService notificationService;
 
 
   @Override
@@ -181,6 +183,10 @@ public class PostServiceImpl implements PostService {
         GenericPostReactionResponse genericPostReactionResponse = generatePostReactionResponse(postVO, postReactionVO);
         published = getBaseESService().put(postVO);
         if (published) {
+
+          // if users like it then send notification
+          getNotificationService().sendLikeNotification(postVO.getPostId(), userResponse.getId());
+
           return genericPostReactionResponse;
         } else {
           getBaseESService().delete(postReactions.getId(), PostReactionVO.class);
@@ -320,6 +326,10 @@ public class PostServiceImpl implements PostService {
       postVO.setUpdatedDate(new Date());
 
       getBaseESService().put(postVO);
+
+      // if users like it then send notification
+      getNotificationService().sendCommentNotification(commentVO.getId());
+
 
       return commentResponse;
     } else {
@@ -1500,5 +1510,9 @@ public class PostServiceImpl implements PostService {
 
   public CircleDao getCircleDao() {
     return circleDao;
+  }
+
+  public NotificationService getNotificationService() {
+    return notificationService;
   }
 }

@@ -9,6 +9,9 @@ import java.util.Date;
  */
 @Entity
 @Table(name = "comments")
+@NamedQueries(
+    @NamedQuery(name = "findCommentsByPostId",query = "from Comment a where a.postId = :postId")
+)
 public class Comment implements Serializable {
 
   @Id

@@ -14,9 +14,7 @@ import com.potaliadmin.vo.post.PostVO;
 import org.apache.commons.lang.StringUtils;
 
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
-import java.util.Map;
 
 /**
  * Created by Shakti Singh on 12/20/14.
@@ -69,7 +67,7 @@ public class GenericPostResponse extends GenericBaseResponse {
     this.setShareDto(genericPostVO.getShareDto());
 
     this.setPostedOn(DateUtils.getPostedOnDate(genericPostVO.getCreatedDate()));
-    this.setContent(BaseUtil.trimContent(genericPostVO.getContent()));
+    this.setContent(BaseUtil.trimContent(genericPostVO.getContent(), 0));
 
 
     // set User
@@ -103,7 +101,7 @@ public class GenericPostResponse extends GenericBaseResponse {
     this.setShareDto(postVO.getShareDto());
 
     this.setPostedOn(DateUtils.getPostedOnDate(postVO.getCreatedDate()));
-    this.setContent(BaseUtil.trimContent(postVO.getContent()));
+    this.setContent(BaseUtil.trimContent(postVO.getContent(), 0));
     this.setAttachmentDtoList(postVO.getAttachmentDtoList());
 
     // set User
