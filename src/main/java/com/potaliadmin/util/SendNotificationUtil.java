@@ -23,7 +23,7 @@ public class SendNotificationUtil implements Runnable {
 
   private static final String CONTENT_TYPE = "application/json";
   private static final String GOOGLE_URL = "https://android.googleapis.com/gcm/send";
-  private static final String AUTH_KEY = "key=AIzaSyCRYIzgrBNJhiYAWCZSmwkqtafwfk2zkyk";
+  private static final String AUTH_KEY = "key=AIzaSyDFChuYp5OMPLAjDMSdEQjCCQCWxyw8d8I";
   private static final Integer BATCH_SIZE = 1000;
   private static final String UNINSTALLED_ERROR = "NotRegistered";
 
