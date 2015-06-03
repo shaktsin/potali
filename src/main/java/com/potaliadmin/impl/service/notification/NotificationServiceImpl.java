@@ -41,7 +41,7 @@ public class NotificationServiceImpl implements NotificationService {
 
   private static final String CONTENT_TYPE = "application/json";
   private static final String GOOGLE_URL = "https://android.googleapis.com/gcm/send";
-  private static final String AUTH_KEY = "key=AIzaSyCRYIzgrBNJhiYAWCZSmwkqtafwfk2zkyk";
+  private static final String AUTH_KEY = "key=AIzaSyAPo4ELrlJ852Df5jtzwjHsMJBx0ggZjMc";
   private static final Integer BATCH_SIZE = 1000;
   private static final String UNINSTALLED_ERROR = "NotRegistered";
 

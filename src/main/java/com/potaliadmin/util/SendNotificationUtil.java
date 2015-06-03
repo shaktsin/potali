@@ -111,6 +111,8 @@ public class SendNotificationUtil implements Runnable {
           if (success > 0L) {
             logger.info("Number of notification failures in batch: " + i + " to " + (i + batch) + " is: " + f);
           }
+        } else {
+          logger.info("Could not send notification");
         }
         i = i + batch;
       } catch (Exception e) {
