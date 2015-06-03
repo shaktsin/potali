@@ -185,7 +185,9 @@ public class PostServiceImpl implements PostService {
         if (published) {
 
           // if users like it then send notification
-          getNotificationService().sendLikeNotification(postVO.getPostId(), userResponse.getId());
+          if (postReactionRequest.getActionId().equals(EnumReactions.LIKE_IT.getId())) {
+            getNotificationService().sendLikeNotification(postVO.getPostId(), userResponse.getId());
+          }
 
           return genericPostReactionResponse;
         } else {

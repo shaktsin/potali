@@ -97,7 +97,7 @@ public class NotificationServiceImpl implements NotificationService {
       // add post's user too
       gcmIds.add(postUser.getGcmId());
 
-      SendNotificationUtil sendNotificationUtil = new SendNotificationUtil(gcmIds, title, subject, null);
+      SendNotificationUtil sendNotificationUtil = new SendNotificationUtil(gcmIds, null, title, subject, postId, postVO.getPostType());
       notificationService.execute(sendNotificationUtil);
 
       //isSent = sendNotification(gcmIds, title, subject, null);
@@ -128,7 +128,7 @@ public class NotificationServiceImpl implements NotificationService {
     // add post's user too
     gcmIds.add(postUser.getGcmId());
 
-    SendNotificationUtil sendNotificationUtil = new SendNotificationUtil(gcmIds, title, subject, null);
+    SendNotificationUtil sendNotificationUtil = new SendNotificationUtil(gcmIds, null, title, subject, postId, postVO.getPostType());
     notificationService.execute(sendNotificationUtil);
 
     //isSent = sendNotification(gcmIds, title, subject, null);

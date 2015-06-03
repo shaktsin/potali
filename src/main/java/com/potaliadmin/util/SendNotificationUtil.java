@@ -31,23 +31,28 @@ public class SendNotificationUtil implements Runnable {
   private String imageUrl;
   private String title;
   private String subject;
+  private Long postId;
+  private int postType;
 
 
 
-  public SendNotificationUtil(List<String> gcmIds, String imageUrl, String title, String subject) {
+  public SendNotificationUtil(List<String> gcmIds, String imageUrl, String title, String subject,
+                              Long postId, int postType) {
     this.gcmIds = gcmIds;
     this.imageUrl = imageUrl;
     this.title = title;
     this.subject = subject;
+    this.postId = postId;
+    this.postType = postType;
   }
 
   @Override
   public void run() {
-    sendNotification(this.gcmIds, this.title, this.subject, this.imageUrl);
+    sendNotification(this.gcmIds, this.title, this.subject, this.imageUrl, this.postId, this.postType);
   }
 
   @SuppressWarnings("unchecked")
-  private boolean sendNotification(List<String> gcmIds, String title, String message, String imageUrl) {
+  private boolean sendNotification(List<String> gcmIds, String title, String message, String imageUrl, Long postId, int postType) {
     boolean isSent = false;
 
     long success = 0L, failure = 0l;
@@ -56,6 +61,8 @@ public class SendNotificationUtil implements Runnable {
 
     postObject.put("title", title);
     postObject.put("message", message);
+    postObject.put("postId", postId);
+    postObject.put("post_type", postType);
 
     if (imageUrl != null && !imageUrl.isEmpty()) {
       postObject.put("picture_url", imageUrl);
