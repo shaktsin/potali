@@ -95,10 +95,14 @@ public class NotificationServiceImpl implements NotificationService {
       }
 
       // add post's user too
-      gcmIds.add(postUser.getGcmId());
+      if (!postUser.getId().equals(commentUser.getId())) {
+        gcmIds.add(postUser.getGcmId());
+      }
 
-      SendNotificationUtil sendNotificationUtil = new SendNotificationUtil(gcmIds, null, title, subject, postId, postVO.getPostType());
-      notificationService.execute(sendNotificationUtil);
+      if (gcmIds.size() > 0) {
+        SendNotificationUtil sendNotificationUtil = new SendNotificationUtil(gcmIds, null, title, subject, postId, postVO.getPostType());
+        notificationService.execute(sendNotificationUtil);
+      }
 
       //isSent = sendNotification(gcmIds, title, subject, null);
 
@@ -126,10 +130,15 @@ public class NotificationServiceImpl implements NotificationService {
     String subject = BaseUtil.trimContent(postVO.getSubject(), 200);
 
     // add post's user too
-    gcmIds.add(postUser.getGcmId());
+    if (!postUser.getId().equals(commentUser.getId())) {
+      gcmIds.add(postUser.getGcmId());
+    }
+    //gcmIds.add(postUser.getGcmId());
 
-    SendNotificationUtil sendNotificationUtil = new SendNotificationUtil(gcmIds, null, title, subject, postId, postVO.getPostType());
-    notificationService.execute(sendNotificationUtil);
+    if (gcmIds.size() > 0) {
+      SendNotificationUtil sendNotificationUtil = new SendNotificationUtil(gcmIds, null, title, subject, postId, postVO.getPostType());
+      notificationService.execute(sendNotificationUtil);
+    }
 
     //isSent = sendNotification(gcmIds, title, subject, null);
 
