@@ -41,7 +41,7 @@ public enum CircleType {
   }
 
   public static String getYearGroupName(String year) {
-    return "Batch" + " " + year;
+    return "Class" + " " + year;
   }
 
   public Integer getId() {
