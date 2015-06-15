@@ -69,7 +69,6 @@ import com.potaliadmin.vo.circle.CircleVO;
 import com.potaliadmin.vo.comment.CommentVO;
 import com.potaliadmin.vo.post.PostVO;
 import com.potaliadmin.vo.user.UserVO;
-import org.elasticsearch.action.count.CountResponse;
 import org.elasticsearch.action.search.SearchRequestBuilder;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.index.query.AndFilterBuilder;
@@ -784,7 +783,7 @@ public class PostServiceImpl implements PostService {
 
           Attachment attachment = getAttachmentDao()
               .createAttachment(EnumAttachmentType.IMAGE, path,
-                  EnumImageSize.FIT, postId);
+                  EnumImageSize.FIT, postId, attachmentDto.getFileName());
 
           //attachmentList.add(attachment);
           AttachmentMap attachmentMap = new AttachmentMap();
@@ -834,6 +833,7 @@ public class PostServiceImpl implements PostService {
           createAttachmentResponseDto.setFormat(EnumImageFormat.getImageFormatById(attachment.getFormat()));
           createAttachmentResponseDto.setPublicId(attachment.getPublicId());
           createAttachmentResponseDto.setVersion(attachment.getVersion());
+          createAttachmentResponseDto.setName(attachment.getName());
         }
         createAttachmentResponseDtoList.add(createAttachmentResponseDto);
       }
@@ -878,7 +878,7 @@ public class PostServiceImpl implements PostService {
 
           Attachment attachment = getAttachmentDao()
               .createAttachment(EnumAttachmentType.DOC, path,
-                  EnumImageSize.FIT, postId);
+                  EnumImageSize.FIT, postId, attachmentDto.getFileName());
 
           //attachmentList.add(attachment);
           AttachmentMap attachmentMap = new AttachmentMap();
@@ -928,6 +928,7 @@ public class PostServiceImpl implements PostService {
           createAttachmentResponseDto.setFormat(EnumImageFormat.getImageFormatById(attachment.getFormat()));
           createAttachmentResponseDto.setPublicId(attachment.getPublicId());
           createAttachmentResponseDto.setVersion(attachment.getVersion());
+          createAttachmentResponseDto.setName(attachment.getName());
         }
         createAttachmentResponseDtoList.add(createAttachmentResponseDto);
       }

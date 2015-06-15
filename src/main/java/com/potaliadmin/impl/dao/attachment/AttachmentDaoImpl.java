@@ -8,8 +8,6 @@ import com.potaliadmin.pact.dao.attachment.AttachmentDao;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Repository;
-import org.springframework.transaction.annotation.Propagation;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -23,12 +21,14 @@ public class AttachmentDaoImpl extends BaseDaoImpl implements AttachmentDao {
 
   @Override
   //@Transactional
-  public Attachment createAttachment(EnumAttachmentType enumAttachmentType, String path, EnumImageSize enumImageSize,Long postId) {
+  public Attachment createAttachment(EnumAttachmentType enumAttachmentType, String path,
+                                     EnumImageSize enumImageSize, Long postId, String name) {
     Attachment attachment = new Attachment();
     attachment.setAttachmentType(enumAttachmentType.getId());
     attachment.setSize(enumImageSize.getId());
     attachment.setPath(path);
     attachment.setPostId(postId);
+    attachment.setName(name);
     logger.info(" type " +  enumAttachmentType.getName() +  " path " + path);
     return (Attachment)save(attachment);
     //return attachment;

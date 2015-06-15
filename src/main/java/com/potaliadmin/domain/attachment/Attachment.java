@@ -43,6 +43,9 @@ public class Attachment implements Serializable {
   @Column(name = "format", nullable = true)
   private Integer format;
 
+  @Column(name = "name", nullable = true, length = 100)
+  private String name;
+
 
   @Temporal(TemporalType.TIMESTAMP)
   @Column(name = "created_date",nullable = false)
@@ -149,5 +152,13 @@ public class Attachment implements Serializable {
 
   public void setFormat(Integer format) {
     this.format = format;
+  }
+
+  public String getName() {
+    return name;
+  }
+
+  public void setName(String name) {
+    this.name = name;
   }
 }

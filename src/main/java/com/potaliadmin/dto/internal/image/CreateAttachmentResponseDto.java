@@ -13,6 +13,7 @@ public class CreateAttachmentResponseDto {
   private Long version;
   private String publicId;
   private String format;
+  private String name;
 
   public Long getId() {
     return id;
@@ -60,5 +61,13 @@ public class CreateAttachmentResponseDto {
 
   public void setFormat(String format) {
     this.format = format;
+  }
+
+  public String getName() {
+    return name;
+  }
+
+  public void setName(String name) {
+    this.name = name;
   }
 }

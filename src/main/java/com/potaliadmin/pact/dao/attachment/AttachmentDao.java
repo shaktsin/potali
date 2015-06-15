@@ -12,7 +12,7 @@ import java.util.List;
  */
 public interface AttachmentDao extends BaseDao {
 
-  Attachment createAttachment(EnumAttachmentType enumAttachmentType, String path, EnumImageSize enumImageSize, Long postId);
+  Attachment createAttachment(EnumAttachmentType enumAttachmentType, String path, EnumImageSize enumImageSize, Long postId, String name);
 
   List<Attachment> findByPostId(Long postId);
 }

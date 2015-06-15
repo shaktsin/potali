@@ -209,6 +209,7 @@ public class NewsFeedServiceImpl implements NewsFeedService {
         AttachmentDto attachmentDto = new AttachmentDto();
         attachmentDto.setId(createAttachmentResponseDto.getId());
         attachmentDto.setUrl(imageLink);
+        attachmentDto.setName(createAttachmentResponseDto.getName());
         attachmentDtoList.add(attachmentDto);
         //imageMap.put(createImageResponseDto.getId(), imageLink);
       }
@@ -244,6 +245,7 @@ public class NewsFeedServiceImpl implements NewsFeedService {
         attachmentDto.setId(createAttachmentResponseDto.getId());
         attachmentDto.setUrl(uploadLink);
         attachmentDto.setAttachmentType(EnumAttachmentType.DOC.getName());
+        attachmentDto.setName(createAttachmentResponseDto.getName());
         attachmentDtoList.add(attachmentDto);
 
         //imageMap.put(createImageResponseDto.getId(), imageLink);
@@ -415,6 +417,7 @@ public class NewsFeedServiceImpl implements NewsFeedService {
         AttachmentDto attachmentDto = new AttachmentDto();
         attachmentDto.setId(attachment.getId());
         attachmentDto.setUrl(imageLink);
+        attachmentDto.setName(attachment.getName());
         attachmentDtoList.add(attachmentDto);
       }
       //postVO.setImageMap(imageMap);
@@ -447,6 +450,7 @@ public class NewsFeedServiceImpl implements NewsFeedService {
         attachmentDto.setId(createAttachmentResponseDto.getId());
         attachmentDto.setUrl(uploadLink);
         attachmentDto.setAttachmentType(EnumAttachmentType.DOC.getName());
+        attachmentDto.setName(createAttachmentResponseDto.getName());
         attachmentDtoList.add(attachmentDto);
 
         //imageMap.put(createImageResponseDto.getId(), imageLink);

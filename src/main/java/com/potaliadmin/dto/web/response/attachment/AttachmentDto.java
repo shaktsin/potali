@@ -10,6 +10,7 @@ public class AttachmentDto {
   private Long id;
   private String url;
   private String attachmentType = EnumAttachmentType.IMAGE.getName();
+  private String name;
 
   public Long getId() {
     return id;
@@ -33,5 +34,13 @@ public class AttachmentDto {
 
   public void setAttachmentType(String attachmentType) {
     this.attachmentType = attachmentType;
+  }
+
+  public String getName() {
+    return name;
+  }
+
+  public void setName(String name) {
+    this.name = name;
   }
 }
