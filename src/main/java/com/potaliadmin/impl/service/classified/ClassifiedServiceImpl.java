@@ -558,7 +558,9 @@ public class ClassifiedServiceImpl implements ClassifiedService {
       UserResponse postUser = getUserService().findById(postVO.getUserId());
       GenericPostResponse genericPostResponse = new GenericPostResponse(postVO, postUser);
       boolean isImp = getPostService().isPostImportantForUser(postVO.getPostId(), userResponse.getId());
+      boolean isLiked = getPostService().isPostLikedForUser(postVO.getPostId(), userResponse.getId());
       genericPostResponse.setImportant(isImp);
+      genericPostResponse.setLiked(isLiked);
       genericPostResponseList.add(genericPostResponse);
     }
 
@@ -603,6 +605,12 @@ public class ClassifiedServiceImpl implements ClassifiedService {
       SecondaryCategoryDto secondaryCategoryDto = new SecondaryCategoryDto();
       secondaryCategoryDto.setId(secondaryCategoryVO.getId());
       secondaryCategoryDto.setName(secondaryCategoryVO.getName());
+      secondaryCategoryDto.setPrimaryCatId(secondaryCategoryVO.getPrimaryCategoryId());
+
+      // get primary name
+      PrimaryCategoryVO primaryCategoryVO = PrimaryCategoryCache.getCache().getPrimaryCategoryVO(secondaryCategoryVO.getId());
+      secondaryCategoryDto.setPrimaryCatName(primaryCategoryVO.getName());
+
       if (secondaryCatList != null && secondaryCatList.length > 0) {
         boolean isSelected = Arrays.asList(secondaryCatList).contains(secondaryCategoryVO.getId());
         secondaryCategoryDto.setSelected(isSelected);

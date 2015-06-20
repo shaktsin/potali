@@ -180,7 +180,6 @@ public class PostServiceImpl implements PostService {
       //genericPostReactionResponse.setSuccess(published);
       if (published) {
         GenericPostReactionResponse genericPostReactionResponse = generatePostReactionResponse(postVO, postReactionVO);
-        published = getBaseESService().put(postVO);
         if (published) {
 
           // if users like it then send notification
@@ -1471,6 +1470,8 @@ public class PostServiceImpl implements PostService {
       if (EnumReactions.LIKE_IT.getId().equals(postReactionVO.getId())) {
         postVO.setNumLikes(postVO.getNumLikes() + 1);
       }
+      // put into ES
+      getBaseESService().put(postVO);
 
       GenericPostReactionResponse genericPostReactionResponse = new GenericPostReactionResponse();
       genericPostReactionResponse.setSuccess(true);

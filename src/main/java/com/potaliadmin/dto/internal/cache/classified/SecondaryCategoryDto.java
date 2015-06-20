@@ -8,6 +8,8 @@ public class SecondaryCategoryDto {
   private Long id;
   private String name;
   private Boolean selected;
+  private Long primaryCatId;
+  private String primaryCatName;
 
   public Long getId() {
     return id;
@@ -31,5 +33,21 @@ public class SecondaryCategoryDto {
 
   public void setSelected(Boolean selected) {
     this.selected = selected;
+  }
+
+  public Long getPrimaryCatId() {
+    return primaryCatId;
+  }
+
+  public void setPrimaryCatId(Long primaryCatId) {
+    this.primaryCatId = primaryCatId;
+  }
+
+  public String getPrimaryCatName() {
+    return primaryCatName;
+  }
+
+  public void setPrimaryCatName(String primaryCatName) {
+    this.primaryCatName = primaryCatName;
   }
 }
