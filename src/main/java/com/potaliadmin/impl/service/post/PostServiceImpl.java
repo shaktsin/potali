@@ -1454,20 +1454,20 @@ public class PostServiceImpl implements PostService {
       return commentPostReactionResponse;
     } else {
 
-      if (EnumReactions.HIDE_THIS_POST.getId().equals(postReactionVO.getId())) {
+      if (EnumReactions.HIDE_THIS_POST.getId().equals(postReactionVO.getReactionId())) {
         postVO.setNumHides(postVO.getNumHides() + 1);
       }
 
-      if (EnumReactions.MARK_AS_IMPORTANT.getId().equals(postReactionVO.getId())) {
+      if (EnumReactions.MARK_AS_IMPORTANT.getId().equals(postReactionVO.getReactionId())) {
         postVO.setNumImportant(postVO.getNumImportant() + 1);
       }
 
 
-      if (EnumReactions.MARK_AS_SPAM.getId().equals(postReactionVO.getId())) {
+      if (EnumReactions.MARK_AS_SPAM.getId().equals(postReactionVO.getReactionId())) {
         postVO.setNumSpam(postVO.getNumSpam() + 1);
       }
 
-      if (EnumReactions.LIKE_IT.getId().equals(postReactionVO.getId())) {
+      if (EnumReactions.LIKE_IT.getId().equals(postReactionVO.getReactionId())) {
         postVO.setNumLikes(postVO.getNumLikes() + 1);
       }
       // put into ES
