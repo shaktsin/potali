@@ -568,6 +568,7 @@ public class JobServiceImpl implements JobService {
     List<GenericPostResponse> genericPostResponseList = new ArrayList<GenericPostResponse>();
     for (BaseElasticVO baseElasticVO : postVOList) {
       PostVO postVO = (PostVO) baseElasticVO;
+      JobVO jobVO = (JobVO)getBaseESService().get(postVO.getPostId(), postVO.getPostId(),JobVO.class);
 
       boolean isHiddenOrSpammed = getPostService().isPostMarkHiddenOrSpammed(postVO.getPostId(), userResponse.getId());
       if (isHiddenOrSpammed) {
@@ -580,6 +581,9 @@ public class JobServiceImpl implements JobService {
       boolean isLiked = getPostService().isPostLikedForUser(postVO.getPostId(), userResponse.getId());
       genericPostResponse.setImportant(isImp);
       genericPostResponse.setLiked(isLiked);
+      genericPostResponse.setLocations(jobVO.getLocationList());
+      genericPostResponse.setIndustryRolesDtoList(jobVO.getIndustryRolesList());
+
       genericPostResponseList.add(genericPostResponse);
     }
     jobSearchResponse.setJobCreateResponseList(genericPostResponseList);

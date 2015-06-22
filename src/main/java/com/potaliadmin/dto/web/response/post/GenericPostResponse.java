@@ -1,7 +1,10 @@
 package com.potaliadmin.dto.web.response.post;
 
 import com.potaliadmin.constants.reactions.EnumReactions;
+import com.potaliadmin.dto.internal.cache.classified.SecondaryCategoryDto;
 import com.potaliadmin.dto.internal.cache.es.framework.GenericPostVO;
+import com.potaliadmin.dto.internal.cache.es.job.CityDto;
+import com.potaliadmin.dto.internal.cache.es.job.IndustryRolesDto;
 import com.potaliadmin.dto.web.response.attachment.AttachmentDto;
 import com.potaliadmin.dto.web.response.base.GenericBaseResponse;
 import com.potaliadmin.dto.web.response.circle.CircleDto;
@@ -35,6 +38,11 @@ public class GenericPostResponse extends GenericBaseResponse {
   private List<CircleDto> circleDtoList;
   private CommentListResponse commentListResponse;
   private List<AttachmentDto> attachmentDtoList;
+
+  private List<CityDto> locations;
+  private List<IndustryRolesDto> industryRolesDtoList;
+  private List<SecondaryCategoryDto> secondaryCategoryDtoList;
+
   private long numReplies;
   private long numShared;
   private long numHides;
@@ -308,5 +316,29 @@ public class GenericPostResponse extends GenericBaseResponse {
 
   public void setLiked(boolean liked) {
     this.liked = liked;
+  }
+
+  public List<CityDto> getLocations() {
+    return locations;
+  }
+
+  public void setLocations(List<CityDto> locations) {
+    this.locations = locations;
+  }
+
+  public List<IndustryRolesDto> getIndustryRolesDtoList() {
+    return industryRolesDtoList;
+  }
+
+  public void setIndustryRolesDtoList(List<IndustryRolesDto> industryRolesDtoList) {
+    this.industryRolesDtoList = industryRolesDtoList;
+  }
+
+  public List<SecondaryCategoryDto> getSecondaryCategoryDtoList() {
+    return secondaryCategoryDtoList;
+  }
+
+  public void setSecondaryCategoryDtoList(List<SecondaryCategoryDto> secondaryCategoryDtoList) {
+    this.secondaryCategoryDtoList = secondaryCategoryDtoList;
   }
 }

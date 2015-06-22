@@ -549,6 +549,7 @@ public class ClassifiedServiceImpl implements ClassifiedService {
     List<GenericPostResponse> genericPostResponseList = new ArrayList<GenericPostResponse>();
     for (BaseElasticVO baseElasticVO : postVOList) {
       PostVO postVO = (PostVO) baseElasticVO;
+      ClassifiedVO classifiedVO = (ClassifiedVO) getBaseESService().get(postVO.getPostId(), postVO.getPostId(), ClassifiedVO.class);
 
       boolean isHiddenOrSpammed = getPostService().isPostMarkHiddenOrSpammed(postVO.getPostId(), userResponse.getId());
       if (isHiddenOrSpammed) {
@@ -561,6 +562,8 @@ public class ClassifiedServiceImpl implements ClassifiedService {
       boolean isLiked = getPostService().isPostLikedForUser(postVO.getPostId(), userResponse.getId());
       genericPostResponse.setImportant(isImp);
       genericPostResponse.setLiked(isLiked);
+      genericPostResponse.setSecondaryCategoryDtoList(classifiedVO.getSecondaryCategoryDtoList());
+      genericPostResponse.setLocations(classifiedVO.getLocationList());
       genericPostResponseList.add(genericPostResponse);
     }
 
