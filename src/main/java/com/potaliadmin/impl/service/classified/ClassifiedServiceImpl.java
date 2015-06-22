@@ -603,7 +603,7 @@ public class ClassifiedServiceImpl implements ClassifiedService {
     classifiedSearchResponse.setPrimaryCategoryDtoList(primaryCategoryDtoList);
 
     List<SecondaryCategoryDto> secondaryCategoryDtoList = new ArrayList<SecondaryCategoryDto>();
-    List<SecondaryCategoryVO> secondaryCategoryVOs = SecondaryCategoryCache.getCache().getAllSecondaryCategoryVO();
+    /*List<SecondaryCategoryVO> secondaryCategoryVOs = SecondaryCategoryCache.getCache().getAllSecondaryCategoryVO();
     for (SecondaryCategoryVO secondaryCategoryVO : secondaryCategoryVOs) {
       SecondaryCategoryDto secondaryCategoryDto = new SecondaryCategoryDto();
       secondaryCategoryDto.setId(secondaryCategoryVO.getId());
@@ -619,7 +619,7 @@ public class ClassifiedServiceImpl implements ClassifiedService {
         secondaryCategoryDto.setSelected(isSelected);
       }
       secondaryCategoryDtoList.add(secondaryCategoryDto);
-    }
+    }*/
     classifiedSearchResponse.setSecondaryCategoryDtoList(secondaryCategoryDtoList);
 
     return classifiedSearchResponse;
