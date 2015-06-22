@@ -549,7 +549,14 @@ public class ClassifiedServiceImpl implements ClassifiedService {
     List<GenericPostResponse> genericPostResponseList = new ArrayList<GenericPostResponse>();
     for (BaseElasticVO baseElasticVO : postVOList) {
       PostVO postVO = (PostVO) baseElasticVO;
+      if (postVO == null) {
+        continue;
+      }
       ClassifiedVO classifiedVO = (ClassifiedVO) getBaseESService().get(postVO.getPostId(), postVO.getPostId(), ClassifiedVO.class);
+
+      if (classifiedVO == null) {
+        continue;
+      }
 
       boolean isHiddenOrSpammed = getPostService().isPostMarkHiddenOrSpammed(postVO.getPostId(), userResponse.getId());
       if (isHiddenOrSpammed) {
