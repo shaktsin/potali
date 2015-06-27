@@ -935,6 +935,7 @@ public class JobServiceImpl implements JobService {
     jobResponse.setFrom(jobVO.getFrom());
     jobResponse.setSalaryFrom(jobVO.getSalaryFrom());
     jobResponse.setSalaryTo(jobVO.getSalaryTo());
+    jobResponse.setPostType(postVO.getPostType());
     jobResponse.setPostedOn(DateUtils.getPostedOnDate(postVO.getCreatedDate()));
     //jobResponse.setReplyEmail(fullJobVO.getReplyEmail());
     //jobResponse.setReplyPhone(fullJobVO.getReplyPhone());

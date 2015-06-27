@@ -700,6 +700,7 @@ public class ClassifiedServiceImpl implements ClassifiedService {
     postResponse.setPostId(postVO.getPostId());
     postResponse.setSubject(postVO.getSubject());
     postResponse.setContent(postVO.getContent());
+    postResponse.setPostType(postVO.getPostType());
     postResponse.setPostedOn(DateUtils.getPostedOnDate(postVO.getCreatedDate()));
 
     ReplyDto replyDto = new ReplyDto(-1, -1, -1);

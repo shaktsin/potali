@@ -556,6 +556,7 @@ public class NewsFeedServiceImpl implements NewsFeedService {
     postResponse.setPostId(postVO.getPostId());
     postResponse.setSubject(postVO.getSubject());
     postResponse.setContent(postVO.getContent());
+    postResponse.setPostType(postVO.getPostType());
     postResponse.setPostedOn(DateUtils.getPostedOnDate(postVO.getCreatedDate()));
 
 
