@@ -571,6 +571,10 @@ public class CircleServiceImpl implements CircleService {
 
     for (long circleId : subList) {
 
+      if (circleId == -1) {
+        continue;
+      }
+
       CircleVO circleVO = (CircleVO)
           getBaseESService().get(circleId, null, CircleVO.class);
 
