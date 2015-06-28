@@ -571,7 +571,7 @@ public class CircleServiceImpl implements CircleService {
 
     for (long circleId : subList) {
 
-      if (circleId == -1) {
+      if (circleId == -1l) {
         continue;
       }
 
