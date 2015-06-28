@@ -510,7 +510,10 @@ public class NewsFeedServiceImpl implements NewsFeedService {
     }
 
     if (circleList != null && circleList.length > 0) {
-      List<Long> arrayList = Arrays.asList(circleList);
+      List<Long> arrayList = new ArrayList<Long>();
+      for (long id : circleList) {
+        arrayList.add(id);
+      }
       arrayList.add(DefaultConstants.DEFAULT_FILTER);
       List<Long> finalArray = new ArrayList<Long>();
       finalArray.addAll(arrayList);

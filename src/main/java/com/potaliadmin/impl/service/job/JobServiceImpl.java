@@ -492,7 +492,10 @@ public class JobServiceImpl implements JobService {
 
 
     if (locationList != null && locationList.length > 0) {
-      List<Long> arrayList = Arrays.asList(locationList);
+      List<Long> arrayList = new ArrayList<Long>();
+      for (long id : locationList) {
+        arrayList.add(id);
+      }
       arrayList.add(DefaultConstants.DEFAULT_FILTER);
       List<Long> finalArray = new ArrayList<Long>();
       finalArray.addAll(arrayList);
@@ -502,7 +505,10 @@ public class JobServiceImpl implements JobService {
       //Arrays.asList(locationList);
     }
     if (rolesList != null && rolesList.length > 0) {
-      List<Long> arrayList = Arrays.asList(rolesList);
+      List<Long> arrayList = new ArrayList<Long>();
+      for (long id : rolesList) {
+        arrayList.add(id);
+      }
       if (industryList != null) {
         for (long indId : industryList) {
           arrayList.add(IndustryCache.getCache().getOtherFromParent(indId));
@@ -516,7 +522,10 @@ public class JobServiceImpl implements JobService {
       //andFilterBuilder.add(FilterBuilders.inFilter("industryRolesList.id", rolesList));
     }
     if (industryList != null && industryList.length > 0) {
-      List<Long> arrayList = Arrays.asList(industryList);
+      List<Long> arrayList = new ArrayList<Long>();
+      for (long id : industryList) {
+        arrayList.add(id);
+      }
       arrayList.add(DefaultConstants.DEFAULT_FILTER);
       List<Long> finalArray = new ArrayList<Long>();
       finalArray.addAll(arrayList);

@@ -514,7 +514,10 @@ public class ClassifiedServiceImpl implements ClassifiedService {
 
     if (locationList != null && locationList.length > 0) {
       //locationList = Arrays.asList(locationList);
-      List<Long> arrayList = Arrays.asList(locationList);
+      List<Long> arrayList = new ArrayList<Long>();
+      for (long id : locationList) {
+        arrayList.add(id);
+      }
       arrayList.add(DefaultConstants.DEFAULT_FILTER);
       List<Long> finalArray = new ArrayList<Long>();
       finalArray.addAll(arrayList);
@@ -524,7 +527,10 @@ public class ClassifiedServiceImpl implements ClassifiedService {
       //Arrays.asList(locationList);
     }
     if (primaryCatList != null && primaryCatList.length > 0) {
-      List<Long> arrayList = Arrays.asList(primaryCatList);
+      List<Long> arrayList = new ArrayList<Long>();
+      for (long id : primaryCatList) {
+        arrayList.add(id);
+      }
       arrayList.add(DefaultConstants.DEFAULT_FILTER);
       List<Long> finalArray = new ArrayList<Long>();
       finalArray.addAll(arrayList);
@@ -534,7 +540,10 @@ public class ClassifiedServiceImpl implements ClassifiedService {
       //andFilterBuilder.add(FilterBuilders.inFilter("industryRolesList.id", rolesList));
     }
     if (secondaryCatList != null && secondaryCatList.length > 0) {
-      List<Long> arrayList = Arrays.asList(secondaryCatList);
+      List<Long> arrayList = new ArrayList<Long>();
+      for (long id : secondaryCatList) {
+        arrayList.add(id);
+      }
       if (primaryCatList != null) {
         for (long primaryCatId :  primaryCatList) {
           arrayList.add(PrimaryCategoryCache.getCache().getOtherFromParent(primaryCatId));
@@ -548,7 +557,10 @@ public class ClassifiedServiceImpl implements ClassifiedService {
       //andFilterBuilder.add(FilterBuilders.inFilter("industryRolesList.industryId", industryList));
     }
     if (circleList != null && circleList.length > 0) {
-      List<Long> arrayList = Arrays.asList(circleList);
+      List<Long> arrayList = new ArrayList<Long>();
+      for (long id : circleList) {
+        arrayList.add(id);
+      }
       arrayList.add(DefaultConstants.DEFAULT_FILTER);
       List<Long> finalArray = new ArrayList<Long>();
       finalArray.addAll(arrayList);
