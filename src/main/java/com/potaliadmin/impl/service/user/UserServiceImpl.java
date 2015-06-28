@@ -412,7 +412,7 @@ public class UserServiceImpl implements UserService {
 
       String batchName = CircleType.getYearGroupName(userProfileUpdateRequest.getYearOfGrad().toString());
       AndFilterBuilder andFilterBuilder =
-          FilterBuilders.andFilter(FilterBuilders.termFilter("name", batchName),
+          FilterBuilders.andFilter(FilterBuilders.termFilter("year", userProfileUpdateRequest.getYearOfGrad()),
           FilterBuilders.termFilter("type", CircleType.YEAR.getId()),
           FilterBuilders.termFilter("instituteId", userResponse.getInstituteId()));
 
@@ -447,6 +447,7 @@ public class UserServiceImpl implements UserService {
         circleVO.setAdmin(userResponse.getId());
         circleVO.setInstituteId(userResponse.getInstituteId());
         circleVO.setActive(true);
+        circleVO.setYear(userProfileUpdateRequest.getYearOfGrad());
 
 
         boolean published = getBaseESService().put(circleVO);

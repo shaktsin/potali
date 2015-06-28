@@ -19,6 +19,7 @@ public class CircleVO extends BaseElasticVO {
   private Long admin;
   private Long instituteId;
   private boolean active;
+  private Integer year;
   private List<Long> requestList;
 
   public CircleVO() {
@@ -89,11 +90,19 @@ public class CircleVO extends BaseElasticVO {
     this.requestList = requestList;
   }
 
-    public String getDesc() {
+  public String getDesc() {
         return desc;
     }
 
-    public void setDesc(String desc) {
+  public void setDesc(String desc) {
         this.desc = desc;
     }
+
+  public Integer getYear() {
+    return year;
+  }
+
+  public void setYear(Integer year) {
+    this.year = year;
+  }
 }
