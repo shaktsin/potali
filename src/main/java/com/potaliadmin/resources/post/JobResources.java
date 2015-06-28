@@ -172,7 +172,7 @@ public class JobResources {
       jobSearchResponse.setUpdateMessage(DefaultConstants.UPDATE_MESSAGE);
 
       return jobSearchResponse;
-      
+
     } catch (Exception e) {
       JobSearchResponse jobSearchResponse = new JobSearchResponse();
       jobSearchResponse.setException(true);

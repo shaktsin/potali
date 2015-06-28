@@ -218,13 +218,13 @@ public class UserServiceImpl implements UserService {
     }
 
     InstituteVO instituteVO = InstituteCache.getCache().getInstitute(userSignUpRequest.getInstituteId());
-    if (!userSignUpRequest.getEmail().toLowerCase().contains(instituteVO.getEmSuffix().toLowerCase())) {
+    /*if (!userSignUpRequest.getEmail().toLowerCase().contains(instituteVO.getEmSuffix().toLowerCase())) {
       userResponse = new UserResponse();
       userResponse.setException(Boolean.TRUE);
       userResponse.addMessage("You are not the student of college !"+instituteVO.getNm());
       return userResponse;
       //throw new PotaliRuntimeException("You are not the student of college !"+instituteVO.getNm());
-    }
+    }*/
 
     UserSignUpQueryRequest userSignUpQueryRequest = new UserSignUpQueryRequest(userSignUpRequest);
     User user = getUserDao().createUser(userSignUpQueryRequest);
