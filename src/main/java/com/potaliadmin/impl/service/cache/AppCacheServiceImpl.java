@@ -151,6 +151,11 @@ public class AppCacheServiceImpl implements AppCacheService {
     List<Institute> institutes = getBaseDao().findByQuery(query);
     for (Institute institute : institutes) {
       InstituteVO instituteVO = new InstituteVO(institute);
+      // add all valid emails
+      // now set up industry to industry roles map
+      String query2 = "select ie.emailSuffix from InstituteEmail ie where ie.instituteId=?";
+      List<String> emails = getBaseDao().findByQuery(query2, new Object[]{institute.getId()});
+      instituteVO.setEmails(emails);
       instituteCache.addInstitute(instituteVO.getId(), instituteVO);
     }
     instituteCache.freeze();

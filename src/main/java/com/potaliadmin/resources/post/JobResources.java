@@ -159,14 +159,20 @@ public class JobResources {
         postDate = DateUtils.convertFromString(jobSearchRequest.getPostDate());
       }
 
-      return getJobService().searchJob(BaseUtil.convertToLong(circleFilterList),BaseUtil.convertToLong(locationFilterList),BaseUtil.convertToLong(rolesFilterList),
+
+
+      JobSearchResponse jobSearchResponse = getJobService().searchJob(BaseUtil.convertToLong(circleFilterList),BaseUtil.convertToLong(locationFilterList),BaseUtil.convertToLong(rolesFilterList),
                                         BaseUtil.convertToLong(industryFiltersList),BaseUtil.convertToDouble(salaryFilterList),
                                         BaseUtil.convertToInteger(experienceFilterList),enumSearchOperation,
                                         postDate,postId,jobSearchRequest.getPerPage(),jobSearchRequest.getPageNo());
 
 
+      jobSearchResponse.setAppUpdate(DefaultConstants.FORCE_UPDATE);
+      jobSearchResponse.setUpdateTitle(DefaultConstants.UPDATE_TITLE);
+      jobSearchResponse.setUpdateMessage(DefaultConstants.UPDATE_MESSAGE);
 
-
+      return jobSearchResponse;
+      
     } catch (Exception e) {
       JobSearchResponse jobSearchResponse = new JobSearchResponse();
       jobSearchResponse.setException(true);

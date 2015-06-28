@@ -2,6 +2,8 @@ package com.potaliadmin.dto.internal.cache.institute;
 
 import com.potaliadmin.domain.institute.Institute;
 
+import java.util.List;
+
 /**
  * Created by Shakti Singh on 12/14/14.
  */
@@ -12,6 +14,7 @@ public class InstituteVO {
   private String emSuffix;
   private Boolean thPartyAuth;
   private Integer provider;
+  private List<String> emails;
 
   public InstituteVO(Institute institute) {
     id = institute.getId();
@@ -59,5 +62,13 @@ public class InstituteVO {
 
   public void setProvider(Integer provider) {
     this.provider = provider;
+  }
+
+  public List<String> getEmails() {
+    return emails;
+  }
+
+  public void setEmails(List<String> emails) {
+    this.emails = emails;
   }
 }

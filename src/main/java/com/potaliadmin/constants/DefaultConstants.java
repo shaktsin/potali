@@ -48,4 +48,9 @@ public class DefaultConstants
   public static final String JD ="jd";
 
   public static final String SHARE_SUFFIX = "Shared By OfCampus";
+
+  // APP Update
+  public static final boolean FORCE_UPDATE = false;
+  public static final String UPDATE_TITLE = "Update Required";
+  public static final String UPDATE_MESSAGE = "Update Required";
 }

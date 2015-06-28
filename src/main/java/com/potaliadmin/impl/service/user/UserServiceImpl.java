@@ -671,9 +671,11 @@ public class UserServiceImpl implements UserService {
       List<InstituteVO> instituteVOs = getInstituteReadService().getAllInstitute();
       String emailSuffix = email.split("@")[1];
       for (InstituteVO instituteVO : instituteVOs) {
-        if (instituteVO.getEmSuffix().equals(emailSuffix)) {
-          instituteId = instituteVO.getId();
-          break;
+        for (String emailSuf : instituteVO.getEmails()) {
+          if (emailSuf.equals(emailSuffix)) {
+            instituteId = instituteVO.getId();
+            break;
+          }
         }
       }
     }
