@@ -28,7 +28,7 @@ public class AppResource {
     updateResponse.setUpdateTitle(DefaultConstants.UPDATE_TITLE);
     updateResponse.setUpdateMessage(DefaultConstants.UPDATE_MESSAGE);
     if (updateRequest.getAppVersion() != null &&
-        DefaultConstants.APP_VERSION.equals(updateRequest.getAppVersion())) {
+        !DefaultConstants.APP_VERSION.equals(updateRequest.getAppVersion())) {
       updateResponse.setAppUpdate(true);
     } else {
       updateResponse.setAppUpdate(false);
