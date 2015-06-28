@@ -492,26 +492,34 @@ public class JobServiceImpl implements JobService {
 
 
     if (locationList != null && locationList.length > 0) {
-      TermsFilterBuilder locationFilter = FilterBuilders.inFilter("locationList.id", locationList);
+      List<Long> arrayList = Arrays.asList(locationList);
+      arrayList.add(DefaultConstants.DEFAULT_FILTER);
+      TermsFilterBuilder locationFilter = FilterBuilders.inFilter("locationList.id", arrayList.toArray());
       HasChildFilterBuilder hasLocationChild = FilterBuilders.hasChildFilter(JOB, locationFilter);
       andFilterBuilder.add(hasLocationChild);
       //Arrays.asList(locationList);
     }
     if (rolesList != null && rolesList.length > 0) {
-      TermsFilterBuilder rolesFilter = FilterBuilders.inFilter("industryRolesList.id", rolesList);
+      List<Long> arrayList = Arrays.asList(rolesList);
+      arrayList.add(DefaultConstants.DEFAULT_FILTER);
+      TermsFilterBuilder rolesFilter = FilterBuilders.inFilter("industryRolesList.id", arrayList.toArray());
       HasChildFilterBuilder hasRolesChild = FilterBuilders.hasChildFilter(JOB, rolesFilter);
       andFilterBuilder.add(hasRolesChild);
       //andFilterBuilder.add(FilterBuilders.inFilter("industryRolesList.id", rolesList));
     }
     if (industryList != null && industryList.length > 0) {
-      TermsFilterBuilder industryFilter = FilterBuilders.inFilter("industryRolesList.industryId", industryList);
+      List<Long> arrayList = Arrays.asList(industryList);
+      arrayList.add(DefaultConstants.DEFAULT_FILTER);
+      TermsFilterBuilder industryFilter = FilterBuilders.inFilter("industryRolesList.industryId", arrayList.toArray());
       HasChildFilterBuilder hasIndustryChild = FilterBuilders.hasChildFilter(JOB, industryFilter);
       andFilterBuilder.add(hasIndustryChild);
       //andFilterBuilder.add(FilterBuilders.inFilter("industryRolesList.industryId", industryList));
     }
 
     if (circleList != null && circleList.length > 0) {
-      andFilterBuilder.add(FilterBuilders.inFilter("circleList.id", circleList));
+      List<Long> arrayList = Arrays.asList(circleList);
+      arrayList.add(DefaultConstants.DEFAULT_FILTER);
+      andFilterBuilder.add(FilterBuilders.inFilter("circleList.id", arrayList.toArray()));
     } else {
       if (userResponse.getCircleList() != null && userResponse.getCircleList().size() > 0) {
         //Long[] circleArrayList = (Long[])userResponse.getCircleList().toArray();

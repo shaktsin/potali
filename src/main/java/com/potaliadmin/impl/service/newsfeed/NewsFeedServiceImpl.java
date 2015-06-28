@@ -56,6 +56,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 
@@ -509,7 +510,9 @@ public class NewsFeedServiceImpl implements NewsFeedService {
     }
 
     if (circleList != null && circleList.length > 0) {
-      andFilterBuilder.add(FilterBuilders.inFilter("circleList.id", circleList));
+      List<Long> arrayList = Arrays.asList(circleList);
+      arrayList.add(DefaultConstants.DEFAULT_FILTER);
+      andFilterBuilder.add(FilterBuilders.inFilter("circleList.id", arrayList.toArray()));
     } else {
       if (userResponse.getCircleList() != null && userResponse.getCircleList().size() > 0) {
         //Long[] circleArrayList = (Long[])userResponse.getCircleList().toArray();
