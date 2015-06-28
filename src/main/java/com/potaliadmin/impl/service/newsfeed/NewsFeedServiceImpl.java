@@ -510,9 +510,14 @@ public class NewsFeedServiceImpl implements NewsFeedService {
     }
 
     if (circleList != null && circleList.length > 0) {
-      List<Long> arrayList = Arrays.asList(circleList);
+      List<Long> arrayList = new ArrayList<Long>();
+      for (long id : circleList) {
+        arrayList.add(id);
+      }
       arrayList.add(DefaultConstants.DEFAULT_FILTER);
-      andFilterBuilder.add(FilterBuilders.inFilter("circleList.id", arrayList.toArray()));
+      List<Long> finalArray = new ArrayList<Long>();
+      finalArray.addAll(arrayList);
+      andFilterBuilder.add(FilterBuilders.inFilter("circleList.id", finalArray.toArray()));
     } else {
       if (userResponse.getCircleList() != null && userResponse.getCircleList().size() > 0) {
         //Long[] circleArrayList = (Long[])userResponse.getCircleList().toArray();
@@ -522,7 +527,7 @@ public class NewsFeedServiceImpl implements NewsFeedService {
     }
 
     ESSearchFilter esSearchFilter = new ESSearchFilter().setFilterBuilder(andFilterBuilder)
-        .addSortedMap("updatedDate", SortOrder.DESC).setPageNo(pageNo).setPerPage(perPage);
+        .addSortedMap("postId", SortOrder.DESC).setPageNo(pageNo).setPerPage(perPage);
 
     ESSearchResponse esSearchResponse = getBaseESService().search(esSearchFilter, PostVO.class);
 
