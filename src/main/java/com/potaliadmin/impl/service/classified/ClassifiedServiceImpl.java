@@ -554,7 +554,7 @@ public class ClassifiedServiceImpl implements ClassifiedService {
     }
 
     ESSearchFilter esSearchFilter = new ESSearchFilter().setFilterBuilder(andFilterBuilder)
-        .addSortedMap("updatedDate", SortOrder.DESC).setPageNo(pageNo).setPerPage(perPage);
+        .addSortedMap("postId", SortOrder.DESC).setPageNo(pageNo).setPerPage(perPage);
 
     ESSearchResponse esSearchResponse = getBaseESService().search(esSearchFilter, PostVO.class);
 
