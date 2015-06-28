@@ -40,6 +40,12 @@ public class AppProperties {
   @Value("${CLOUD_SEC_KEY}")
   private String cloudSecKey;
 
+  @Value("${CLOUD_IMAGE_PATH}")
+  private String cloudImagePath;
+
+  @Value("${CLOUD_DOC_PATH}")
+  private String cloudDocPath;
+
 
 
   public boolean isDev() {
@@ -92,5 +98,21 @@ public class AppProperties {
 
   public void setCloudSecKey(String cloudSecKey) {
     this.cloudSecKey = cloudSecKey;
+  }
+
+  public String getCloudImagePath() {
+    return cloudImagePath;
+  }
+
+  public void setCloudImagePath(String cloudImagePath) {
+    this.cloudImagePath = cloudImagePath;
+  }
+
+  public String getCloudDocPath() {
+    return cloudDocPath;
+  }
+
+  public void setCloudDocPath(String cloudDocPath) {
+    this.cloudDocPath = cloudDocPath;
   }
 }

@@ -54,9 +54,9 @@ public class UploadServiceImpl implements UploadService {
 
   @Override
   public String getCanonicalPathOfCloudResource(String publicId, Long version, String format, EnumAttachmentType enumAttachmentType) {
-    String primaryPath = CLOUD_IMAGE_PATH;
+    String primaryPath = getAppProperties().getCloudImagePath();
     if (enumAttachmentType.getId() == EnumAttachmentType.DOC.getId()) {
-      primaryPath = CLOUD_DOC_PATH;
+      primaryPath = getAppProperties().getCloudDocPath();
       return primaryPath  + "v" + version + DefaultConstants.PATH_SEPARATOR
           + publicId ;
     }
