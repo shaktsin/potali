@@ -53,4 +53,5 @@ public class DefaultConstants
   public static final boolean FORCE_UPDATE = false;
   public static final String UPDATE_TITLE = "Update Required";
   public static final String UPDATE_MESSAGE = "Update Required";
+  public static final String APP_VERSION = "1.0.1";
 }

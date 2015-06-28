@@ -20,9 +20,7 @@ public class JobSearchResponse extends GenericBaseResponse {
   private long totalResults;
   private long pageNo;
   private long perPage;
-  private boolean appUpdate;
-  private String updateTitle;
-  private String updateMessage;
+
 
   public List<GenericPostResponse> getJobCreateResponseList() {
     return jobCreateResponseList;
@@ -78,29 +76,5 @@ public class JobSearchResponse extends GenericBaseResponse {
 
   public void setPerPage(long perPage) {
     this.perPage = perPage;
-  }
-
-  public boolean isAppUpdate() {
-    return appUpdate;
-  }
-
-  public void setAppUpdate(boolean appUpdate) {
-    this.appUpdate = appUpdate;
-  }
-
-  public String getUpdateTitle() {
-    return updateTitle;
-  }
-
-  public void setUpdateTitle(String updateTitle) {
-    this.updateTitle = updateTitle;
-  }
-
-  public String getUpdateMessage() {
-    return updateMessage;
-  }
-
-  public void setUpdateMessage(String updateMessage) {
-    this.updateMessage = updateMessage;
   }
 }
