@@ -1,6 +1,8 @@
 package com.potaliadmin.framework.cache.classified;
 
+import com.potaliadmin.constants.DefaultConstants;
 import com.potaliadmin.dto.internal.cache.classified.PrimaryCategoryVO;
+import com.potaliadmin.dto.internal.cache.classified.SecondaryCategoryVO;
 import com.potaliadmin.dto.internal.cache.job.IndustryVO;
 import com.potaliadmin.framework.cache.LocalCache;
 
@@ -57,6 +59,17 @@ public class PrimaryCategoryCache implements LocalCache {
 
   public List<Long> getSecondaryCategoriesFromPC(Long industryId) {
     return pcToSecondaryCategories.get(industryId);
+  }
+
+  public long getOtherFromParent(Long industryId) {
+    for (long ind : pcToSecondaryCategories.get(industryId)) {
+      SecondaryCategoryVO secondaryCategoryVO = SecondaryCategoryCache.getCache().getSecondaryCategoryVO(ind);
+      if (secondaryCategoryVO.getName().equals(DefaultConstants.DEFAULT_OTHER_FILTER)) {
+        return secondaryCategoryVO.getId();
+      }
+    }
+    //return pcToSecondaryCategories.get(industryId);
+    return DefaultConstants.DEFAULT_FILTER;
   }
 
   public static PrimaryCategoryCache getCache() {

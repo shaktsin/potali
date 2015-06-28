@@ -531,7 +531,11 @@ public class ClassifiedServiceImpl implements ClassifiedService {
     }
     if (secondaryCatList != null && secondaryCatList.length > 0) {
       List<Long> arrayList = Arrays.asList(secondaryCatList);
-      arrayList.add(DefaultConstants.DEFAULT_FILTER);
+      if (primaryCatList != null) {
+        for (long primaryCatId :  primaryCatList) {
+          arrayList.add(PrimaryCategoryCache.getCache().getOtherFromParent(primaryCatId));
+        }
+      }
       TermsFilterBuilder secCatFilter = FilterBuilders.inFilter("secondaryCategoryDtoList.id", arrayList.toArray());
       HasChildFilterBuilder hasIndustryChild = FilterBuilders.hasChildFilter(CLASSIFIED, secCatFilter);
       andFilterBuilder.add(hasIndustryChild);

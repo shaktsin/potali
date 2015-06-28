@@ -1,7 +1,10 @@
 package com.potaliadmin.framework.cache.industry;
 
+import com.potaliadmin.constants.DefaultConstants;
+import com.potaliadmin.dto.internal.cache.classified.SecondaryCategoryVO;
 import com.potaliadmin.dto.internal.cache.job.IndustryVO;
 import com.potaliadmin.framework.cache.LocalCache;
+import com.potaliadmin.framework.cache.classified.SecondaryCategoryCache;
 
 import java.util.*;
 
@@ -58,6 +61,17 @@ public class IndustryCache implements LocalCache {
     }
     rolesList.add(industryRolesId);
     industryToIndustryRoles.put(industryId, rolesList);
+  }
+
+  public long getOtherFromParent(Long industryId) {
+    for (long ind : industryToIndustryRoles.get(industryId)) {
+      SecondaryCategoryVO secondaryCategoryVO = SecondaryCategoryCache.getCache().getSecondaryCategoryVO(ind);
+      if (secondaryCategoryVO.getName().equals(DefaultConstants.DEFAULT_OTHER_FILTER)) {
+        return secondaryCategoryVO.getId();
+      }
+    }
+    //return pcToSecondaryCategories.get(industryId);
+    return DefaultConstants.DEFAULT_FILTER;
   }
 
   public void addToIndustryToIndustryRolesMap(Long industryId, List<Long> indRolesList) {

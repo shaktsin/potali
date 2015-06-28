@@ -501,7 +501,11 @@ public class JobServiceImpl implements JobService {
     }
     if (rolesList != null && rolesList.length > 0) {
       List<Long> arrayList = Arrays.asList(rolesList);
-      arrayList.add(DefaultConstants.DEFAULT_FILTER);
+      if (industryList != null) {
+        for (long indId : industryList) {
+          arrayList.add(IndustryCache.getCache().getOtherFromParent(indId));
+        }
+      }
       TermsFilterBuilder rolesFilter = FilterBuilders.inFilter("industryRolesList.id", arrayList.toArray());
       HasChildFilterBuilder hasRolesChild = FilterBuilders.hasChildFilter(JOB, rolesFilter);
       andFilterBuilder.add(hasRolesChild);
