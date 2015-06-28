@@ -516,7 +516,9 @@ public class ClassifiedServiceImpl implements ClassifiedService {
       //locationList = Arrays.asList(locationList);
       List<Long> arrayList = Arrays.asList(locationList);
       arrayList.add(DefaultConstants.DEFAULT_FILTER);
-      TermsFilterBuilder locationFilter = FilterBuilders.inFilter("locationList.id", arrayList.toArray());
+      List<Long> finalArray = new ArrayList<Long>();
+      finalArray.addAll(arrayList);
+      TermsFilterBuilder locationFilter = FilterBuilders.inFilter("locationList.id", finalArray.toArray());
       HasChildFilterBuilder hasLocationChild = FilterBuilders.hasChildFilter(CLASSIFIED, locationFilter);
       andFilterBuilder.add(hasLocationChild);
       //Arrays.asList(locationList);
@@ -524,7 +526,9 @@ public class ClassifiedServiceImpl implements ClassifiedService {
     if (primaryCatList != null && primaryCatList.length > 0) {
       List<Long> arrayList = Arrays.asList(primaryCatList);
       arrayList.add(DefaultConstants.DEFAULT_FILTER);
-      TermsFilterBuilder primaryCatFilter = FilterBuilders.inFilter("primaryCategoryDtoList.id", arrayList.toArray());
+      List<Long> finalArray = new ArrayList<Long>();
+      finalArray.addAll(arrayList);
+      TermsFilterBuilder primaryCatFilter = FilterBuilders.inFilter("primaryCategoryDtoList.id", finalArray.toArray());
       HasChildFilterBuilder hasRolesChild = FilterBuilders.hasChildFilter(CLASSIFIED, primaryCatFilter);
       andFilterBuilder.add(hasRolesChild);
       //andFilterBuilder.add(FilterBuilders.inFilter("industryRolesList.id", rolesList));
@@ -536,7 +540,9 @@ public class ClassifiedServiceImpl implements ClassifiedService {
           arrayList.add(PrimaryCategoryCache.getCache().getOtherFromParent(primaryCatId));
         }
       }
-      TermsFilterBuilder secCatFilter = FilterBuilders.inFilter("secondaryCategoryDtoList.id", arrayList.toArray());
+      List<Long> finalArray = new ArrayList<Long>();
+      finalArray.addAll(arrayList);
+      TermsFilterBuilder secCatFilter = FilterBuilders.inFilter("secondaryCategoryDtoList.id", finalArray.toArray());
       HasChildFilterBuilder hasIndustryChild = FilterBuilders.hasChildFilter(CLASSIFIED, secCatFilter);
       andFilterBuilder.add(hasIndustryChild);
       //andFilterBuilder.add(FilterBuilders.inFilter("industryRolesList.industryId", industryList));
@@ -544,7 +550,9 @@ public class ClassifiedServiceImpl implements ClassifiedService {
     if (circleList != null && circleList.length > 0) {
       List<Long> arrayList = Arrays.asList(circleList);
       arrayList.add(DefaultConstants.DEFAULT_FILTER);
-      andFilterBuilder.add(FilterBuilders.inFilter("circleList.id", arrayList.toArray()));
+      List<Long> finalArray = new ArrayList<Long>();
+      finalArray.addAll(arrayList);
+      andFilterBuilder.add(FilterBuilders.inFilter("circleList.id", finalArray.toArray()));
     } else {
       if (userResponse.getCircleList() != null && userResponse.getCircleList().size() > 0) {
         //Long[] circleArrayList = (Long[])userResponse.getCircleList().toArray();

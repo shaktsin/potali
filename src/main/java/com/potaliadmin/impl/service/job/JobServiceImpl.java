@@ -494,7 +494,9 @@ public class JobServiceImpl implements JobService {
     if (locationList != null && locationList.length > 0) {
       List<Long> arrayList = Arrays.asList(locationList);
       arrayList.add(DefaultConstants.DEFAULT_FILTER);
-      TermsFilterBuilder locationFilter = FilterBuilders.inFilter("locationList.id", arrayList.toArray());
+      List<Long> finalArray = new ArrayList<Long>();
+      finalArray.addAll(arrayList);
+      TermsFilterBuilder locationFilter = FilterBuilders.inFilter("locationList.id", finalArray.toArray());
       HasChildFilterBuilder hasLocationChild = FilterBuilders.hasChildFilter(JOB, locationFilter);
       andFilterBuilder.add(hasLocationChild);
       //Arrays.asList(locationList);
@@ -506,7 +508,9 @@ public class JobServiceImpl implements JobService {
           arrayList.add(IndustryCache.getCache().getOtherFromParent(indId));
         }
       }
-      TermsFilterBuilder rolesFilter = FilterBuilders.inFilter("industryRolesList.id", arrayList.toArray());
+      List<Long> finalArray = new ArrayList<Long>();
+      finalArray.addAll(arrayList);
+      TermsFilterBuilder rolesFilter = FilterBuilders.inFilter("industryRolesList.id", finalArray.toArray());
       HasChildFilterBuilder hasRolesChild = FilterBuilders.hasChildFilter(JOB, rolesFilter);
       andFilterBuilder.add(hasRolesChild);
       //andFilterBuilder.add(FilterBuilders.inFilter("industryRolesList.id", rolesList));
@@ -514,7 +518,9 @@ public class JobServiceImpl implements JobService {
     if (industryList != null && industryList.length > 0) {
       List<Long> arrayList = Arrays.asList(industryList);
       arrayList.add(DefaultConstants.DEFAULT_FILTER);
-      TermsFilterBuilder industryFilter = FilterBuilders.inFilter("industryRolesList.industryId", arrayList.toArray());
+      List<Long> finalArray = new ArrayList<Long>();
+      finalArray.addAll(arrayList);
+      TermsFilterBuilder industryFilter = FilterBuilders.inFilter("industryRolesList.industryId", finalArray.toArray());
       HasChildFilterBuilder hasIndustryChild = FilterBuilders.hasChildFilter(JOB, industryFilter);
       andFilterBuilder.add(hasIndustryChild);
       //andFilterBuilder.add(FilterBuilders.inFilter("industryRolesList.industryId", industryList));
@@ -523,7 +529,9 @@ public class JobServiceImpl implements JobService {
     if (circleList != null && circleList.length > 0) {
       List<Long> arrayList = Arrays.asList(circleList);
       arrayList.add(DefaultConstants.DEFAULT_FILTER);
-      andFilterBuilder.add(FilterBuilders.inFilter("circleList.id", arrayList.toArray()));
+      List<Long> finalArray = new ArrayList<Long>();
+      finalArray.addAll(arrayList);
+      andFilterBuilder.add(FilterBuilders.inFilter("circleList.id", finalArray.toArray()));
     } else {
       if (userResponse.getCircleList() != null && userResponse.getCircleList().size() > 0) {
         //Long[] circleArrayList = (Long[])userResponse.getCircleList().toArray();
