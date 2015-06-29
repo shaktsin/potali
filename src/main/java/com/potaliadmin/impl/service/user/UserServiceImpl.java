@@ -424,8 +424,10 @@ public class UserServiceImpl implements UserService {
         }
 
         circleIdList = userVO.getCircleList();
-        circleIdList.add(circleVO.getId());
-        userVO.setCircleList(circleIdList);
+        if (!circleIdList.contains(circleVO.getId())) {
+          circleIdList.add(circleVO.getId());
+          userVO.setCircleList(circleIdList);
+        }
       } else {
         Circle circle = getCircleDao().createCircle(batchName,  "Club for Year -" + user.getYearOfGraduation() , CircleType.YEAR,
             userResponse, false);
@@ -688,6 +690,7 @@ public class UserServiceImpl implements UserService {
     ESSearchFilter esSearchFilter =
         new ESSearchFilter().setFilterBuilder(andFilterBuilder);
 
+    esSearchFilter.setPerPage(100);
     ESSearchResponse esSearchResponse = getBaseESService().search(esSearchFilter, CircleVO.class);
 
     List<BaseElasticVO> baseElasticVOs = esSearchResponse.getBaseElasticVOs();

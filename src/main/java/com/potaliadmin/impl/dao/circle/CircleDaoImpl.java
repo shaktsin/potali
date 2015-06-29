@@ -60,22 +60,28 @@ public class CircleDaoImpl extends BaseDaoImpl implements CircleDao {
       throw new InValidInputException("CIRCLE_ID_CANNOT_BE_NULL");
     }
 
-    UserCircleMapping userCircleMapping = new UserCircleMapping();
-    userCircleMapping.setAdmin(isAdmin);
-    userCircleMapping.setAuthorised(authorized);
+    UserCircleMapping userCircleMapping = (UserCircleMapping)findUniqueByNamedQueryAndNamedParam("findByUserAndCircle",
+        new String[]{"userId", "circleId"}, new Object[]{userResponse.getId(), circleId});
+    if (userCircleMapping == null) {
+      userCircleMapping = new UserCircleMapping();
+      userCircleMapping.setAdmin(isAdmin);
+      userCircleMapping.setAuthorised(authorized);
 
-    UserCircleMappingKey userCircleMappingKey = new UserCircleMappingKey();
-    userCircleMappingKey.setUserId(userResponse.getId());
-    userCircleMappingKey.setUserInstituteId(userResponse.getInstituteId());
-    userCircleMappingKey.setCircleId(circleId);
+      UserCircleMappingKey userCircleMappingKey = new UserCircleMappingKey();
+      userCircleMappingKey.setUserId(userResponse.getId());
+      userCircleMappingKey.setUserInstituteId(userResponse.getInstituteId());
+      userCircleMappingKey.setCircleId(circleId);
 
-    userCircleMapping.setUserCircleMappingKey(userCircleMappingKey);
+      userCircleMapping.setUserCircleMappingKey(userCircleMappingKey);
+      userCircleMapping = (UserCircleMapping) save(userCircleMapping);
+    }
+
     //userCircleMapping.setCircleId(circleId);
     //userCircleMapping.setUserId(userResponse.getId());
     //userCircleMapping.setUserInstituteId(userResponse.getInstituteId());
 
 
-    return (UserCircleMapping) save(userCircleMapping);
+    return userCircleMapping;
   }
 
   @Override
