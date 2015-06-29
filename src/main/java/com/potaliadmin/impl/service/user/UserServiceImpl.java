@@ -411,17 +411,9 @@ public class UserServiceImpl implements UserService {
     if (userProfileUpdateRequest.getYearOfGrad() != null) {
 
       String batchName = CircleType.getYearGroupName(userProfileUpdateRequest.getYearOfGrad().toString());
-      AndFilterBuilder andFilterBuilder =
-          FilterBuilders.andFilter(FilterBuilders.termFilter("year", userProfileUpdateRequest.getYearOfGrad()),
-          FilterBuilders.termFilter("type", CircleType.YEAR.getId()),
-          FilterBuilders.termFilter("instituteId", userResponse.getInstituteId()));
+      List<BaseElasticVO> baseElasticVOs =
+          getCirclesByName(batchName, CircleType.YEAR.getId(), userResponse.getInstituteId());
 
-      ESSearchFilter esSearchFilter =
-          new ESSearchFilter().setFilterBuilder(andFilterBuilder);
-
-      ESSearchResponse esSearchResponse = getBaseESService().search(esSearchFilter, CircleVO.class);
-
-      List<BaseElasticVO> baseElasticVOs = esSearchResponse.getBaseElasticVOs();
       if (baseElasticVOs != null && !baseElasticVOs.isEmpty()) {
         CircleVO circleVO = (CircleVO) baseElasticVOs.get(0);
 
@@ -682,6 +674,35 @@ public class UserServiceImpl implements UserService {
     }
 
     return instituteId;
+  }
+
+
+
+  private List<BaseElasticVO> getCirclesByName(String name, int type, long instituteId) {
+    List<BaseElasticVO> circleVOs = new ArrayList<BaseElasticVO>();
+
+    AndFilterBuilder andFilterBuilder =
+        FilterBuilders.andFilter(FilterBuilders.termFilter("type", type),
+            FilterBuilders.termFilter("instituteId", instituteId));
+
+    ESSearchFilter esSearchFilter =
+        new ESSearchFilter().setFilterBuilder(andFilterBuilder);
+
+    ESSearchResponse esSearchResponse = getBaseESService().search(esSearchFilter, CircleVO.class);
+
+    List<BaseElasticVO> baseElasticVOs = esSearchResponse.getBaseElasticVOs();
+    if (baseElasticVOs != null && baseElasticVOs.size() > 0) {
+      for (BaseElasticVO baseElasticVO : baseElasticVOs) {
+        CircleVO circleVO = (CircleVO) baseElasticVO;
+        if (circleVO.getName().equalsIgnoreCase(name)) {
+          circleVOs.add(circleVO);
+        }
+      }
+
+      return circleVOs;
+    } else {
+      return null;
+    }
   }
 
   public UserDao getUserDao() {
