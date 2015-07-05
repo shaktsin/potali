@@ -68,6 +68,8 @@ import org.elasticsearch.search.aggregations.metrics.min.Min;
 import org.elasticsearch.search.aggregations.metrics.min.MinBuilder;
 import org.elasticsearch.search.sort.SortOrder;
 import org.glassfish.jersey.media.multipart.FormDataBodyPart;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -80,6 +82,8 @@ import java.util.*;
  */
 @Service
 public class JobServiceImpl implements JobService {
+
+  private Logger logger = LoggerFactory.getLogger(JobServiceImpl.class);
 
   @Autowired
   LoginService loginService;
@@ -231,6 +235,15 @@ public class JobServiceImpl implements JobService {
     UserResponse userResponse = getLoginService().getLoggedInUser();
     jobCreateRequest.setUserId(userResponse.getId());
     jobCreateRequest.setUserInstituteId(userResponse.getInstituteId());
+
+
+    logger.info("============================= Job Content =======================");
+    logger.info(jobCreateRequest.getContent());
+
+    logger.info("============================= Job Content Finished ===============");
+
+
+
 
     // check whether user is authorized to comment
     boolean isAuthorized = false;
