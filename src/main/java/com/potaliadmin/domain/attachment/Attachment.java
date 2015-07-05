@@ -22,7 +22,7 @@ public class Attachment implements Serializable {
   @Column(name = "attachment_type", nullable = false)
   private Integer attachmentType;
 
-  @Column(name = "path", nullable = false,length = 45)
+  @Column(name = "path", nullable = false,length = 200)
   private String path;
 
   @Column(name = "size", nullable = false)
