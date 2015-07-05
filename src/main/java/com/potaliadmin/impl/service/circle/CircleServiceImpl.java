@@ -24,6 +24,7 @@ import com.potaliadmin.framework.elasticsearch.response.ESSearchResponse;
 import com.potaliadmin.pact.dao.circle.CircleDao;
 import com.potaliadmin.pact.service.circle.CircleService;
 import com.potaliadmin.pact.service.users.UserService;
+import com.potaliadmin.util.BaseUtil;
 import com.potaliadmin.vo.BaseElasticVO;
 import com.potaliadmin.vo.circle.CircleVO;
 import com.potaliadmin.vo.post.PostVO;
@@ -108,7 +109,7 @@ public class CircleServiceImpl implements CircleService {
 
   @Override
   @Transactional
-  public GenericSuccessResponse joinCircle(CircleJoinRequest circleJoinRequest) {
+  public CircleGetResponse joinCircle(CircleJoinRequest circleJoinRequest) {
     GenericSuccessResponse genericSuccessResponse = new GenericSuccessResponse();
     if (!circleJoinRequest.validate()) {
       throw new InValidInputException("Please input valid parameters");
@@ -171,9 +172,16 @@ public class CircleServiceImpl implements CircleService {
       genericSuccessResponse.setSuccess(true);
     }
 
+    CircleGetResponse circleGetResponse = new CircleGetResponse();
 
+    if (genericSuccessResponse.isSuccess()) {
+      CircleGetRequest circleGetRequest = new CircleGetRequest();
+      circleGetRequest.setCircleId(circleVO.getType());
 
-    return genericSuccessResponse;
+      circleGetResponse = fetchAllCircle(circleGetRequest);
+    }
+
+    return circleGetResponse;
   }
 
   @Override
@@ -351,10 +359,7 @@ public class CircleServiceImpl implements CircleService {
       CircleDto circleDto = new CircleDto();
       circleDto.setId(circleVO.getId());
       circleDto.setName(circleVO.getName());
-      //if (userResponse.getCircleList().contains(circleVO.getId())) {
-        //circleDto.setJoined(true);
-      //  continue;
-      //}
+      circleDto.setJoined(false);
 
       if (circleVO.getAdmin().equals(userResponse.getId())) {
         circleDto.setAdmin(true);
@@ -372,9 +377,38 @@ public class CircleServiceImpl implements CircleService {
 
       circleDtoList.add(circleDto);
     }
+
+    // now set all circles of user
+    List<CircleDto> finalList = new ArrayList<CircleDto>();
+    List<Long> userCircleList = userResponse.getCircleList();
+    for (long circleId : userCircleList) {
+
+      CircleVO circleVO = (CircleVO) getBaseESService().get(circleId, null, CircleVO.class);
+      if (circleVO == null || CircleType.ALL.getId().equals(circleVO.getType()) || CircleType.YEAR.getId().equals(circleVO.getType())) {
+        continue;
+      }
+
+      // calculate no of members
+      QueryBuilder queryBuilder = QueryBuilders.termQuery("circleList", circleVO.getId());
+      long members = getBaseESService().count(queryBuilder, UserVO.class);
+
+      // calculate number of posts
+      queryBuilder = QueryBuilders.termQuery("circleList.id", circleVO.getId());
+      long posts = getBaseESService().count(queryBuilder, PostVO.class);
+
+      CircleDto circleDto = new CircleDto();
+      circleDto.setId(circleVO.getId());
+      circleDto.setName(circleVO.getName());
+      circleDto.setJoined(true);
+      finalList.add(circleDto);
+    }
+
+    finalList.addAll(circleDtoList);
+
+
     CircleGetResponse circleGetResponse = new CircleGetResponse();
-    if (!circleDtoList.isEmpty()) {
-      circleGetResponse.setCircleDtoList(circleDtoList);
+    if (!finalList.isEmpty()) {
+      circleGetResponse.setCircleDtoList(BaseUtil.getPaginatedList(finalList, circleGetRequest.getPageNo(), circleGetRequest.getPerPage()));
       circleGetResponse.setPageNo(circleGetRequest.getPageNo());
       circleGetResponse.setPerPage(circleGetRequest.getPerPage());
     } else {
@@ -421,7 +455,7 @@ public class CircleServiceImpl implements CircleService {
 
   @Override
   @Transactional
-  public GenericSuccessResponse unJoinCircle(CircleJoinRequest circleJoinRequest) {
+  public CircleGetResponse unJoinCircle(CircleJoinRequest circleJoinRequest) {
     if (!circleJoinRequest.validate()) {
       throw new InValidInputException("Invalid input");
     }
@@ -468,9 +502,16 @@ public class CircleServiceImpl implements CircleService {
     GenericSuccessResponse genericSuccessResponse = new GenericSuccessResponse();
     genericSuccessResponse.setSuccess(true);
 
+    CircleGetResponse circleGetResponse = new CircleGetResponse();
 
+    if (genericSuccessResponse.isSuccess()) {
+      CircleGetRequest circleGetRequest = new CircleGetRequest();
+      circleGetRequest.setCircleId(circleVO.getType());
 
-    return genericSuccessResponse;
+      circleGetResponse = fetchAllCircle(circleGetRequest);
+    }
+
+    return circleGetResponse;
   }
 
   @Override

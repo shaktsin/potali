@@ -13,7 +13,7 @@ public interface CircleService {
 
   CreateCircleResponse createCircle(CircleCreateRequest circleCreateRequest);
 
-  GenericSuccessResponse joinCircle(CircleJoinRequest circleJoinRequest);
+  CircleGetResponse joinCircle(CircleJoinRequest circleJoinRequest);
 
   GenericSuccessResponse authorizeCircle(CircleAuthorizeRequest circleAuthorizeRequest);
 
@@ -23,7 +23,7 @@ public interface CircleService {
 
   CircleRequestListResponse fetchAllRequest(CircleJoinListRequest circleJoinRequest);
 
-  GenericSuccessResponse unJoinCircle(CircleJoinRequest circleJoinRequest);
+  CircleGetResponse unJoinCircle(CircleJoinRequest circleJoinRequest);
 
   GenericSuccessResponse deactivateCircle(CircleJoinRequest circleJoinRequest);
 
