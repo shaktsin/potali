@@ -43,11 +43,11 @@ public class CircleResource {
   @Path("/join")
   @Produces("application/json")
   @RequiresAuthentication
-  public CircleGetResponse joinCircle(CircleJoinRequest circleJoinRequest) {
+  public GenericSuccessResponse joinCircle(CircleJoinRequest circleJoinRequest) {
     try {
       return getCircleService().joinCircle(circleJoinRequest);
     } catch (Exception e) {
-      CircleGetResponse circleGetResponse = new CircleGetResponse();
+      GenericSuccessResponse circleGetResponse = new GenericSuccessResponse();
       circleGetResponse.setException(true);
       circleGetResponse.addMessage(e.getMessage());
       return circleGetResponse;
@@ -133,11 +133,11 @@ public class CircleResource {
   @Path("/unjoin")
   @Produces("application/json")
   @RequiresAuthentication
-  public CircleGetResponse unJoinCircle(CircleJoinRequest circleJoinRequest) {
+  public GenericSuccessResponse unJoinCircle(CircleJoinRequest circleJoinRequest) {
     try {
       return getCircleService().unJoinCircle(circleJoinRequest);
     } catch (Exception e) {
-      CircleGetResponse genericSuccessResponse = new CircleGetResponse();
+      GenericSuccessResponse genericSuccessResponse = new GenericSuccessResponse();
       genericSuccessResponse.setException(true);
       genericSuccessResponse.addMessage(e.getMessage());
       return genericSuccessResponse;

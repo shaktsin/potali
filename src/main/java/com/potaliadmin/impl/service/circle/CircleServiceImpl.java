@@ -109,7 +109,7 @@ public class CircleServiceImpl implements CircleService {
 
   @Override
   @Transactional
-  public CircleGetResponse joinCircle(CircleJoinRequest circleJoinRequest) {
+  public GenericSuccessResponse joinCircle(CircleJoinRequest circleJoinRequest) {
     GenericSuccessResponse genericSuccessResponse = new GenericSuccessResponse();
     if (!circleJoinRequest.validate()) {
       throw new InValidInputException("Please input valid parameters");
@@ -172,16 +172,16 @@ public class CircleServiceImpl implements CircleService {
       genericSuccessResponse.setSuccess(true);
     }
 
-    CircleGetResponse circleGetResponse = new CircleGetResponse();
+    /*CircleGetResponse circleGetResponse = new CircleGetResponse();
 
     if (genericSuccessResponse.isSuccess()) {
       CircleGetRequest circleGetRequest = new CircleGetRequest();
       circleGetRequest.setCircleId(circleVO.getType());
 
       circleGetResponse = fetchAllCircle(circleGetRequest);
-    }
+    }*/
 
-    return circleGetResponse;
+    return genericSuccessResponse;
   }
 
   @Override
@@ -455,7 +455,7 @@ public class CircleServiceImpl implements CircleService {
 
   @Override
   @Transactional
-  public CircleGetResponse unJoinCircle(CircleJoinRequest circleJoinRequest) {
+  public GenericSuccessResponse unJoinCircle(CircleJoinRequest circleJoinRequest) {
     if (!circleJoinRequest.validate()) {
       throw new InValidInputException("Invalid input");
     }
@@ -502,16 +502,16 @@ public class CircleServiceImpl implements CircleService {
     GenericSuccessResponse genericSuccessResponse = new GenericSuccessResponse();
     genericSuccessResponse.setSuccess(true);
 
-    CircleGetResponse circleGetResponse = new CircleGetResponse();
+    /*CircleGetResponse circleGetResponse = new CircleGetResponse();
 
     if (genericSuccessResponse.isSuccess()) {
       CircleGetRequest circleGetRequest = new CircleGetRequest();
       circleGetRequest.setCircleId(circleVO.getType());
 
       circleGetResponse = fetchAllCircle(circleGetRequest);
-    }
+    }*/
 
-    return circleGetResponse;
+    return genericSuccessResponse;
   }
 
   @Override
