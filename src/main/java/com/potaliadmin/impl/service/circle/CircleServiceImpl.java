@@ -388,6 +388,10 @@ public class CircleServiceImpl implements CircleService {
         continue;
       }
 
+      if (!circleGetRequest.getCircleId().equals(circleVO.getType())) {
+        continue;
+      }
+
       // calculate no of members
       QueryBuilder queryBuilder = QueryBuilders.termQuery("circleList", circleVO.getId());
       long members = getBaseESService().count(queryBuilder, UserVO.class);
@@ -400,6 +404,8 @@ public class CircleServiceImpl implements CircleService {
       circleDto.setId(circleVO.getId());
       circleDto.setName(circleVO.getName());
       circleDto.setJoined(true);
+      circleDto.setPosts(posts);
+      circleDto.setMembers(members);
       finalList.add(circleDto);
     }
 
