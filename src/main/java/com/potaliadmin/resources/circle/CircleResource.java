@@ -47,10 +47,10 @@ public class CircleResource {
     try {
       return getCircleService().joinCircle(circleJoinRequest);
     } catch (Exception e) {
-      GenericSuccessResponse genericSuccessResponse = new GenericSuccessResponse();
-      genericSuccessResponse.setException(true);
-      genericSuccessResponse.addMessage(e.getMessage());
-      return genericSuccessResponse;
+      GenericSuccessResponse circleGetResponse = new GenericSuccessResponse();
+      circleGetResponse.setException(true);
+      circleGetResponse.addMessage(e.getMessage());
+      return circleGetResponse;
     }
   }
 

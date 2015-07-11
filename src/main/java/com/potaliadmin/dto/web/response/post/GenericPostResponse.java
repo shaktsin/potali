@@ -132,7 +132,7 @@ public class GenericPostResponse extends GenericBaseResponse {
       for (CircleVO circleVO : postVO.getCircleList()) {
         CircleDto circleDto = new CircleDto();
         circleDto.setId(circleVO.getId());
-        circleDto.setName(BaseUtil.capitalize(circleVO.getName()));
+        circleDto.setName(circleVO.getName());
         circleDtos.add(circleDto);
       }
     }
