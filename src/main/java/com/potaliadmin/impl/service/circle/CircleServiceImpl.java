@@ -310,7 +310,7 @@ public class CircleServiceImpl implements CircleService {
 
   @Override
   public CircleGetResponse fetchAllCircle(CircleGetRequest circleGetRequest) {
-
+    List<CircleDto> finalList = new ArrayList<CircleDto>();
     UserResponse userResponse = getUserService().getLoggedInUser();
     if (userResponse == null) {
       throw new UnAuthorizedAccessException("UnAuthorized Access!");
@@ -334,7 +334,8 @@ public class CircleServiceImpl implements CircleService {
 
     ESSearchFilter esSearchFilter =
         new ESSearchFilter().setFilterBuilder(andFilterBuilder)
-            .addSortedMap("id", SortOrder.DESC).setPageNo(circleGetRequest.getPageNo())
+            .addSortedMap("name", SortOrder.DESC)
+            .setPageNo(circleGetRequest.getPageNo())
             .setPerPage(circleGetRequest.getPerPage());
 
 
@@ -378,8 +379,10 @@ public class CircleServiceImpl implements CircleService {
       circleDtoList.add(circleDto);
     }
 
-    // now set all circles of user
-    List<CircleDto> finalList = new ArrayList<CircleDto>();
+    finalList.addAll(circleDtoList);
+
+    /*// now set all circles of user
+    List<CircleDto> userList = new ArrayList<CircleDto>();
     List<Long> userCircleList = userResponse.getCircleList();
     for (long circleId : userCircleList) {
 
@@ -406,15 +409,22 @@ public class CircleServiceImpl implements CircleService {
       circleDto.setJoined(true);
       circleDto.setPosts(posts);
       circleDto.setMembers(members);
-      finalList.add(circleDto);
+      userList.add(circleDto);
     }
 
-    finalList.addAll(circleDtoList);
+
+    if (circleGetRequest.getPageNo() == 0) {
+      finalList.addAll(userList);
+    } else if (userList.size() > circleGetRequest.getPerPage()) {
+
+    }*/
+
+
 
 
     CircleGetResponse circleGetResponse = new CircleGetResponse();
     if (!finalList.isEmpty()) {
-      circleGetResponse.setCircleDtoList(BaseUtil.getPaginatedList(finalList, circleGetRequest.getPageNo(), circleGetRequest.getPerPage()));
+      circleGetResponse.setCircleDtoList(finalList);
       circleGetResponse.setPageNo(circleGetRequest.getPageNo());
       circleGetResponse.setPerPage(circleGetRequest.getPerPage());
     } else {
