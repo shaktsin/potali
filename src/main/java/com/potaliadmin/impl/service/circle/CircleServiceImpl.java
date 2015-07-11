@@ -326,15 +326,15 @@ public class CircleServiceImpl implements CircleService {
     boolFilterBuilder.must(FilterBuilders.termFilter("type", circleGetRequest.getCircleId()));
 
     andFilterBuilder.add(boolFilterBuilder);
-    NotFilterBuilder notFilterBuilder = FilterBuilders.notFilter(
+    /*NotFilterBuilder notFilterBuilder = FilterBuilders.notFilter(
         FilterBuilders.inFilter("id", userResponse.getCircleList().toArray())
     );
 
-    andFilterBuilder.add(notFilterBuilder);
+    andFilterBuilder.add(notFilterBuilder);*/
 
     ESSearchFilter esSearchFilter =
         new ESSearchFilter().setFilterBuilder(andFilterBuilder)
-            .addSortedMap("name", SortOrder.DESC)
+            .addSortedMap("id", SortOrder.DESC)
             .setPageNo(circleGetRequest.getPageNo())
             .setPerPage(circleGetRequest.getPerPage());
 
