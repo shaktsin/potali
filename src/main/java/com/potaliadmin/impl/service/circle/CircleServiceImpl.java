@@ -372,6 +372,10 @@ public class CircleServiceImpl implements CircleService {
 
       }
 
+      if (userResponse.getCircleList().contains(circleDto.getId())) {
+        circleDto.setJoined(true);
+      }
+
       circleDto.setPosts(posts);
       circleDto.setMembers(members);
       circleDto.setModerate(circleVO.isModerate());
