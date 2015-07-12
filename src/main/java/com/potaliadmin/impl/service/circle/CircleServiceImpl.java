@@ -29,12 +29,7 @@ import com.potaliadmin.vo.BaseElasticVO;
 import com.potaliadmin.vo.circle.CircleVO;
 import com.potaliadmin.vo.post.PostVO;
 import com.potaliadmin.vo.user.UserVO;
-import org.elasticsearch.index.query.AndFilterBuilder;
-import org.elasticsearch.index.query.BoolFilterBuilder;
-import org.elasticsearch.index.query.FilterBuilders;
-import org.elasticsearch.index.query.NotFilterBuilder;
-import org.elasticsearch.index.query.QueryBuilder;
-import org.elasticsearch.index.query.QueryBuilders;
+import org.elasticsearch.index.query.*;
 import org.elasticsearch.search.sort.SortOrder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -473,6 +468,66 @@ public class CircleServiceImpl implements CircleService {
     return circleRequestListResponse;
   }
 
+
+
+  public CircleRequestListResponse fetchAllUserOfCircle(CircleJoinListRequest circleJoinRequest) {
+    if (!circleJoinRequest.validate()) {
+      throw new InValidInputException("Invalid Inputs");
+    }
+
+    TermFilterBuilder termFilterBuilder = FilterBuilders.termFilter("circleList", circleJoinRequest.getCircleId());
+
+    ESSearchFilter esSearchFilter =
+        new ESSearchFilter().setFilterBuilder(termFilterBuilder)
+            .addSortedMap("id", SortOrder.DESC)
+            .setPageNo(circleJoinRequest.getPageNo())
+            .setPerPage(circleJoinRequest.getPerPage());
+
+
+    ESSearchResponse esSearchResponse = getBaseESService().search(esSearchFilter, UserVO.class);
+    List<BaseElasticVO> baseElasticVOs = esSearchResponse.getBaseElasticVOs();
+
+    CircleRequestListResponse circleRequestListResponse = new CircleRequestListResponse();
+
+    /*List<UserCircleMapping> userCircleMappingList =
+        getCircleDao().getCircleMappingRequest(circleJoinRequest.getCircleId(),
+            circleJoinRequest.getPageNo(), circleJoinRequest.getPerPage());*/
+
+    List<UserDto> userDtoList = new ArrayList<UserDto>();
+    for (BaseElasticVO baseElasticVO : baseElasticVOs) {
+      UserVO userVO = (UserVO) baseElasticVO;
+      UserDto userDto = new UserDto();
+      userDto.setId(userVO.getId());
+      userDto.setName(userVO.getFirstName() + " "+userVO.getLastName());
+      userDto.setImage(userVO.getImage());
+      userDtoList.add(userDto);
+    }
+
+    circleRequestListResponse.setUserDtoList(userDtoList);
+    circleRequestListResponse.setPageNo(circleJoinRequest.getPageNo());
+    circleRequestListResponse.setPerPage(circleJoinRequest.getPerPage());
+
+    /*List<UserDto> userDtoList = new ArrayList<UserDto>();
+    if (userCircleMappingList != null && userCircleMappingList.size() > 0) {
+      for (UserCircleMapping userCircleMapping : userCircleMappingList) {
+        UserResponse userResponse = getUserService().findById(userCircleMapping.getUserCircleMappingKey().getUserId());
+        UserDto userDto = new UserDto();
+        userDto.setId(userResponse.getId());
+        userDto.setName(userResponse.getName());
+        userDto.setImage(userResponse.getImage());
+        userDtoList.add(userDto);
+      }
+      circleRequestListResponse.setUserDtoList(userDtoList);
+      circleRequestListResponse.setPageNo(circleJoinRequest.getPageNo());
+      circleRequestListResponse.setPerPage(circleJoinRequest.getPerPage());
+    } else {
+      circleRequestListResponse.setException(true);
+      circleRequestListResponse.addMessage("No more requests");
+    }*/
+
+    return circleRequestListResponse;
+  }
+
   @Override
   @Transactional
   public GenericSuccessResponse unJoinCircle(CircleJoinRequest circleJoinRequest) {
@@ -610,10 +665,18 @@ public class CircleServiceImpl implements CircleService {
 
   @Override
   public CircleGetResponse getUsersCircle(CircleGetRequest circleGetRequest) {
-    UserResponse userResponse = getUserService().getLoggedInUser();
+
+    UserResponse userResponse = null;
+    if (circleGetRequest.getUserId() == null) {
+      userResponse = getUserService().getLoggedInUser();
+    } else {
+      userResponse = getUserService().findById(circleGetRequest.getUserId());
+    }
+
     if (userResponse == null) {
       throw new UnAuthorizedAccessException("UnAuthorized Access!");
     }
+
 
     List<Long> circleList = userResponse.getCircleList();
     int firstIndex = circleGetRequest.getPageNo()*circleGetRequest.getPerPage();

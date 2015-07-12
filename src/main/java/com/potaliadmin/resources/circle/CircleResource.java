@@ -69,6 +69,10 @@ public class CircleResource {
     }
   }
 
+
+  /*
+  * fetch all circle of a user
+  * */
   @POST
   @Path("/user/all")
   @Produces("application/json")
@@ -78,6 +82,25 @@ public class CircleResource {
       return getCircleService().getUsersCircle(circleGetRequest);
     } catch (Exception e) {
       CircleGetResponse circleGetResponse = new CircleGetResponse();
+      circleGetResponse.setException(true);
+      circleGetResponse.addMessage(e.getMessage());
+      return circleGetResponse;
+    }
+  }
+
+  /*
+  * fetch all users on a circle
+  *
+  * */
+  @POST
+  @Path("/users")
+  @Produces("application/json")
+  @RequiresAuthentication
+  public CircleRequestListResponse getAllUsersOfCircle(CircleJoinListRequest circleJoinRequest) {
+    try {
+      return getCircleService().fetchAllUserOfCircle(circleJoinRequest);
+    } catch (Exception e) {
+      CircleRequestListResponse circleGetResponse = new CircleRequestListResponse();
       circleGetResponse.setException(true);
       circleGetResponse.addMessage(e.getMessage());
       return circleGetResponse;

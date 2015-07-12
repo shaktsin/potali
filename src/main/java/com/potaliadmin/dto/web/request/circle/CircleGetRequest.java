@@ -8,6 +8,7 @@ import com.potaliadmin.dto.web.request.framework.GenericRequest;
  */
 public class CircleGetRequest extends GenericRequest {
 
+  private Long userId;
   private int perPage = DefaultConstants.AND_APP_PER_PAGE;
   private int pageNo = DefaultConstants.AND_APP_PAGE_NO;
 
@@ -35,5 +36,13 @@ public class CircleGetRequest extends GenericRequest {
 
   public void setCircleId(Integer circleId) {
     this.circleId = circleId;
+  }
+
+  public Long getUserId() {
+    return userId;
+  }
+
+  public void setUserId(Long userId) {
+    this.userId = userId;
   }
 }
