@@ -618,7 +618,7 @@ public class CircleServiceImpl implements CircleService {
     List<Long> circleList = userResponse.getCircleList();
     int firstIndex = circleGetRequest.getPageNo()*circleGetRequest.getPerPage();
 
-    int lastIndex = firstIndex + circleGetRequest.getPerPage();
+    int lastIndex = firstIndex + circleGetRequest.getPerPage() - 1;
     if (circleList.size() < lastIndex) {
       lastIndex = circleList.size();
     }
@@ -639,9 +639,9 @@ public class CircleServiceImpl implements CircleService {
       CircleVO circleVO = (CircleVO)
           getBaseESService().get(circleId, null, CircleVO.class);
 
-      if (circleVO.getType() != circleGetRequest.getCircleId()) {
+      /*if (circleVO.getType() != circleGetRequest.getCircleId()) {
         continue;
-      }
+      }*/
 
       if (!circleVO.isActive()) {
         continue;
