@@ -475,10 +475,11 @@ public class CircleServiceImpl implements CircleService {
       throw new InValidInputException("Invalid Inputs");
     }
 
-    TermFilterBuilder termFilterBuilder = FilterBuilders.termFilter("circleList", circleJoinRequest.getCircleId());
+    TermQueryBuilder termQueryBuilder = QueryBuilders.termQuery("circleList", circleJoinRequest.getCircleId());
+    //QueryBuilders.termQuery("circleList", circleJoinRequest.getCircleId());
 
     ESSearchFilter esSearchFilter =
-        new ESSearchFilter().setFilterBuilder(termFilterBuilder)
+        new ESSearchFilter().setQueryBuilder(termQueryBuilder)
             .addSortedMap("id", SortOrder.DESC)
             .setPageNo(circleJoinRequest.getPageNo())
             .setPerPage(circleJoinRequest.getPerPage());

@@ -223,7 +223,15 @@ public class BaseESServiceImpl implements BaseESService {
 
     searchRequestBuilder.setIndices(getAppProperties().getEsClusterName());
     searchRequestBuilder.setTypes(type);
-    searchRequestBuilder.setPostFilter(esSearchFilter.getFilterBuilder());
+
+    if (esSearchFilter.getFilterBuilder() != null) {
+      searchRequestBuilder.setPostFilter(esSearchFilter.getFilterBuilder());
+    }
+
+    if (esSearchFilter.getQueryBuilder() != null) {
+      searchRequestBuilder.setQuery(esSearchFilter.getQueryBuilder());
+    }
+
 
     for (Map.Entry<String, SortOrder> sortField : esSearchFilter.getSortOrderMap().entrySet()) {
       searchRequestBuilder.addSort(sortField.getKey(), sortField.getValue());

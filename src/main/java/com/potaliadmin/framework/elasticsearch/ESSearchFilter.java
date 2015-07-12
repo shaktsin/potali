@@ -1,6 +1,7 @@
 package com.potaliadmin.framework.elasticsearch;
 
 import org.elasticsearch.index.query.FilterBuilder;
+import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.search.sort.SortOrder;
 
 import java.util.HashMap;
@@ -12,6 +13,7 @@ import java.util.Map;
 public class ESSearchFilter {
 
   private FilterBuilder filterBuilder;
+  private QueryBuilder queryBuilder;
   private Map<String, SortOrder> sortOrderMap = new HashMap<String, SortOrder>();
   private int pageNo=0;
   private int perPage=1;
@@ -54,6 +56,15 @@ public class ESSearchFilter {
 
   public ESSearchFilter addSortedMap(String key, SortOrder sortOrder) {
     this.sortOrderMap.put(key, sortOrder);
+    return this;
+  }
+
+  public QueryBuilder getQueryBuilder() {
+    return queryBuilder;
+  }
+
+  public ESSearchFilter setQueryBuilder(QueryBuilder queryBuilder) {
+    this.queryBuilder = queryBuilder;
     return this;
   }
 }
