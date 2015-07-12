@@ -618,7 +618,7 @@ public class CircleServiceImpl implements CircleService {
     List<Long> circleList = userResponse.getCircleList();
     int firstIndex = circleGetRequest.getPageNo()*circleGetRequest.getPerPage();
 
-    int lastIndex = firstIndex + circleGetRequest.getPerPage() - 1;
+    int lastIndex = firstIndex + circleGetRequest.getPerPage();
     if (circleList.size() < lastIndex) {
       lastIndex = circleList.size();
     }
