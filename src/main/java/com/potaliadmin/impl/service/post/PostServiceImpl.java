@@ -4,6 +4,7 @@ import com.potaliadmin.constants.DefaultConstants;
 import com.potaliadmin.constants.attachment.EnumAttachmentType;
 import com.potaliadmin.constants.attachment.EnumImageFormat;
 import com.potaliadmin.constants.cache.ESIndexKeys;
+import com.potaliadmin.constants.circle.CircleType;
 import com.potaliadmin.constants.image.EnumImageSize;
 import com.potaliadmin.constants.json.DtoJsonConstants;
 import com.potaliadmin.constants.post.EnumPostType;
@@ -1311,6 +1312,8 @@ public class PostServiceImpl implements PostService {
     circleProfileResponse.setName(circleVO.getName());
     circleProfileResponse.setDesc(circleVO.getDesc());
     circleProfileResponse.setModerate(circleVO.isModerate());
+    circleProfileResponse.setHide(CircleType.shouldBeHidden(circleVO.getId().intValue()));
+
     if (!userResponse.getCircleList().contains(circleVO.getId())) {
       circleProfileResponse.setJoined(false);
     } else {

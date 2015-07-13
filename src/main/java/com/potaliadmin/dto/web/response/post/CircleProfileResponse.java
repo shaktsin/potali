@@ -15,6 +15,7 @@ public class CircleProfileResponse extends GenericBaseResponse {
   private String desc;
   private boolean moderate;
   private boolean joined;
+  private boolean hide;
   private List<GenericPostResponse> posts;
   private long totalPosts;
 
@@ -105,11 +106,20 @@ public class CircleProfileResponse extends GenericBaseResponse {
     this.perPage = perPage;
   }
 
-    public String getDesc() {
+  public String getDesc() {
         return desc;
     }
 
-    public void setDesc(String desc) {
+  public void setDesc(String desc) {
         this.desc = desc;
     }
+
+
+  public boolean isHide() {
+    return hide;
+  }
+
+  public void setHide(boolean hide) {
+    this.hide = hide;
+  }
 }

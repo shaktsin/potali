@@ -40,6 +40,10 @@ public enum CircleType {
     return null;
   }
 
+  public static boolean shouldBeHidden(Integer id) {
+    return ALL.getId().equals(id);
+  }
+
   public static String getYearGroupName(String year) {
     return "Class" + " " + year;
   }
