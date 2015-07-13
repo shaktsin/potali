@@ -401,7 +401,7 @@ public class PostServiceImpl implements PostService {
     }
 
     BoolFilterBuilder boolFilterBuilder = FilterBuilders.boolFilter();
-    boolFilterBuilder.must(FilterBuilders.termFilter("userId", userResponse.getId()));
+    boolFilterBuilder.must(FilterBuilders.termFilter("userId", requestUser.getId()));
 
     ESSearchFilter esSearchFilter =
         new ESSearchFilter().setFilterBuilder(boolFilterBuilder)
