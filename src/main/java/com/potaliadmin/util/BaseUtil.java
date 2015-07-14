@@ -106,7 +106,7 @@ public class BaseUtil {
       throw new PotaliRuntimeException("List cannot be null");
     }
     int startIndex = (pageNo)*perPage;
-    int lastIndex = startIndex + perPage - 1;
+    int lastIndex = startIndex + perPage;
     if (startIndex > list.size()) {
       return null;
     }
