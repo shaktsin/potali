@@ -1312,7 +1312,7 @@ public class PostServiceImpl implements PostService {
     circleProfileResponse.setName(circleVO.getName());
     circleProfileResponse.setDesc(circleVO.getDesc());
     circleProfileResponse.setModerate(circleVO.isModerate());
-    circleProfileResponse.setHide(CircleType.shouldBeHidden(circleVO.getId().intValue()));
+    circleProfileResponse.setHide(CircleType.shouldBeHidden(circleVO.getType()));
 
     if (!userResponse.getCircleList().contains(circleVO.getId())) {
       circleProfileResponse.setJoined(false);
