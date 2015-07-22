@@ -1,5 +1,6 @@
 package com.potaliadmin.dto.web.request.jobs;
 
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.potaliadmin.dto.web.request.framework.GenericRequest;
 import com.potaliadmin.dto.web.response.post.ShareDto;
 import com.potaliadmin.framework.cache.address.CityCache;
@@ -10,6 +11,7 @@ import org.apache.commons.lang.StringUtils;
 import org.glassfish.jersey.media.multipart.FormDataBodyPart;
 
 import javax.xml.bind.annotation.XmlRootElement;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
@@ -19,13 +21,20 @@ import java.util.Set;
 public class JobCreateRequest extends GenericRequest {
 
   //private Long industryId;
+  @JsonDeserialize(as=ArrayList.class, contentAs=Long.class)
   private List<Long> circleList;
+
+  @JsonDeserialize(as=ArrayList.class, contentAs=Long.class)
   private List<Long> industryRolesIdList;
+
   private int to;
   private int from;
   private Double salaryFrom;
   private Double salaryTo;
+
+  @JsonDeserialize(as=ArrayList.class, contentAs=Long.class)
   private List<Long> locationIdList;
+  
   private String subject;
   private String content;
   private String replyEmail;
