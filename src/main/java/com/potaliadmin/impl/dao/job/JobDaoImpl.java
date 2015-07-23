@@ -141,6 +141,15 @@ public class JobDaoImpl extends BaseDaoImpl implements JobDao {
     job.setCircleSet(circles);
 
 
+    // set location set
+    Set<City> citySet = getCityDao().findListOfCity(jobEditRequest.getLocationIdList());
+    job.setCitySet(citySet);
+
+    //set industry role set
+    Set<IndustryRoles> industryRolesSet = getIndustryRolesDao().findIndustryRolesSetByIdList(jobEditRequest.getIndustryRolesIdList());
+    job.setIndustryRolesSet(industryRolesSet);
+
+
     PostBlob postBlob = getPostBlobDao().findByPostId(job.getId());
     if (postBlob == null) {
       throw new PotaliRuntimeException("Some exception occurred, please try again");
