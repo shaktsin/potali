@@ -102,6 +102,7 @@ public class ClassifiedDaoImpl extends BaseDaoImpl implements ClassifiedDao {
   }
 
   @Override
+  @Transactional
   public ClassifiedPost editClassified(ClassifiedEditRequest classifiedEditRequest) {
     ClassifiedPost classifiedPost = get(ClassifiedPost.class, classifiedEditRequest.getPostId());
     if (classifiedPost == null) {
